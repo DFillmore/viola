@@ -1,0 +1,66 @@
+VIOLA
+
+VIOLA is a Z-Machine Interpreter. That is, it interprets programs written for the virtual machine 
+known as the Z-Machine. There's a brief history of the Z-Machine at the bottom of this file, for
+some reason.
+
+Viola conforms to the Z-Machine Standards Document version 1.1 for Z-Machine versions 1-8, 
+barring bugs.
+
+
+
+INSTALLATION
+
+A few random notes on getting the program up and running.
+
+You will need Python (version 3.3.5), which you can get at http://www.python.org, and pygame, which you
+can get at http://www.pygame.org/.
+
+NOTES
+
+Viola more or less complies with the Z-Machine Standards Document 1.1, barring a few bugs. Quite a few
+bugs, actually. It also does not handle unexpected behaviour from z-code files terribly well. 
+
+Viola also implements several features from the proposal for a Z-Machine 1.2 Standard. The 1.2 standard
+has not been finalised, so these features should be used with caution. They are only implemented to test
+the viability of the standard.
+
+Also, Viola supports Blorb 2.0 for pictures and sound, and Quetzal 1.4 saved games.
+
+
+BUGS
+
+Timed input stops the interpreter from closing. No, I don't have a clue what's going on there.
+
+The coordinates are slightly messed up, as Viola is under the mistaken impression that the top left of
+the screen is at 0,0, rather than 1,1. 
+
+Text decoding probably doesn't work properly for z1 and z2.
+
+External file handling doesn't prompt for a filename when it should.
+
+Any comments, new bugs, etc. should be sent to marvin@frobnitz.co.uk
+
+BRIEF HISTORY OF THE Z-MACHINE FOR SOME REASON
+
+The Z-Machine was created in the early Eighties by Infocom in order to run 
+text adventures.
+
+Infocom evolved the design of the Z-Machine gradually, and created six distinct versions, each with 
+more capabilites than the previous. Versions 1, 2 and 3 are almost identical, with slight changes to 
+certain parts of the design that make them incompatible. Most of Infocom's games were released for 
+version 3. Version 3 was a fairly simple design, but a seperate upper window was introduced for one 
+game, and support for sound effects (which was really part of the Version 5 design, but a scaled down 
+version was stuck into Version 3).
+Version 4 introduced text styles, better upper window support and a few other features, as well as 
+allowing games to be larger. Version 5 allowed even larger games, with several new features including 
+better sound support. Version 6 allowed for graphics,  up to eight windows which could be moved and 
+resized, bigger games, and other less obvious features. 
+
+Then Infocom went out of business, more or less.
+
+Several years later, Graham Nelson created Inform, which allowed anyone to create Z-Machine games. 
+Two new Versions were created, numbered 7 and 8. These have none of the features of z6, but instead 
+are identical to the z5 model, except that they both allow larger games.
+
+Most games created for the Z-Machine since Infocom stopped business are z5 games.
