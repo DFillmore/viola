@@ -322,7 +322,6 @@ class window:
 class screen:
     updates = []
     def __init__(self, width, height):
-
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         self.screen.fill(0xFFFFFF)
         self.width = width

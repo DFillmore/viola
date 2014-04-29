@@ -18,13 +18,11 @@
 
 import zio as io
 
-
-
-
 quit = 0
 input = 0
 scrolling = 0
 restart = 0
+timerreturn = False
 
 import zcode
 
@@ -54,10 +52,13 @@ def execloop(debug=False):
     global input
     global restart
     global oldpc
+    global timerreturn
     #debug = False
+
     zcode.screen.cursoroff()
-    while (restart == 0) and (quit == 0) and (scrolling == 0):
-        zcode.game.interrupt_call()
+    while (restart == 0) and (quit == 0) and (timerreturn == False) and (scrolling == 0):
+        if timerreturn == False:
+            zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
         zcode.instructions.runops(oldpc, debug)
@@ -73,7 +74,8 @@ def execloop(debug=False):
             zcode.screen.fixedpitchbit = False
         if input > 0:
             zcode.game.PC = oldpc # if we've hit an input instruction, we'll need to call it again
-         
+    timerreturn = False
+
     if restart == 1:
         restart = 0
         execstart(debug)

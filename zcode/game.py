@@ -25,7 +25,7 @@ import zio as io
 import zcode
 
 
-
+returning = False
 
 
 undolist = []
@@ -200,7 +200,7 @@ def setglobal(varnum, value):
     zcode.memory.setword(table + (varnum * 2), value)
 
 def interrupt_call():
-    if len(interruptstack) > 0 and currentframe.interrupt == False: # if there are calls on the interupt stack and we're not in an interrupt routine
+    if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine
         zcode.game.PC = zcode.routines.oldpc
         address = interruptstack.pop()
         call(address, [], 0, 1)
@@ -211,7 +211,6 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
     global callstack
     global currentframe
     global PC
-    #print('call', len(callstack))
     if len(callstack) > LARGEST_STACK:
         LARGEST_STACK = len(callstack)
 
@@ -287,7 +286,6 @@ def ret(value):
     global interruptroutine
     global currentframe
     global timer
-    #print('ret', len(callstack))
     PC = currentframe.retPC
     varnum = currentframe.varnum
     if currentframe.flags & 16 == 16:
@@ -311,6 +309,7 @@ def ret(value):
     if timer and currentframe.interrupt == False:
         timer = False
         #io.pygame.timer.returned = 1
+        zcode.routines.timerreturn = True
         if value != 0:
             zcode.routines.input = -99 #abs(zcode.routines.input)
 #            io.pygame.timer.termchar = 0
@@ -352,11 +351,17 @@ def popuserstack(address, items):
     
 def firetimer():
     global timerreturned
+    global timer
+    global PC
+    oldPC = PC
     #if timerreturned == 1:
     zcode.screen.currentWindow.flushTextBuffer()
     #frame.screen.update()
     timerreturned = 0
+    timer = True
     interruptstack.append(timerroutine)
     zcode.game.interrupt_call()
     zcode.routines.input = 0
+    zcode.routines.timerreturn = False
     zcode.routines.execloop()
+    PC = oldPC
