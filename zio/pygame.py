@@ -298,7 +298,7 @@ class window:
 
     def printText(self, text):
         self.buffertext(text) # assume that all text gets buffered for now
-        if text.find('\r') != -1: # and io.pygame.timer.IsRunning() == 0:
+        if text.find('\r') != -1:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed
      
 
@@ -506,56 +506,8 @@ def nextinput():
 def previnput():
     pass
 
-def dobackspace():
-    global xcursor, ycursor, termchar
-    if routines.input == 2:
-        termchar = 8
-        routines.input = -2
-        routines.execloop()
-    elif len(inputtext) > 0:
-        erasecursor()
-        letter = inputtext.pop()
-        width = getstringlength(letter)
-        height = getstringheight(letter)
-        movecursor(width * -1, 0) # move the cursor back one char
-        area = pygame.Rect(io2z(xcursor), io2z(ycursor), width, height)
-        erase(io2z(xcursor), io2z(ycursor), width, height)
-        screen.currentwin.x_cursor -= width
-        showcursor()
-    try:
-        pygame.display.update(area)
-    except:
-        pass
 
-
-def doenter():
-    global intext, inputtext, termchar
-    if routines.input == 2:
-        termchar = 13
-        routines.input = -2
-        routines.execloop()
-    else:
-        intext = string.join(inputtext, '')
-        #self.inputlist.append(inputtext)
-        inputtext = []
-        pygame.display.update()
-        if output.stream1 == 1:
-            output.closestream(1)
-            x = 1
-        output.printtext(intext)
-        if x == 1:
-            output.openstream(1)
-        erasecursor()
-        #screen.currentwin.newline()
-        showcursor()
-        termchar = 13
-        routines.input = -1
-        routines.execloop()
-
-  
-
-
-        
+     
 
 
 
