@@ -401,7 +401,7 @@ def gestalt(id, arg1=0, arg2=0, arg3=0):
     if id == 4: # text styles
         return zcode.screen.supportedstyles(arg1)
     if id == 5: # timed input
-        return 0 # I don't even remember where the code for this is, but I know it doesn't work right now.
+        return 1 # should really query the io code to see if we support this
     if id == 6: # supported input devices
         if arg1 == 1: # keyboard support
             return 1
