@@ -188,7 +188,6 @@ class font(io.pygame.font):
     fixedstyle = False
 
     def getUseFile(self):
-        print('getusefile', self.fixedstyle)
         if self.italic and self.bold and self.fixedstyle:
             return self.bolditalicfixedfile
         elif self.italic and self.fixedstyle:
@@ -214,7 +213,6 @@ class font(io.pygame.font):
             self.reversevideo = False
 
     def setFixed(self, value):
-        print('setFixed', value)
         if value:
             self.fixedstyle = True
         else:
@@ -305,23 +303,23 @@ def pix2units(pix, horizontal, coord=False): # converts a number of pixels into 
     if pixelunits:
         value = pix
     elif not horizontal:
-        value = ((pix - 1) // font.getHeight()) + 1
+        value = ((pix - 1) // currentWindow.font.getHeight()) + 1
     else:
-        value = ((pix - 1) // font.getWidth()) + 1
+        value = ((pix - 1) // currentWindow.font.getWidth()) + 1
     return value
 
 def units2pix(units, horizontal, coord=False): # converts a number of units into a number of pixels
     if pixelunits:
         value = units
     elif not horizontal:
-        value = units * font.getHeight()
+        value = units * currentWindow.font.getHeight()
         if coord:
-            value -= font.getHeight()
+            value -= currentWindow.font.getHeight()
             value += 1
     else:
-        value = units * font.getWidth()
+        value = units * currentWindow.font.getWidth()
         if coord:
-            value -= font.getWidth()
+            value -= currentWindow.font.getWidth()
             value += 1
     return value
 
@@ -666,7 +664,6 @@ class window(io.pygame.window):
             if style & 4:
                 self.font.setItalic(True)
             if style & 8:
-                print('style8')
                 self.font.setFixed(True)
 
 
