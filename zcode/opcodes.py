@@ -572,7 +572,6 @@ def z_or():
 
 def z_output_stream(): # unfinished (need to fix the width stuff)
     stream = zcode.numbers.neg(zcode.instructions.operands[0])
-    print(stream)
     if stream == 3:
         table = zcode.instructions.operands[1]
         if zcode.header.zversion() == 6 and len(zcode.instructions.operands) > 2:

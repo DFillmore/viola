@@ -189,7 +189,6 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
     elif effect == 2:
         try:
             s = Sound(sound)
-            print('currentchannel', currentchannel[s.type])
             soundchannels[s.type][currentchannel[s.type]-1].play(s, volume, repeats, routine)
             return True
         except:

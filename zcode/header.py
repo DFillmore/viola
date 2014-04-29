@@ -389,7 +389,7 @@ def gettruedefaultbackground():
 
 # Standard 1.2 stuff
 
-viola_version = 85 # version 0.85
+viola_version = 8 # version 0.8
 
 def gestalt(id, arg1=0, arg2=0, arg3=0):
     if id == 0: # interpreter version

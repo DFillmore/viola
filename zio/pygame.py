@@ -23,7 +23,6 @@ os.environ['PYGAME_FREETYPE'] = '1'
 import pygame
 import io
 import sys
-#import zcode
 
 from pygame.locals import *
 pygame.init()
@@ -298,7 +297,6 @@ class window:
 
 
     def printText(self, text):
-        print(text)
         self.buffertext(text) # assume that all text gets buffered for now
         if text.find('\r') != -1: # and io.pygame.timer.IsRunning() == 0:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed
