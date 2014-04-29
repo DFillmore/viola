@@ -398,18 +398,18 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
         type = 1
     else:
         type = 0
-    statusline.setcursor(2 * font.getWidth() + 1,1)
+    statusline.setCursor(2 * font.getWidth() + 1,1)
     location = zcode.objects.getshortname(zcode.game.getglobal(0))
     statusline.printText(location)
     if type == 0:
-        statusline.setcursor(statusline.x_size - (23 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (23 * font.getWidth()) + 1, 1)
         score = str(zcode.game.getglobal(1))
         statusline.printText('Score: ' + score)
-        statusline.setcursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
         turns = str(zcode.game.getglobal(2))
         statusline.printText('Turns: ' + turns)
     else:
-        statusline.setcursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
         hours = str(zcode.game.getglobal(1))
         minutes = str(zcode.game.getglobal(2))
         if zcode.game.getglobal(2) < 10:
@@ -565,11 +565,6 @@ class window(io.pygame.window):
         s = self.old_relative_font_size - self.relative_font_size
         self.setfontsize(s)
    
-    def setcursor(self, x, y):
-        self.flushTextBuffer()
-        self.x_cursor = x
-        self.y_cursor = y
-
     def setBasicColours(self, foreground, background, flush=True):
         self.basic_foreground_colour = foreground
         self.basic_background_colour = background
@@ -596,7 +591,7 @@ class window(io.pygame.window):
         fo = 16
         bo = 16
         if foreground == -3:
-            foreground = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor), (currentWindow.y_coord + currentWindow.y_cursor))
+            foreground = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor) - 1, (currentWindow.y_coord + currentWindow.y_cursor) - 1)
             r = foreground[0] // 8
             g = foreground[1] // 8
             b = foreground[2] // 8
@@ -607,7 +602,7 @@ class window(io.pygame.window):
 
         if background == -3:
 
-            background = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor), (currentWindow.y_coord + currentWindow.y_cursor))
+            background = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor) - 1, (currentWindow.y_coord + currentWindow.y_cursor) - 1)
             r = background[0] // 8
             g = background[1] // 8
             b = background[2] // 8
@@ -679,23 +674,25 @@ class window(io.pygame.window):
             s += 8
         return s
 
-#    def setPosition(self, x, y):
-#        self.x_coord = x - 1
-#        self.y_coord = y - 1
+    def setPosition(self, x, y):
+        self.x_coord = x - 1
+        self.y_coord = y - 1
 
-#    def getPosition(self):
-#        return (self.x_coord + 1, self.y_coord + 1)
+    def getPosition(self):
+        return (self.x_coord + 1, self.y_coord + 1)
 
-#    def setCursor(self, x, y):
-#        self.x_cursor = x - 1
-#        self.y_cursor = y - 1
+    def setCursor(self, x, y):
+        self.flushTextBuffer()
+        self.x_cursor = x - 1
+        self.y_cursor = y - 1
 
-#    def getCursor(self):
-#        return (self.x_cursor + 1, self.y_cursor + 1)
+    def getCursor(self):
+        return (self.x_cursor + 1, self.y_cursor + 1)
 
-#    def getPixelColour(self, x, y):
-#        print(x,y)
-#        return self.screen.getpixel(x-1,y-1)
+    def getPixelColour(self, x, y):
+        print('getpixelcolour', x, y)
+        print(self.screen.getpixel(x-1,y-1))
+        return self.screen.getpixel(x-1,y-1)
 
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.x_cursor <= self.left_margin) or (self.x_cursor >= (self.x_size - self.right_margin)):
@@ -836,9 +833,6 @@ class window(io.pygame.window):
         if self.x_cursor > self.x_size - self.right_margin:
             self.x_cursor = self.left_margin + 1
 
-        self.setPosition(self.x_coord, self.y_coord)
-        self.setSize(self.x_size, self.y_size)
-
         buffering = self.testattributes(8)
 
         if not self.testattributes(1): # if wrapping is off
@@ -856,7 +850,6 @@ class window(io.pygame.window):
                 winwidth = (self.x_size - self.x_cursor - self.right_margin)
                 x = fittext(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
                 linebuffer = linebuffers[a][0:x]
-                self.setCursor(self.x_cursor, self.y_cursor)
                 #print self.font_number
                 if self.font_number == 3:
                     for char in linebuffer:
@@ -867,7 +860,6 @@ class window(io.pygame.window):
                     self.newline()
                 elif self.font_number != 2 and self.font_number != 3:
                     self.x_cursor += self.getStringLength(linebuffer)
-                self.setCursor(self.x_cursor, self.y_cursor)
             self.textbuffer = ''
             
         else:
@@ -885,7 +877,6 @@ class window(io.pygame.window):
 
                 if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
                     self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
-                self.setCursor(self.x_cursor, self.y_cursor)
                 
                 if self.font_number == 3:
                     for char in linebuffer:
@@ -897,7 +888,6 @@ class window(io.pygame.window):
                     self.newline()
                 elif self.font_number != 2:
                     self.x_cursor += self.getStringLength(linebuffer)
-                self.setCursor(self.x_cursor, self.y_cursor)
                 if self.cdown:
                     return 1
         #io.pygame.showcursor()
@@ -937,7 +927,6 @@ class window(io.pygame.window):
         self.x_cursor = self.left_margin + 1
         if self.line_count >= (self.y_size // self.font.getHeight()):
             self.line_count = 0
-            self.setCursor(self.x_cursor, self.y_cursor)
             self.drawText('[MORE]')
             while zcode.input.getinput() != 32:
                 pass
