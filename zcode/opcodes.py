@@ -180,11 +180,11 @@ def z_draw_picture():
     if len(zcode.instructions.operands) > 1:
         y = zcode.instructions.operands[1]
     else:
-        y = zcode.screen.currentWindow.y_cursor
+        y = zcode.screen.currentWindow.getCursor()[1]
     if len(zcode.instructions.operands) > 2:
         x = zcode.instructions.operands[2]
     else:
-        x = zcode.screen.currentWindow.x_cursor
+        x = zcode.screen.currentWindow.getCursor()[0]
   
     zcode.screen.currentWindow.drawpic(picture_number, x, y)
 
@@ -201,7 +201,7 @@ def z_encode_text():
 def z_erase_line():
     value = zcode.instructions.operands[0]
     if value == 1:
-        zcode.screen.currentWindow.eraseline(zcode.screen.currentWindow.x_size)
+        zcode.screen.currentWindow.eraseline(zcode.screen.currentWindow.getSize()[0])
     elif zcode.header.zversion() != 6:
         pass
     else:
@@ -213,11 +213,11 @@ def z_erase_picture():
     if len(zcode.instructions.operands) > 1:
         y = zcode.instructions.operands[1]
     else:
-        y = zcode.screen.currentWindow.y_cursor
+        y = zcode.screen.currentWindow.getCursor()[1]
     if len(zcode.instructions.operands) > 2:
         x = zcode.instructions.operands[2]
     else:
-        x = zcode.screen.currentWindow.x_cursor
+        x = zcode.screen.currentWindow.getCursor()[0]
 
     pic = False
     for a in zcode.screen.blorbs:
@@ -300,8 +300,8 @@ def z_get_cursor():
     zcode.screen.currentWindow.flushTextBuffer()
     array = zcode.instructions.operands[0]
     window = zcode.screen.currentWindow
-    ypos = zcode.screen.pix2units(window.y_cursor, 0)
-    xpos = zcode.screen.pix2units(window.x_cursor, 1)
+    ypos = zcode.screen.pix2units(window.getCursor()[1], 0)
+    xpos = zcode.screen.pix2units(window.getCursor()[0], 1)
     zcode.memory.setword(array, ypos)
     zcode.memory.setword(array+2, xpos)
 
@@ -544,8 +544,7 @@ def z_move_window():
     window = zcode.screen.getWindow(zcode.instructions.operands[0])
     y = zcode.instructions.operands[1]
     x = zcode.instructions.operands[2]
-    window.y_coord = y
-    window.x_coord = x
+    window.setPosition(x,y)
 
 def z_mul():
     a = zcode.numbers.neg(zcode.instructions.operands[0])
@@ -577,7 +576,7 @@ def z_output_stream(): # unfinished (need to fix the width stuff)
         if zcode.header.zversion() == 6 and len(zcode.instructions.operands) > 2:
             width = zcode.numbers.neg(zcode.instructions.operands[2])
             if width >= 0:
-                width = zcode.screen.getWindow(width).x_size
+                width = zcode.screen.getWindow(width).getSize()[0]
             elif width < 0:
                 width = abs(width)
         else:
@@ -669,8 +668,7 @@ def z_print_char():
 def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks right)
     linestart = zcode.instructions.operands[0]
     linelen = zcode.memory.getword(linestart)
-    x = zcode.screen.currentWindow.x_cursor
-    y = zcode.screen.currentWindow.y_cursor
+    x, y = zcode.screen.currentWindow.getCursor()
     while linelen != 0:
         linestart += 2
         for a in range(linelen):
@@ -679,7 +677,7 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
         linestart += linelen
         linelen = zcode.memory.getword(linestart)
         y += zcode.screen.getfontheight()
-        zcode.screen.currentWindow.setcursor(x, y)
+        zcode.screen.currentWindow.setCursor(x, y)
 
 def z_print_num():
     num = zcode.numbers.neg(zcode.instructions.operands[0])
@@ -718,8 +716,7 @@ def z_print_table():
     else:
         skip = 0
 
-    x = zcode.screen.currentWindow.x_cursor
-    y = zcode.screen.currentWindow.y_cursor
+    x,y = zcode.screen.currentWindow.getCursor()
     c = 0
 
     for a in range(height):
@@ -1187,8 +1184,7 @@ def z_set_cursor():
         elif y == -2:
             zcode.screen.cursoron()
     elif x:
-        window.x_cursor = zcode.screen.units2pix(x, horizontal=True, coord=True)
-        window.y_cursor = zcode.screen.units2pix(y, horizontal=False, coord=True)
+        window.setCursor(zcode.screen.units2pix(x, horizontal=True, coord=True), zcode.screen.units2pix(y, horizontal=False, coord=True))
         window.setCursorToMargin()
 
 def z_set_font():
@@ -1428,11 +1424,9 @@ def z_window_size():
     window = zcode.screen.getWindow(zcode.instructions.operands[0])
     y = zcode.instructions.operands[1]
     x = zcode.instructions.operands[2]
-    window.y_size = y
-    window.x_size = x
-    if window.x_cursor > window.x_size or window.y_cursor > window.y_size:
-        window.x_cursor = 1
-        window.y_cursor = 1
+    window.setSize(x, y)
+    if window.getCursor()[0] > window.getSize()[0] or window.getCursor()[1] > window.getSize()[1]:
+        window.setCursor(1,1)
 
 def z_window_style():
     window = zcode.screen.getWindow(zcode.instructions.operands[0])

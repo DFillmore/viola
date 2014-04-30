@@ -69,7 +69,7 @@ class image():
             window.screen.screen.blit(picture, (x,y), r)
         else:
             window.screen.screen.blit(picture, (x,y))
-        area = pygame.Rect(window.getPosition(), window.getSize())
+        area = pygame.Rect((window.x_coord, window.y_coord), window.getSize())
         window.screen.updates.append(area)
 
     def scale(self, width, height):
@@ -244,18 +244,13 @@ class window:
     def getPixelColour(self, x, y):
         return self.screen.getpixel(x,y)
 
-    def preErase(self):
-        pass
-    
-    def postErase(self):
-        pass
-
     def erase(self):
-        area = pygame.Rect(self.getPosition(), self.getSize())
+        area = pygame.Rect((self.x_coord, self.y_coord), (self.x_size, self.y_size))
         self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.updates.append(area)
         self.line_count = 0
-        self.x_cursor = 1
-        self.y_cursor = 1
+        self.x_cursor = 0
+        self.y_cursor = 0
 
 
     def preNewline():
@@ -266,26 +261,26 @@ class window:
 
     def scroll(self, amount, dir=0):
         if dir == 0: # scroll area up
-            xpos, ypos = self.getPosition()
-            sourcex, sourcey = self.getPosition()
+            xpos, ypos = self.x_coord, self.y_coord
+            sourcex, sourcey = self.x_coord, self.y_coord
             sourcey += amount
             width, height = self.getSize()
             height -= amount
             sourcerect = pygame.Rect(sourcex, sourcey, width, height)
             destrect = pygame.Rect(xpos, ypos,width, height)
             self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, self.getPosition(), sourcerect)
+            self.screen.screen.blit(self.screen.screen, (self.x_coord, self.y_coord), sourcerect)
             self.screen.screen.set_clip()
             destrect = pygame.Rect(sourcex, ypos+height, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
         else: # scroll area down
-            xpos, ypos = self.getPosition()
-            sourcex, sourcey = self.getPosition()
+            xpos, ypos = self.x_coord, self.y_coord
+            sourcex, sourcey = self.x_coord, self.y_coord
             width, height = self.getSize()
             sourcerect = pygame.Rect(sourcex, sourcey, width, height-amount)
             destrect = pygame.Rect(xpos, ypos+amount, width, height-amount)
             self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, self.getPosition(), sourcerect)
+            self.screen.screen.blit(self.screen.screen, (self.x_coord, self.y_coord), sourcerect)
             self.screen.screen.set_clip()
             destrect = pygame.Rect(xpos, ypos, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
@@ -304,8 +299,8 @@ class window:
 
     def drawText(self, text):
         fg, bg = self.getColours()
-        xpos, ypos = self.getPosition()
-        xcursor, ycursor = self.getCursor()
+        xpos, ypos = self.x_coord, self.y_coord
+        xcursor, ycursor = self.x_cursor, self.y_cursor
         width, height = self.getSize()
         textsurface = self.font.render(text, 1, fg, bg)
         if text != '':
@@ -334,7 +329,7 @@ class screen:
     def getHeight(self):
         return self.height
 
-    def getpixel(self, x,y):
+    def getPixel(self, x,y):
         return self.screen.get_at((x, y))
 
     def erase(self, colour, area=None):

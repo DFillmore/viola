@@ -94,32 +94,23 @@ def setup(b, width=800, height=600, foreground=2, background=9):
         statusline.setSize(ioScreen.getWidth(), statusline.font.getHeight())
         statusline.setPosition(1, 1)
         if zcode.header.zversion() == 3: # version 3
-            zwindow[1].x_size = ioScreen.getWidth()
-            zwindow[1].y_size = 0
-            zwindow[1].x_coord = 1
-            zwindow[1].y_coord = zwindow[1].font.getHeight() + 1
+            zwindow[1].setSize(ioScreen.getWidth(), 0)
+            zwindow[1].setPosition(1, zwindow[1].font.getHeight() + 1)
     else: # version 4, 5, 7 and 8
-        zwindow[0].x_size = ioScreen.getWidth()
-        zwindow[0].y_size = ioScreen.getHeight()
-        zwindow[0].x_coord = 1
-        zwindow[0].y_coord = 1
-        zwindow[1].x_size = ioScreen.getWidth()
-        zwindow[1].y_size = 0
-        zwindow[1].x_coord = 1
-        zwindow[1].y_coord = 1
+        zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight())
+        zwindow[0].setPosition(1, 1)
+        zwindow[1].setSize(ioScreen.getWidth(), 0)
+        zwindow[1].setPosition(1, 1)
 
     # set the cursor in the windows
 
     if zcode.header.zversion() == 6:
         for a in range(len(zwindow)):
-            zwindow[a].x_cursor = 1
-            zwindow[a].y_cursor = 1
+            zwindow[a].setCursor(1,1)
     elif zcode.header.zversion() < 5:
-        zwindow[0].x_cursor = 1
-        zwindow[0].y_cursor = zwindow[0].y_size - zwindow[0].font.getHeight() + 1
+        zwindow[0].setCursor(1, zwindow[0].y_size - zwindow[0].font.getHeight() + 1)
     else:
-        zwindow[0].x_cursor = 1
-        zwindow[0].y_cursor = 1
+        zwindow[0].setCursor(1, 1)
 
     # set up window attributes
 
@@ -220,7 +211,7 @@ class font(io.pygame.font):
         self.usefile = self.getUseFile()
 
     def render(self, text, antialias, colour, background):
-        #print(text, self.italic, self.bold, self.fixedstyle, self.reversevideo)
+
         f = self.fontData()
         if self.reversevideo:
             return f.render(text, antialias, background, colour)
@@ -692,7 +683,7 @@ class window(io.pygame.window):
         return (self.x_coord + 1, self.y_coord + 1)
 
     def setCursor(self, x, y):
-        self.flushTextBuffer()
+        #self.flushTextBuffer() # this breaks newlines
         self.x_cursor = x - 1
         self.y_cursor = y - 1
 
@@ -700,30 +691,29 @@ class window(io.pygame.window):
         return (self.x_cursor + 1, self.y_cursor + 1)
 
     def getPixelColour(self, x, y):
-        x += self.x_coord - 1
-        y += self.y_coord - 1
-        print('getpixel', x-1,y-1)
-        return self.screen.getpixel(x-1,y-1)
+        x += self.getPosition()[0]
+        y += self.getPosition()[1]
+        return self.screen.getPixel(x-3,y-3)
 
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
-        if (self.x_cursor <= self.left_margin) or (self.x_cursor >= (self.x_size - self.right_margin)):
-            self.x_cursor = self.left_margin + 1
+        if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
+            self.setCursor(self.left_margin + 1, self.getCursor()[1])
 
     
     def setprops(self, property, value):
         """General purpose routine to set the value of a window property by property number. Generally not used."""
         if property == 0:
-            self.y_coord = value
+            self.setPosition(self.getPosition()[0], value)
         elif property == 1:
-            self.x_coord = value
+            self.setPosition(value, self.getPosition()[1])
         elif property == 2:
-            self.y_size = value
+            self.setSize(self.getSize()[0], value)
         elif property == 3:
-            self.x_size = value
+            self.setSize(value, self.getSize()[1])
         elif property == 4:
-            self.y_cursor = value
+            self.setCursor(self.getCursor()[0], value)
         elif property == 5:
-            self.x_cursor = value
+            self.setCursor(value, self.getCursor()[1])
         elif property == 6:
             self.left_margin = value
         elif property == 7:
@@ -737,38 +727,38 @@ class window(io.pygame.window):
         elif property == 11:
             fg = value & 255
             bg = value >> 8
-            self.colour_data = fg + bg
+            self.setBasicColours(fg, bg)
         elif property == 12:
-            self.font_number = value
+            self.setFontByNumber(value)
         elif property == 13:
-            self.font_size = value
+            pass
         elif property == 14:
             self.attributes = value
         elif property == 15:
             self.line_count = value
         elif property == 16:
-            self.true_foreground_colour = value
+            pass
         elif property == 17:
-            self.true_background_colour = value
+            pass
         elif property == 18:
-            self.font_metrics = value
+            pass
         else:
             return False
 
     def getprops(self, property):
         """General purpose routine to retrieve the value of a window property, by property number. Also generally not used."""
         if property == 0:
-            return self.y_coord 
+            return self.getPosition()[1]
         elif property == 1:
-            return self.x_coord
+            return self.getPosition()[0]
         elif property == 2:
-            return self.y_size
+            return self.getSize()[1]
         elif property == 3:
-            return self.x_size
+            return self.getSize()[0]
         elif property == 4:
-            return self.y_cursor
+            return self.getCursor()[1]
         elif property == 5:
-            return self.x_cursor
+            return self.getCursor()[0]
         elif property == 6:
             return self.left_margin
         elif property == 7:
@@ -924,11 +914,11 @@ class window(io.pygame.window):
         global morexpos, moreypos
         self.preNewline()
         # move to the new line
-        self.y_cursor += self.font.getHeight()
-        if self.y_cursor >= self.y_size - self.font.getHeight():
+        self.setCursor(self.getCursor()[0], self.getCursor()[1] + self.font.getHeight())
+        if self.getCursor()[1] >= self.getSize()[1] - self.font.getHeight():
             if self.testattributes(2):
                 self.scroll(self.font.getHeight()) # scroll the window region up
-                self.y_cursor -= self.font.getHeight()
+                self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.font.getHeight())
         if self.line_count != -999:
             self.line_count+=1
         
@@ -936,13 +926,13 @@ class window(io.pygame.window):
         # put the cursor at the current left margin
 
         self.x_cursor = self.left_margin + 1
-        if self.line_count >= (self.y_size // self.font.getHeight()):
+        if self.line_count >= (self.getSize()[1] // self.font.getHeight()):
             self.line_count = 0
             self.drawText('[MORE]')
             while zcode.input.getinput() != 32:
                 pass
-            morexpos = self.x_cursor + self.x_coord
-            moreypos = self.y_cursor + self.y_coord
+            morexpos = self.getCursor()[0] + self.getPosition()[0]
+            moreypos = self.getCursor()[1] + self.getPosition()[1]
             currentWindow.flushTextBuffer()
 
          
@@ -966,7 +956,7 @@ class window(io.pygame.window):
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.x_cursor -= charwidth
-        area = ((self.x_coord + self.x_cursor), (self.y_coord + self.y_cursor), charwidth, charheight)
+        area = ((self.getPosition()[0] + self.getCursor()[0]), (self.getPosition()[1] + self.getCursor()[1]), charwidth, charheight)
         ioScreen.erase(self.realbackground, area)
     
     
@@ -1013,7 +1003,7 @@ class window(io.pygame.window):
         
     def drawpic(self, picture_number, x, y):
         pic = self.getpic(picture_number)
-        pic.draw(self, (self.x_coord + x), (self.y_coord + y))
+        pic.draw(self, (self.getPosition()[0] + x), (self.getPosition()[1] + y))
 
     def erasepic(self, picture_data, x, y, scale=1):
         pic = io.pygame.image(picture_data)
@@ -1021,12 +1011,12 @@ class window(io.pygame.window):
         newheight = pic.getHeight() * scale
 
         if self.realbackground != -4:
-            area = ((self.x_coord + x), (self.y_coord + y), newwidth, newheight)
+            area = ((self.getPosition()[0] + x), (self.getPosition()[1] + y), newwidth, newheight)
             ioScreen.erase(self.realbackground, area)
 
     def eraseline(self, len):
         if self.realbackground != -4:
-            ioScreen.erase(self.realbackground, (self.x_cursor, self.y_cursor, len, self.font.getHeight()))
+            ioScreen.erase(self.realbackground, (self.getCursor()[0], self.getCursor()[1], len, self.font.getHeight()))
     fontlist = []
 
 
@@ -1037,15 +1027,14 @@ def eraseWindow(winnum):
         ioScreen.erase(currentWindow.realbackground)
         split(0)
         for a in range(len(zwindow)):
-            zwindow[a].x_cursor = 1
-            zwindow[a].y_cursor = 1
+            zwindow[a].setCursor(1, 1)
             zwindow[a].line_count = 0
     elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
         io.pygame.erase(currentWindow.realbackground)
     elif getWindow(winnum).realbackground != -4:        
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
-            self.y_cursor = self.y_size - self.font.getHeight()
+            self.setCursor(self.getCursor()[0], self.getSize()[1] - self.font.getHeight())
 
 
 
@@ -1059,31 +1048,29 @@ def cursoroff(): # makes the cursor invisible
     #showcursor = 0
     #io.pygame.hidecursor()
 
-def split(size):
-    oldycoord = zwindow[0].y_coord
-    
-    zwindow[1].y_size = size
-    zwindow[0].y_size = ioScreen.getHeight() - size
-    zwindow[1].y_coord = 1
-    zwindow[0].y_coord = size + 1
-    zwindow[1].x_size = ioScreen.getWidth()
-    zwindow[0].x_size = ioScreen.getWidth()
-    zwindow[1].x_coord = 1
-    zwindow[0].x_coord = 1
+def split(size): # this is wrong. Infocom's terps and Frotz do not change the width of the windows
+    oldycoord = zwindow[0].getPosition()[1]
+
+    zwindow[0].setPosition(1, size + 1)
+    zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight() - size)
+
+    zwindow[1].setPosition(1, 1)
+    zwindow[1].setSize(ioScreen.getWidth(), size)
+
+
+
     if zcode.header.zversion() == 3:
         eraseWindow(1)
 
     # move the window's cursor to the same absolute position in was in before the split
 
-    difference = zwindow[0].y_coord - oldycoord
-    zwindow[0].y_cursor -= difference
+    difference = zwindow[0].getPosition()[1] - oldycoord
+    zwindow[0].setCursor(zwindow[0].getCursor()[0], zwindow[0].getCursor()[1] - difference)
 
     # if the cursor now lies outside the window, move it to the window origin
 
-    if (zwindow[0].y_cursor > zwindow[0].y_size) or (zwindow[0].y_cursor < 1):
-        zwindow[0].y_cursor = 1
-        zwindow[0].x_cursor = 1
+    if (zwindow[0].getCursor()[1] > zwindow[0].getSize()[1]) or (zwindow[0].getCursor()[1] < 1):
+        zwindow[0].setCursor(1,1)
     
-    if (zwindow[1].y_cursor > zwindow[1].y_size) or (zwindow[1].y_cursor < 1):
-        zwindow[1].y_cursor = 1
-        zwindow[1].x_cursor = 1
+    if (zwindow[1].getCursor()[1] > zwindow[0].getSize()[1]) or (zwindow[1].getCursor()[1] < 1):
+        zwindow[1].setCursor(1,1)
