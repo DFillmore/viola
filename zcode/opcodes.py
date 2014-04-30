@@ -1156,9 +1156,17 @@ def z_set_colour():
         if background == 0:
             background = window.getBasicColours()[0]
         if foreground == -1:
-            foreground = 16    
+            foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            foreground = window.getTrueFromReal(foreground)
+            foreground = zcode.screen.reverseSpectrumLookup(foreground)
+            if foreground == False:
+                foreground = 16
         if background == -1:
-            background = 16
+            background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            background = window.getTrueFromReal(background)
+            background = zcode.screen.reverseSpectrumLookup(background)
+            if background == False:
+                background = 16
         window.setBasicColours(foreground, background)
     
 

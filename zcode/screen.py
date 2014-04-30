@@ -471,6 +471,14 @@ spectrum = { 2 : 0x0000, # Black
              12: 0x2D6B, # Dark Grey
            }
 
+def reverseSpectrumLookup(colour):
+    for a in spectrum:
+        if spectrum[a] == colour:
+            return a
+    return False
+    
+
+
 
 def fittext(text, width, wrapping=True, buffering=True):
     if width <= 0 or len(text) == 0:
@@ -591,22 +599,16 @@ class window(io.pygame.window):
         fo = 16
         bo = 16
         if foreground == -3:
-            foreground = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor) - 1, (currentWindow.y_coord + currentWindow.y_cursor) - 1)
-            r = foreground[0] // 8
-            g = foreground[1] // 8
-            b = foreground[2] // 8
-            fg = (((b << 5) + g) << 5) + r
+            foreground = self.getPixelColour(currentWindow.x_cursor, currentWindow.y_cursor)
+            fg = self.getTrueFromReal(foreground)
         else:
             fg = foreground
             foreground = truetofull(foreground)
 
         if background == -3:
 
-            background = self.getPixelColour((currentWindow.x_coord + currentWindow.x_cursor) - 1, (currentWindow.y_coord + currentWindow.y_cursor) - 1)
-            r = background[0] // 8
-            g = background[1] // 8
-            b = background[2] // 8
-            bg = (((b << 5) + g) << 5) + r
+            background = self.getPixelColour(currentWindow.x_cursor, currentWindow.y_cursor)
+            bg = self.getTrueFromReal(background)
         elif background != -4:
             bg = background
             background = truetofull(background)
@@ -614,8 +616,7 @@ class window(io.pygame.window):
         if background == -4:
             bg = -4
             bo = 15
-        if fromspectrum == False:
-            self.colour_data = (bo << 8) + fo
+
         
         
            
@@ -625,6 +626,15 @@ class window(io.pygame.window):
 
     def getTrueColours(self):
         return (self.true_foreground_colour, self.true.background_colour)
+
+
+    def getTrueFromReal(self, colour):
+        r = colour[0] // 8
+        g = colour[1] // 8
+        b = colour[2] // 8
+        c = (((b << 5) + g) << 5) + r
+        return c
+
     
     def setMargins(self, left, right):
         self.left_margin = left
@@ -690,8 +700,9 @@ class window(io.pygame.window):
         return (self.x_cursor + 1, self.y_cursor + 1)
 
     def getPixelColour(self, x, y):
-        print('getpixelcolour', x, y)
-        print(self.screen.getpixel(x-1,y-1))
+        x += self.x_coord - 1
+        y += self.y_coord - 1
+        print('getpixel', x-1,y-1)
         return self.screen.getpixel(x-1,y-1)
 
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
