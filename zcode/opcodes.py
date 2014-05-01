@@ -678,6 +678,7 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
         linelen = zcode.memory.getword(linestart)
         y += zcode.screen.currentWindow.font.getHeight()
         zcode.screen.currentWindow.setCursor(x, y)
+        zcode.screen.currentWindow.flushTextBuffer()
 
 def z_print_num():
     num = zcode.numbers.neg(zcode.instructions.operands[0])
@@ -731,6 +732,7 @@ def z_print_table():
             else:
                 y += zcode.screen.currentWindow.font.getHeight()
                 zcode.screen.currentWindow.setCursor(x, y)
+                zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
             
     
