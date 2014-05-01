@@ -389,23 +389,27 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
         type = 1
     else:
         type = 0
-    statusline.setCursor((2 * statusline.font.getWidth()) + 1, 1)
+    statusline.setCursor(2 * statusline.font.getWidth() + 1, 1)
     location = zcode.objects.getshortname(zcode.game.getglobal(0))
-    statusline.printText(location)
+    statusline.printText(location)    
+    statusline.flushTextBuffer()
     if type == 0:
-        statusline.setCursor(statusline.x_size - (23 * statusline.font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.getSize()[0] - (23 * statusline.font.getWidth()) + 1, 1)
         score = str(zcode.game.getglobal(1))
         statusline.printText('Score: ' + score)
-        statusline.setCursor(statusline.x_size - (12 * statusline.font.getWidth()) + 1, 1)
+        statusline.flushTextBuffer()
+        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.font.getWidth()) + 1, 1)
         turns = str(zcode.game.getglobal(2))
         statusline.printText('Turns: ' + turns)
+        statusline.flushTextBuffer()
     else:
-        statusline.setCursor(statusline.x_size - (12 * statusline.font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.font.getWidth()) + 1, 1)
         hours = str(zcode.game.getglobal(1))
         minutes = str(zcode.game.getglobal(2))
         if zcode.game.getglobal(2) < 10:
             minutes = '0' + minutes
         statusline.printText('Time: ' + hours + ':' + minutes)
+        statusline.flushTextBuffer()
     statusline.flushTextBuffer()
     # Score: 999  Turns: 9999 #
     #             Time: 20:52 #
