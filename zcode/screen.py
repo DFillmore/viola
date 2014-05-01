@@ -620,7 +620,7 @@ class window(io.pygame.window):
         self.setColours(foreground, background)
 
     def getTrueColours(self):
-        return (self.true_foreground_colour, self.true.background_colour)
+        return (self.true_foreground_colour, self.true_background_colour)
 
 
     def getTrueFromReal(self, colour):
