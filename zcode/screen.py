@@ -351,28 +351,28 @@ fontlist = [ None,
 
 def resize():
     if zcode.header.zversion != 6:
-        zwindow[0].x_size = ioScreen.getWidth()
-        zwindow[0].y_size = ioScreen.getHeight()
-        zwindow[1].x_size = ioScreen.getWidth()
+        zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight())
+        zwindow[1].setSize(ioScreen.getWidth(), zwindow[1].getSize()[1])
     if zcode.header.zversion() < 4:
-        statusline.x_size = ioScreen.getWidth()
+        statusline.setSize(ioScreen.getWidth(), statusline.getSize()[1])
 
     # Screen height (lines)
-    zcode.header.setscreenheightlines(ioScreen.getHeight() // getmonofontheight())
+    zcode.header.setscreenheightlines(ioScreen.getHeight() // getWindow(1).font.getHeight())
     # Screen width (chars)
-    zcode.header.setscreenwidthchars(ioScreen.getWidth() // getmonofontwidth())
+    zcode.header.setscreenwidthchars(ioScreen.getWidth() // getWindow(1).font.getWidth())
         
     if zcode.header.zversion() > 4:
         # Screen width (units)
         if zcode.header.zversion() == 6:
             zcode.header.setscreenwidth(ioScreen.getWidth())
         else:
-            zcode.header.setscreenwidth(ioScreen.getWidth() // getmonofontwidth())
+            zcode.header.setscreenwidth(ioScreen.getWidth() // getWindow(1).font.getWidth())
         # Screen height (units)
         if zcode.header.zversion() == 6:
             zcode.header.setscreenheight(ioScreen.getHeight())
+            print(ioScreen.getHeight())
         else:
-            zcode.header.setscreenheight(ioScreen.getHeight() // getmonofontheight())
+            zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).font.getHeight())
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
 
@@ -896,6 +896,9 @@ class window(io.pygame.window):
                 if self.cdown:
                     return 1
         #io.pygame.showcursor()
+        if self.screen.resized:
+            self.screen.resized = False
+            resize()
 
     maxfontheight = 0
 

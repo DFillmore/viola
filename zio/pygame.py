@@ -340,6 +340,39 @@ class screen:
         self.screen.fill(colour, area)
         self.updates.append(area)
 
+    background = 0xFFFFFF
+    resized = False
+    justloaded = True
+
+    def resize(self, newsize):
+        if self.justloaded:
+            self.justloaded = False
+            return False
+        x = pygame.display.Info()
+        size = self.screen.get_rect()
+        oldwidth = self.getWidth()
+        oldheight = self.getHeight()
+        screenwidth = newsize[0]
+        screenheight = newsize[1]        
+        self.width = screenwidth
+        self.height = screenheight
+        backup = pygame.Surface((oldwidth, oldheight))
+        if screenwidth < oldwidth:
+            oldwidth = screenwidth
+        if screenheight < oldheight:
+            oldheight = screenheight
+        #screen.resize()
+        backup.blit(self.screen, (0,0))
+        self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
+        self.screen.set_clip(None)
+
+        self.erase(self.background)
+        self.screen.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
+        self.screen.blit(backup, (0,0))
+        self.screen.set_clip(None)
+        self.resized = True
+        pygame.display.update()
+
 
 
 
@@ -385,8 +418,8 @@ class input:
             sys.exit()
         if event.type == KEYDOWN:
             return keypress(event.key, event.unicode)
-#        if event.type == VIDEORESIZE:
-#            resize()
+        if event.type == VIDEORESIZE:
+            self.screen.resize(event.dict['size'])
         if event.type == MOUSEBUTTONDOWN:
             return mousedown(event)
         if event.type == MOUSEBUTTONUP:
@@ -404,7 +437,6 @@ class input:
 
         
 def setup():
-    global zscreen
     global currentfont
     global inputtext
     global timerrunning
@@ -412,36 +444,7 @@ def setup():
     inputtext = []
     pygame.key.set_repeat(100, 100)
 
-#def resize():
-#    global screenwidth
-#    global screenheight
-#    global zscreen
-#    size = zscreen.get_rect()
-#    oldwidth = screenwidth
-#    oldheight = screenheight
-#    screenwidth = zscreen.get_width()
-#    screenheight = zscreen.get_height()
 
-#    backup = pygame.Surface((oldwidth, oldheight))
-
-#    if header.zversion() == 6:
-#        bg = screen.truetofull(screen.spectrum[defbgcolour()])
-#    else:
-#        bg = background
-#        if bg == -4:
-#            bg = screen.truetofull(screen.spectrum[defbgcolour()])
-#    if screeenwidth < oldwidth:
-#        oldwidth = screenwidth
-#    if screenheight < oldheight:
-#            oldheight = screenheight
-#    screen.resize()
-
-#    backup.blit(zscreen, (0,0))
-#    zscreen.fill(bg)
-#    zscreen.set_clip(pygame.Rect(0,0,oldwidth,oldheigh))
-#    zscreen.blit(backup, (0,0))
-#    zscreen.set_clip()
-#    pygame.display.update()
 
 
 def openfile(filename, prompt, mode):
