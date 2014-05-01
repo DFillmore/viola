@@ -68,7 +68,7 @@ def setup(b, width=800, height=600, foreground=2, background=9):
 
     # set up fonts
 
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion() != 6 and zcode.header.zversion() >= 3:
         getWindow(1).fontlist[1] = font4
     if zcode.header.zversion() < 4:
         statusline.fontlist[1] = font4

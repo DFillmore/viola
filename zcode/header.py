@@ -72,9 +72,10 @@ def setup(): # set all the relevant bits and bytes and words in the header
             setflag(3, a, 0)
 
 
-    columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).font.getWidth())
+    
 
     if zversion() > 3:
+        columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).font.getWidth())
         # Interpreter number
         setterpnum(6)
         # Interpreter version
