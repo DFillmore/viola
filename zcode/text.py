@@ -31,8 +31,7 @@ addrwibble = 0
 A0 = '      abcdefghijklmnopqrstuvwxyz'
 A1 = '      ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 A2 = '       \r0123456789.,!?_#\'"/\\-:()'
-currentalpha = A0
-prevalpha = A0
+
 unitable = { 155: 0xe4,
              156: 0xf6,
              157: 0xfc,
@@ -130,7 +129,7 @@ def setupreverseunitable():
                 
 
 def setupalphatable():
-    global A0, A1, A2, currentalpha, prevalpha
+    global A0, A1, A2
     if zcode.header.zversion() == 1:
         A2 = '       0123456789.,!?_#\'"/\\<-:()'
     if (zcode.header.zversion() > 5) and (zcode.header.alphatableloc() != 0):
@@ -157,8 +156,6 @@ def setupalphatable():
             temp.append(chr(zcode.memory.getbyte(loc+x)))
         temp[7] = '\r'
         A2 = string.join(temp, '')
-        currentalpha = A0
-        prevalpha = A0
 
 
 
@@ -207,7 +204,6 @@ def getZSCIIchar(code):
         return ''
     
 def printabbrev(table, code):
-    global currentalpha, A0
     address = zcode.header.abbrevtableloc()
     loc = 32 * (table-1) + code
     infoaddress = address + (loc * 2)
@@ -219,8 +215,8 @@ def printabbrev(table, code):
 
 
 
-def zcharstozscii(address, norecurse=False): # ignoring z1 and z2 for now
-    global currentalpha, A0, A1, A2
+def zcharstozscii(address):
+    global  A0, A1, A2
     codes = []
     loc = address
     finished = False
@@ -259,11 +255,14 @@ def zcharstozscii(address, norecurse=False): # ignoring z1 and z2 for now
     twocode = 0
     abbrev = 0
     unicodestring = False
+
+    temporary = False
     currentalpha = A0
+    previousalpha = A0
+
     for a in codes:
         if abbrev != 0:
             ZSCII.extend(printabbrev(abbrev, a))
-            #ZSCII.extend('abbreviation goes here')
             abbrev = 0
         elif twocode == 1: # first 5 bits of a 10-byte zscii code
             ZSCII.append(a << 5)
@@ -277,19 +276,51 @@ def zcharstozscii(address, norecurse=False): # ignoring z1 and z2 for now
             ZSCII.append(chr(a))
             if a == chr(0):
                 unicodestring = False
-        elif a < 4 and a > 0:
+        elif a < 4 and a > 0 and zcode.header.zversion() >= 3:
             abbrev = a
-        elif a == 4:
+        elif a == 1 and zcode.header.zversion() == 2:
+            abbrev = a
+        elif a == 4 and zcode.header.zversion() >= 3:
+            previousalpha = currentalpha
             currentalpha = A1
-        elif a == 5:
+            temporary = True
+        elif a == 5 and zcode.header.zversion() >= 3:
+            previousalpha = currentalpha
             currentalpha = A2
+            temporary = True
+        elif (a == 2 or a == 4) and zcode.header.zversion() < 3:
+            previousalpha = currentalpha
+            if currentalpha == A0:
+                currentalpha = A1
+            elif currentalpha == A1:
+                currentalpha = A2
+            elif currentalpha == A2:
+                currentalpha = A0
+            if a == 2:
+                temporary = True
+        elif (a == 3 or a == 5) and zcode.header.zversion() < 3:
+            previousalpha = currentalpha
+            if currentalpha == A0:
+                currentalpha = A2
+            elif currentalpha == A1:
+                currentalpha = A0
+            elif currentalpha == A2:
+                currentalpha = A1
+            if a == 3:
+                temporary = True
+        
         elif currentalpha == A2 and a == 6: # start a ten-byte zscii code
             twocode = 1
-            currentalpha = A0
+            if temporary == True:
+                currentalpha = previousalpha
+                temporary = False
+        elif a == 1 and zcode.header.zversion() == 1:
+            ZSCII.append('\r')
         else:
             ZSCII.append(currentalpha[a])
-
-            currentalpha = A0
+            if temporary == True:
+                currentalpha = previousalpha
+                temporary = False
 
     return ZSCII
 
