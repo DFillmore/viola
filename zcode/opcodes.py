@@ -730,7 +730,7 @@ def z_print_table():
                 zcode.output.printtext('\r')
             else:
                 y += zcode.screen.currentWindow.font.getHeight()
-                zcode.screen.currentWindow.setcursor(x, y)
+                zcode.screen.currentWindow.setCursor(x, y)
     zcode.screen.currentWindow.flushTextBuffer()
             
     
