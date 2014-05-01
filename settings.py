@@ -27,7 +27,6 @@ height = 480
 width = 640
 code = ""
 filename = os.path.join(os.path.expandvars("$HOME"), ".violarc")
-#filename = r"C:\Documents and Settings\Marvin\Desktop\wips\viola\violarc-example"
 
 if os.path.exists(filename) != 1:
     filename = None
@@ -36,7 +35,6 @@ if os.path.exists(filename) != 1:
 def getcode(gamedata):
     release = (gamedata[2] << 8) + gamedata[3]
     serial = gamedata[0x12:0x18].decode('ascii')
-    print('getcode', str(release))
     return str(release) + '.' + serial
 
 def findgame():
