@@ -676,7 +676,7 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
             zcode.output.printtext(char)
         linestart += linelen
         linelen = zcode.memory.getword(linestart)
-        y += zcode.screen.getfontheight()
+        y += zcode.screen.currentWindow.font.getHeight()
         zcode.screen.currentWindow.setCursor(x, y)
 
 def z_print_num():
@@ -729,7 +729,7 @@ def z_print_table():
             if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
                 zcode.output.printtext('\r')
             else:
-                y += zcode.screen.getfontheight()
+                y += zcode.screen.currentWindow.font.getHeight()
                 zcode.screen.currentWindow.setcursor(x, y)
     zcode.screen.currentWindow.flushTextBuffer()
             
@@ -1333,7 +1333,7 @@ def z_sound_data(): # a z-spec 1.2 opcode.
 def z_split_window():
     if zcode.header.zversion() != 6:
         lines = zcode.instructions.operands[0]
-        size = lines * zcode.screen.zwindow[1].getfontheight()
+        size = lines * zcode.screen.zwindow[1].font.getHeight()
     else:
         size = zcode.instructions.operands[0]
     zcode.screen.split(size)
