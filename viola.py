@@ -58,7 +58,7 @@ def findfile(filename):
         x = os.path.isfile(os.path.join(a, filename))
         if x == 1:
             return os.path.join(a, filename)
-    return 0
+    return False
 
 class UnknownGameType(Exception):
     def __init__(self, value):
@@ -75,6 +75,9 @@ class UnsupportedGameType(Exception):
 def getgame(filename):
     global blorbs
     f = findfile(filename)
+    if f == False:
+        print("Error opening game file", file=sys.stderr)
+        sys.exit()
     try:
         gamefile = open(f, 'rb')
     except:
