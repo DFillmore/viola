@@ -34,14 +34,14 @@ if os.path.exists(filename) != 1:
 
 
 def getcode(gamedata):
-    release = (gamedata[1] << 8) + gamedata[1]
+    release = (gamedata[2] << 8) + gamedata[3]
     serial = gamedata[0x12:0x18].decode('ascii')
+    print('getcode', str(release))
     return str(release) + '.' + serial
 
 def findgame():
-    global code
-    code = re.escape(code)
-    expr = r'code:[\s\w\.]*' + code + '.*?(^%%|\Z)'
+    c = re.escape(code)
+    expr = r'code:[\s\w\.]*' + c + '.*?(^%%|\Z)'
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
     if match == None: 
