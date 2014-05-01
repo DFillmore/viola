@@ -245,10 +245,10 @@ def setterpversion(number):
     zcode.memory.setbyte(0x1F, number)
 
 def getterpnum():
-    zcode.memory.getbyte(0x1E)
+    return zcode.memory.getbyte(0x1E)
 
 def getterpversion(): # I doubt this will be needed
-    zcode.memory.getbyte(0x1F)
+    return zcode.memory.getbyte(0x1F)
 
 def getscreenheightlines():
     return zcode.memory.getbyte(0x20)
