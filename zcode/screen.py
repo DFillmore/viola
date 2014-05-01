@@ -389,18 +389,18 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
         type = 1
     else:
         type = 0
-    statusline.setCursor(2 * font.getWidth() + 1,1)
+    statusline.setCursor((2 * statusline.font.getWidth()) + 1, 1)
     location = zcode.objects.getshortname(zcode.game.getglobal(0))
     statusline.printText(location)
     if type == 0:
-        statusline.setCursor(statusline.x_size - (23 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (23 * statusline.font.getWidth()) + 1, 1)
         score = str(zcode.game.getglobal(1))
         statusline.printText('Score: ' + score)
-        statusline.setCursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (12 * statusline.font.getWidth()) + 1, 1)
         turns = str(zcode.game.getglobal(2))
         statusline.printText('Turns: ' + turns)
     else:
-        statusline.setCursor(statusline.x_size - (12 * font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.x_size - (12 * statusline.font.getWidth()) + 1, 1)
         hours = str(zcode.game.getglobal(1))
         minutes = str(zcode.game.getglobal(2))
         if zcode.game.getglobal(2) < 10:
