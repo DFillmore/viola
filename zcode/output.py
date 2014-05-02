@@ -91,7 +91,7 @@ class memorystream(outputstream):
                 line = (len(text[:x]), text[:x])
                 text = text[len(line):]
         if zcode.header.zversion() == 6:
-            zcode.header.settextwidth(zcode.screen.currentWindow.font.getStringLength(''.join(self.data)))
+            zcode.header.settextwidth(zcode.screen.currentWindow.getFont().getStringLength(''.join(self.data)))
 
         c = 0
         data = []

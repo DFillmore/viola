@@ -253,6 +253,10 @@ class window:
         self.y_cursor = 0
 
 
+    def getFont(self):
+        return font
+
+
     def preNewline():
         pass
 
@@ -302,7 +306,7 @@ class window:
         xpos, ypos = self.x_coord, self.y_coord
         xcursor, ycursor = self.x_cursor, self.y_cursor
         width, height = self.getSize()
-        textsurface = self.font.render(text, 1, fg, bg)
+        textsurface = self.getFont().render(text, 1, fg, bg)
         if text != '':
             self.screen.screen.blit(textsurface, (xpos + xcursor, ypos + ycursor))
         area = pygame.Rect(xpos, ypos, width, height)
@@ -402,8 +406,6 @@ class mouseup:
         self.button = mousebuttonmapping[event.button]
     button = None
 
-#class timerevent:
-    
 
 class input:
     def __init__(self, screen):
@@ -414,6 +416,7 @@ class input:
         self.screen.updates = []
         
         event = pygame.event.wait()
+
         if event.type == QUIT:
             sys.exit()
         if event.type == KEYDOWN:

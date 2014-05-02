@@ -89,13 +89,13 @@ def setup(b, width=800, height=600, foreground=2, background=9):
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
         getWindow(1).setSize(ioScreen.getWidth(), 0)
     elif zcode.header.zversion() < 4: # version 1, 2 and 3
-        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - getWindow(0).font.getHeight())
-        getWindow(0).setPosition(1, getWindow(0).font.getHeight() + 1)
-        statusline.setSize(ioScreen.getWidth(), statusline.font.getHeight())
+        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - getWindow(0).getFont().getHeight())
+        getWindow(0).setPosition(1, getWindow(0).getFont().getHeight() + 1)
+        statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
         statusline.setPosition(1, 1)
         if zcode.header.zversion() == 3: # version 3
             zwindow[1].setSize(ioScreen.getWidth(), 0)
-            zwindow[1].setPosition(1, zwindow[1].font.getHeight() + 1)
+            zwindow[1].setPosition(1, zwindow[1].getFont().getHeight() + 1)
     else: # version 4, 5, 7 and 8
         zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight())
         zwindow[0].setPosition(1, 1)
@@ -108,7 +108,7 @@ def setup(b, width=800, height=600, foreground=2, background=9):
         for a in range(len(zwindow)):
             zwindow[a].setCursor(1,1)
     elif zcode.header.zversion() < 5:
-        zwindow[0].setCursor(1, zwindow[0].y_size - zwindow[0].font.getHeight() + 1)
+        zwindow[0].setCursor(1, zwindow[0].y_size - zwindow[0].getFont().getHeight() + 1)
     else:
         zwindow[0].setCursor(1, 1)
 
@@ -131,10 +131,10 @@ def setup(b, width=800, height=600, foreground=2, background=9):
 
     for a in range(len(zwindow)):
         zwindow[a].setBasicColours(foreground, background, flush=False)
-        zwindow[a].font_size = (zwindow[a].font.getHeight() << 8) + zwindow[a].font.getWidth()
+        zwindow[a].font_size = (zwindow[a].getFont().getHeight() << 8) + zwindow[a].getFont().getWidth()
     if zcode.header.zversion() < 4:
         statusline.setBasicColours(background, foreground, flush=False)
-        statusline.font_size = (statusline.font.getHeight() << 8) + statusline.font.getWidth()
+        statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
    
 
 pixelunits = False # should units be pixels? Generally only set True in z6 games, but also when z5 want to change font sizes
@@ -294,23 +294,23 @@ def pix2units(pix, horizontal, coord=False): # converts a number of pixels into 
     if pixelunits:
         value = pix
     elif not horizontal:
-        value = ((pix - 1) // currentWindow.font.getHeight()) + 1
+        value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
     else:
-        value = ((pix - 1) // currentWindow.font.getWidth()) + 1
+        value = ((pix - 1) // currentWindow.getFont().getWidth()) + 1
     return value
 
 def units2pix(units, horizontal, coord=False): # converts a number of units into a number of pixels
     if pixelunits:
         value = units
     elif not horizontal:
-        value = units * currentWindow.font.getHeight()
+        value = units * currentWindow.getFont().getHeight()
         if coord:
-            value -= currentWindow.font.getHeight()
+            value -= currentWindow.getFont().getHeight()
             value += 1
     else:
-        value = units * currentWindow.font.getWidth()
+        value = units * currentWindow.getFont().getWidth()
         if coord:
-            value -= currentWindow.font.getWidth()
+            value -= currentWindow.getFont().getWidth()
             value += 1
     return value
 
@@ -357,22 +357,22 @@ def resize():
         statusline.setSize(ioScreen.getWidth(), statusline.getSize()[1])
 
     # Screen height (lines)
-    zcode.header.setscreenheightlines(ioScreen.getHeight() // getWindow(1).font.getHeight())
+    zcode.header.setscreenheightlines(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
     # Screen width (chars)
-    zcode.header.setscreenwidthchars(ioScreen.getWidth() // getWindow(1).font.getWidth())
+    zcode.header.setscreenwidthchars(ioScreen.getWidth() // getWindow(1).getFont().getWidth())
         
     if zcode.header.zversion() > 4:
         # Screen width (units)
         if zcode.header.zversion() == 6:
             zcode.header.setscreenwidth(ioScreen.getWidth())
         else:
-            zcode.header.setscreenwidth(ioScreen.getWidth() // getWindow(1).font.getWidth())
+            zcode.header.setscreenwidth(ioScreen.getWidth() // getWindow(1).getFont().getWidth())
         # Screen height (units)
         if zcode.header.zversion() == 6:
             zcode.header.setscreenheight(ioScreen.getHeight())
             print(ioScreen.getHeight())
         else:
-            zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).font.getHeight())
+            zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
 
@@ -389,21 +389,21 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
         type = 1
     else:
         type = 0
-    statusline.setCursor(2 * statusline.font.getWidth() + 1, 1)
+    statusline.setCursor(2 * statusline.getFont().getWidth() + 1, 1)
     location = zcode.objects.getshortname(zcode.game.getglobal(0))
     statusline.printText(location)    
     statusline.flushTextBuffer()
     if type == 0:
-        statusline.setCursor(statusline.getSize()[0] - (23 * statusline.font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.getSize()[0] - (23 * statusline.getFont().getWidth()) + 1, 1)
         score = str(zcode.game.getglobal(1))
         statusline.printText('Score: ' + score)
         statusline.flushTextBuffer()
-        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.getFont().getWidth()) + 1, 1)
         turns = str(zcode.game.getglobal(2))
         statusline.printText('Turns: ' + turns)
         statusline.flushTextBuffer()
     else:
-        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.font.getWidth()) + 1, 1)
+        statusline.setCursor(statusline.getSize()[0] - (12 * statusline.getFont().getWidth()) + 1, 1)
         hours = str(zcode.game.getglobal(1))
         minutes = str(zcode.game.getglobal(2))
         if zcode.game.getglobal(2) < 10:
@@ -537,7 +537,7 @@ class window(io.pygame.window):
         self.fontlist = fontlist[:]
         self.setFont(font)
         self.setBasicColours(2, 9, flush=False)
-        self.font.resetSize()
+        self.getFont().resetSize()
 
     def testfont(self, font):
         """Checks to see if the given font is available for use. Returns 1 if available, 0 if unavailable."""
@@ -550,19 +550,25 @@ class window(io.pygame.window):
 
     def setFontSize(self, newsize):
         self.flushTextBuffer()
-        if self.font.defaultSize() + newsize < 1:
+        if self.getFont().defaultSize() + newsize < 1:
             return False
         if newsize > 10:
             return False
         self.old_relative_font_size = self.relative_font_size
         self.relative_font_size += newsize
-        self.font.resize(newsize)
-        if self.font.getHeight() > self.maxfontheight:
-            self.maxfontheight = self.font.getHeight()
-        ascent = self.font.getAscent()
-        descent = self.font.getDescent()
+        self.getFont().resize(newsize)
+        if self.getFont().getHeight() > self.maxfontheight:
+            self.maxfontheight = self.getFont().getHeight()
+        ascent = self.getFont().getAscent()
+        descent = self.getFont().getDescent()
         self.font_metrics = ((ascent & 255) << 8) + (descent & 255)
         return True
+
+    def getFont(self):
+        if fixedpitchbit:
+            return self.fontlist[4]
+        return self.font
+
 
     def resetfontsize(self):
         s = self.old_relative_font_size - self.relative_font_size
@@ -849,7 +855,6 @@ class window(io.pygame.window):
                     linebuffers.append(self.textbuffer[:x])
                     self.textbuffer = self.textbuffer[x+1:]
                 else:
-                    #if self.textbuffer != '':
                     linebuffers.append(self.textbuffer[:])
             for a in range(len(linebuffers)):
                 winwidth = (self.x_size - self.x_cursor - self.right_margin)
@@ -916,11 +921,11 @@ class window(io.pygame.window):
         global morexpos, moreypos
         self.preNewline()
         # move to the new line
-        self.setCursor(self.getCursor()[0], self.getCursor()[1] + self.font.getHeight())
-        if self.getCursor()[1] >= self.getSize()[1] - self.font.getHeight():
+        self.setCursor(self.getCursor()[0], self.getCursor()[1] + self.getFont().getHeight())
+        if self.getCursor()[1] >= self.getSize()[1] - self.getFont().getHeight():
             if self.testattributes(2):
-                self.scroll(self.font.getHeight()) # scroll the window region up
-                self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.font.getHeight())
+                self.scroll(self.getFont().getHeight()) # scroll the window region up
+                self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.getFont().getHeight())
         if self.line_count != -999:
             self.line_count+=1
         
@@ -928,7 +933,7 @@ class window(io.pygame.window):
         # put the cursor at the current left margin
 
         self.x_cursor = self.left_margin + 1
-        if self.line_count >= (self.getSize()[1] // self.font.getHeight()):
+        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()):
             self.line_count = 0
             self.drawText('[MORE]')
             while zcode.input.getinput() != 32:
@@ -972,7 +977,7 @@ class window(io.pygame.window):
             prevfont = self.getFontNumber()
             self.font_number = newfont
             self.setFont(self.fontlist[newfont])
-            self.font_size = (self.font.getHeight() << 8) + self.font.getWidth()
+            self.font_size = (self.getFont().getHeight() << 8) + self.getFont().getWidth()
             return prevfont
         else:
             return 0
@@ -1018,7 +1023,7 @@ class window(io.pygame.window):
 
     def eraseline(self, len):
         if self.realbackground != -4:
-            ioScreen.erase(self.realbackground, (self.getCursor()[0], self.getCursor()[1], len, self.font.getHeight()))
+            ioScreen.erase(self.realbackground, (self.getCursor()[0], self.getCursor()[1], len, self.getFont().getHeight()))
     fontlist = []
 
 
@@ -1036,7 +1041,7 @@ def eraseWindow(winnum):
     elif getWindow(winnum).realbackground != -4:        
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
-            self.setCursor(self.getCursor()[0], self.getSize()[1] - self.font.getHeight())
+            self.setCursor(self.getCursor()[0], self.getSize()[1] - self.getFont().getHeight())
 
 
 

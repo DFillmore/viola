@@ -75,14 +75,14 @@ def setup(): # set all the relevant bits and bytes and words in the header
     
 
     if zversion() > 3:
-        columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).font.getWidth())
+        columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).getFont().getWidth())
         # Interpreter number
         setterpnum(6)
         # Interpreter version
         setterpversion(ord('V'))
         #io.frame.screen.setstyle(8)
         # Screen height (lines)
-        setscreenheightlines(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).font.getHeight()))
+        setscreenheightlines(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
         # Screen width (chars)
 
         setscreenwidthchars(columns)
@@ -97,15 +97,15 @@ def setup(): # set all the relevant bits and bytes and words in the header
         if zversion() == 6:
             setscreenheight(zcode.screen.ioScreen.getHeight())
         else:
-            setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).font.getHeight()))
+            setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
         # Font width (units, obviously)
         if zversion() == 6:
-            setfontwidth(zcode.screen.currentWindow.font.getWidth())
+            setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
         else:
             setfontwidth(1)
         # Font height
         if zversion() == 6:
-            setfontheight(zcode.screen.currentWindow.font.getHeight())
+            setfontheight(zcode.screen.currentWindow.getFont().getHeight())
         else:
             setfontheight(1)
         # Default foreground colour

@@ -243,22 +243,22 @@ def z_font_size():
     newsize = zcode.numbers.neg(zcode.instructions.operands[0])
     if zcode.header.zversion() != 6:
         if newsize == 0:
-            zcode.screen.getWindow(0).font.resetSize()
-            zcode.screen.getWindow(1).font.resetSize()
+            zcode.screen.getWindow(0).getFont().resetSize()
+            zcode.screen.getWindow(1).getFont().resetSize()
         if newsize > 0:
-            zcode.screen.getWindow(0).font.increaseSize(newsize)
-            zcode.screen.getWindow(1).font.increaseSize(newsize)
+            zcode.screen.getWindow(0).getFont().increaseSize(newsize)
+            zcode.screen.getWindow(1).getFont().increaseSize(newsize)
         if newsize < 0:
-            zcode.screen.getWindow(0).font.decreaseSize(abs(newsize))
-            zcode.screen.getWindow(1).font.decreaseSize(abs(newsize))
+            zcode.screen.getWindow(0).getFont().decreaseSize(abs(newsize))
+            zcode.screen.getWindow(1).getFont().decreaseSize(abs(newsize))
         
     else:
         if newsize == 0:
-            zcode.screen.currentWindow.font.resetSize()
+            zcode.screen.currentWindow.getFont().resetSize()
         if newsize > 0:
-            zcode.screen.currentWindow.font.increaseSize(newsize)
+            zcode.screen.currentWindow.getFont().increaseSize(newsize)
         if newsize < 0:
-            zcode.screen.currentWindow.font.decreaseSize(abs(newsize))
+            zcode.screen.currentWindow.getFont().decreaseSize(abs(newsize))
     result = True
     if result:
         zcode.instructions.branch(1)
@@ -676,7 +676,7 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
             zcode.output.printtext(char)
         linestart += linelen
         linelen = zcode.memory.getword(linestart)
-        y += zcode.screen.currentWindow.font.getHeight()
+        y += zcode.screen.currentWindow.getFont().getHeight()
         zcode.screen.currentWindow.setCursor(x, y)
         zcode.screen.currentWindow.flushTextBuffer()
 
@@ -730,7 +730,7 @@ def z_print_table():
             if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
                 zcode.output.printtext('\r')
             else:
-                y += zcode.screen.currentWindow.font.getHeight()
+                y += zcode.screen.currentWindow.getFont().getHeight()
                 zcode.screen.currentWindow.setCursor(x, y)
                 zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
@@ -792,7 +792,7 @@ def z_put_wind_prop():
     window.setprops(propnum, value)
 
 def z_quit():
-    zcode.screen.currentWindow.font.resetSize()
+    zcode.screen.currentWindow.getFont().resetSize()
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
@@ -1335,7 +1335,7 @@ def z_sound_data(): # a z-spec 1.2 opcode.
 def z_split_window():
     if zcode.header.zversion() != 6:
         lines = zcode.instructions.operands[0]
-        size = lines * zcode.screen.zwindow[1].font.getHeight()
+        size = lines * zcode.screen.getWindow(1).getFont().getHeight()
     else:
         size = zcode.instructions.operands[0]
     zcode.screen.split(size)
