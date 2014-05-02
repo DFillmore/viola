@@ -184,10 +184,8 @@ def getZSCIIchar(code):
     if code == 1 and zcode.header.zversion() == 1:
         return '\r'
     elif code == 9:
-        if zcode.header.zversion() == 6: # tab. Not sure how to handle this yet.
-            # tab should collapse to a single space if not at the start of a line
-            return '   ' # need to find out what to do with tab and sentence space if font is fixed-width
-    elif code == 11 and zcode.header.zversion() == 6: # sentence space. also to do later.
+        return '\t'
+    elif code == 11 and zcode.header.zversion() == 6: # sentence space.
         return '  '
     elif code == 13:
         return '\r'

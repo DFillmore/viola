@@ -370,7 +370,6 @@ def resize():
         # Screen height (units)
         if zcode.header.zversion() == 6:
             zcode.header.setscreenheight(ioScreen.getHeight())
-            print(ioScreen.getHeight())
         else:
             zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
     if zcode.header.zversion() == 6:
@@ -540,13 +539,14 @@ class window(io.pygame.window):
         self.getFont().resetSize()
 
     def testfont(self, font):
-        """Checks to see if the given font is available for use. Returns 1 if available, 0 if unavailable."""
+        """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
+        if font > len(self.fontlist):
+            return False
         if self.fontlist[font] == None:
             return False
         else:
             return True
-        #except:
-        #    return False
+
 
     def setFontSize(self, newsize):
         self.flushTextBuffer()
@@ -573,6 +573,13 @@ class window(io.pygame.window):
     def resetfontsize(self):
         s = self.old_relative_font_size - self.relative_font_size
         self.setfontsize(s)
+
+    def atMargin(self): #
+        """Checks to see if the cursor is at the left margin"""
+        if self.getCursor()[0] == self.left_margin + 1:
+            return True
+        else:
+            return False
    
     def setBasicColours(self, foreground, background, flush=True):
         self.basic_foreground_colour = foreground
@@ -835,10 +842,18 @@ class window(io.pygame.window):
         self.textbuffer = ''.join(x)
         #self.chars += len(text)
 
-      
+    def alterTabs(self): # changes the tab character to various spaces
+        x = list(self.textbuffer)
+        if len(x) > 0 and x[0] == '\t' and self.atMargin():
+            x[0] = '   '
+        self.textbuffer = ''.join(x)
+        self.textbuffer = self.textbuffer.replace('\t', ' ')
+
 
     def flushTextBuffer(self):
         self.setCursorToMargin()
+
+        self.alterTabs()
      
 
         if self.x_cursor > self.x_size - self.right_margin:
