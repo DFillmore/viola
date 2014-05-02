@@ -153,7 +153,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
         flag = 1
         for a in range(bit):
             flag = flag * 2
-        if zcode.memory.getword(0x8) & flag == flag:
+        if zcode.memory.getword(0x10) & flag == flag:
             return 1
         else:
             return 0
