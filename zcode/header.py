@@ -71,20 +71,46 @@ def setup(): # set all the relevant bits and bytes and words in the header
         for a in range(2, 16): # set all the other bits to 0, because we don't know what they do
             setflag(3, a, 0)
 
-
-    
-
     if zversion() > 3:
-        columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).getFont().getWidth())
         # Interpreter number
         setterpnum(6)
         # Interpreter version
         setterpversion(ord('V'))
-        #io.frame.screen.setstyle(8)
+    
+    updateSizes()
+
+    if zversion() > 4:
+        # Default foreground colour
+        setdeffgcolour(2)
+        # Default background colour
+        setdefbgcolour(9)
+        settruedefaultforeground(zcode.screen.spectrum[2])
+        settruedefaultbackground(zcode.screen.spectrum[9])
+    # Z-machine Standard number
+    # not bug free enough to fully support even 1.0
+    # although even 1.2 is partially implemented
+    setstandardnum(0, 0)
+
+def updateFontSize():
+    if zversion() > 4:
+        # Font width 
+        if zversion() == 6:
+            setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
+        else:
+            setfontwidth(1)
+        # Font height
+        if zversion() == 6:
+            setfontheight(zcode.screen.currentWindow.getFont().getHeight())
+        else:
+            setfontheight(1)
+
+
+def updateSizes():
+    if zversion() > 3:
+        columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).getFont().getWidth())
         # Screen height (lines)
         setscreenheightlines(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
         # Screen width (chars)
-
         setscreenwidthchars(columns)
         
     if zversion() > 4:
@@ -98,26 +124,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
             setscreenheight(zcode.screen.ioScreen.getHeight())
         else:
             setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
-        # Font width (units, obviously)
-        if zversion() == 6:
-            setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
-        else:
-            setfontwidth(1)
-        # Font height
-        if zversion() == 6:
-            setfontheight(zcode.screen.currentWindow.getFont().getHeight())
-        else:
-            setfontheight(1)
-        # Default foreground colour
-        setdeffgcolour(2)
-        # Default background colour
-        setdefbgcolour(9)
-        settruedefaultforeground(zcode.screen.spectrum[2])
-        settruedefaultbackground(zcode.screen.spectrum[9])
-    # Z-machine Standard number
-    # not bug free enough to fully support even 1.0
-    # although even 1.2 is partially implemented
-    setstandardnum(0, 0) 
+        updateFontSize()
 
 
 def release():
