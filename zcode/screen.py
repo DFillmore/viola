@@ -855,15 +855,12 @@ class window(io.pygame.window):
                 winwidth = (self.x_size - self.x_cursor - self.right_margin)
                 x = fittext(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
                 linebuffer = linebuffers[a][0:x]
-                #print self.font_number
-                if self.font_number == 3:
-                    for char in linebuffer:
-                        self.drawfont3(char)
-                else:
-                    self.drawText(linebuffer)
+                
+
+                self.drawText(linebuffer)
                 if a < len(linebuffers) - 1:
                     self.newline()
-                elif self.font_number != 2 and self.font_number != 3:
+                else:
                     self.x_cursor += self.getStringLength(linebuffer)
             self.textbuffer = ''
             
@@ -883,15 +880,11 @@ class window(io.pygame.window):
                 if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
                     self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
                 
-                if self.font_number == 3:
-                    for char in linebuffer:
-                        self.drawfont3(char)
-                else:
-                    self.drawText(linebuffer)
+                self.drawText(linebuffer)
                 self.cdown = False
                 if definitescroll == 1 or len(self.textbuffer) > 0:
                     self.newline()
-                elif self.font_number != 2:
+                else:
                     self.x_cursor += self.getStringLength(linebuffer)
                 if self.cdown:
                     return 1
