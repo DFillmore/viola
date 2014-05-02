@@ -962,8 +962,8 @@ class window(io.pygame.window):
     def backspace(self, char):
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
-        self.x_cursor -= charwidth
-        area = ((self.getPosition()[0] + self.getCursor()[0]), (self.getPosition()[1] + self.getCursor()[1]), charwidth, charheight)
+        self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
+        area = ((self.getPosition()[0] + self.getCursor()[0]) - 1, (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
         ioScreen.erase(self.realbackground, area)
     
     
