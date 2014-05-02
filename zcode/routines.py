@@ -76,19 +76,23 @@ def execloop(debug=False):
             zcode.game.PC = oldpc # if we've hit an input instruction, we'll need to call it again
     timerreturn = False
 
-    if restart == 1:
-        restart = 0
-        execstart(debug)
-
 
 def execstart(debug=False): # sets up the Z-Machine to start executing instructions
     global quit # if set to 1, game ends
     global input # if set to 1, pause opcode loop for read input. If set to 2, pause for read_char input.
+    global restart
     if zcode.header.zversion() != 6:
         zcode.game.PC = zcode.header.initialPC()
-
     else:
         address = zcode.header.mainroutine()
         zcode.game.call(address, [], 0, 0, 1)
     execloop(debug)
+    while restart:
+        if zcode.header.zversion() != 6:
+            zcode.game.PC = zcode.header.initialPC()
+        else:
+            address = zcode.header.mainroutine()
+            zcode.game.call(address, [], 0, 0, 1)
+        restart = 0
+        execloop(debug)
 
