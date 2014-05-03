@@ -45,7 +45,6 @@ def setup(b, width=800, height=600, foreground=2, background=9):
     ioScreen = io.pygame.screen(width, height)
     blorbs = b
 
-    #io.pygame.openfile()
     zwindow = []
 
     # create all the windows

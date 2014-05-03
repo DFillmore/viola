@@ -270,28 +270,13 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
     streams[5].write(text)
 
 
-def save(data, filename):
-    file = io.pygame.openoutfile(filename)
-    file.write(data)
-    file.close()
-
-def restore(filename):
-    file = io.pygame.openinfile(filename)
-    filelen = io.pygame.getfilelen(filename)
-    if file == 0: # there is no such file
-        return 0
-    else:
-        data = file.read(filelen)
-        for a in range(filelen):
-            data[a] = ord(data[a])
-        return data
 
     
 def writefile(data, filename=None, prompt=False, append=False): 
     if append:
-        f = io.pygame.openfile(filename, prompt, 'a')
+        f = io.pygame.openfile(zcode.screen.currentWindow, 'a', filename, prompt)
     else:
-        f = io.pygame.openfile(filename, prompt, 'w')
+        f = io.pygame.openfile(zcode.screen.currentWindow, 'w', filename, prompt)
     f.write(data)
     f.close()
 

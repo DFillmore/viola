@@ -64,30 +64,9 @@ class undoframe:
     currentframe = 0
     PC = 0
 
-def save(filename=None, data=None, prompt=1):
-    if filename == None:
-        return quetzal.save()
-    filename = filename.upper()
-    if filename.find('.') == -1:
-        filename = filename + '.AUX'
-    if prompt == 1:
-        sd = io.pygame.FileDialog(io.pygame.frame, "Save as", os.getcwd(), style=io.pygame.SAVE,
-                           wildcard="All files (*.*)|*.*", defaultFile=filename)
-        if sd.ShowModal() == io.pygame.ID_OK: # If the user clicks on OK
-            sname = sd.GetPath() # Get the name of the file to save the game to
-            sd.Destroy() # destroy the save dialog box doodad
-        else:
-            sd.Destroy()
-            return 0
-    else:
-        sname = filename
-    try:
-        sfile=open(sname, 'wb') # open a new file with the name chosen by the user
-        sfile.write(data)
-        sfile.close() # close file
-        return 1
-    except:
-        return 0         
+def save():
+    f = io.pygame.openfile(zcode.screen.currentWindow, 'w')
+    return quetzal.save(f)
 
 def save_undo():
     undodata = undoframe()

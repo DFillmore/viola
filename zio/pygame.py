@@ -448,24 +448,49 @@ def setup():
     inputtext = []
     pygame.key.set_repeat(100, 100)
 
+def getinput(screen):
+    i = input(screen).getinput()
+  
+    if isinstance(i, keypress):
+        return i
+    else:
+        return None
 
-
-
-def openfile(filename, prompt, mode):
+def openfile(window, mode, filename=None, prompt=None):
     # if filename == None, prompt for a filename
     # returns a file object to be read/written
     mode = mode + 'b'
     if filename == None: # should prompt for filename
-        return open("TESTFILE.AUX", mode)
-    elif prompt: # prompt for filename, but supply suggestion
-        return open("TESTFILE.AUX", mode)
-    else: # just open the filename with no prompt
-        return open(filename, mode) 
+        prompt = True
 
+    if prompt: # prompt for filename, but supply suggestion
+        
+        window.printText('Filename: ')
+        window.flushTextBuffer()
+        i = None
+        c = None
+        if filename:
+            t = filename.split()
+            window.printText(filename)
+            window.flushTextBuffer()
+        else:
+            t = []
+        while c != '\r':
+            i = getinput(window.screen) 
+            if i:
+                c = i.character
+                if ord(c) == 8 and len(t) > 0:
+                    window.backspace(t.pop())
+                else:
+                    t.append(c)
+                    window.printText(c)
+                    window.flushTextBuffer()
+        t.pop()
+        filename = ''.join(t)
 
+    return open(filename, mode) 
 
-
-
+    
 
 def opentranscript(filename=None):
     pass

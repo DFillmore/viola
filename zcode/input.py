@@ -134,7 +134,7 @@ def getinput(display=True):
         sys.exit()
 
 def readfile(length, filename=None, prompt=False, seek=0): 
-    f = io.pygame.openfile(filename, prompt, 'r')
+    f = io.pygame.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
     f.seek(seek)
     data = f.read(length)
     f.close()
