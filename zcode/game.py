@@ -286,6 +286,7 @@ def ret(value):
     global interruptroutine
     global currentframe
     global timer
+    global timervalue
     PC = currentframe.retPC
     varnum = currentframe.varnum
     if currentframe.flags & 16 == 16:
@@ -296,31 +297,19 @@ def ret(value):
     if useret == 1:
         setvar(varnum, value)
 
-#    numargs = 0
-#    while oldframe.args > 0:
-#        oldframe.args //= 2
-#        numargs += 1
-#    evalstack = oldframe.evalstack[0:len(evalstack)]
-#    lvars = oldframe.lvars
-#    if oldframe.flags & 16 == 16:
-#        pass
-#    else:
-#        setvar(oldframe.varnum, value)
     if timer and currentframe.interrupt == False:
         timer = False
-        #io.pygame.timer.returned = 1
         zcode.routines.timerreturn = True
         if value != 0:
-            zcode.routines.input = -99 #abs(zcode.routines.input)
-#            io.pygame.timer.termchar = 0
-        #zcode.routines.execloop()
+            timervalue = True
+            io.pygame.stoptimer()
         # all right, we need to check here if the program has printed anything
         # not sure how, but anyway, if the program has printed, we reprint the
         # input text so far. If the program has not printed, we do not reprint
         # the input text. Yay.
 
 
-        
+timervalue = False        
         
 # user stacks
 
@@ -353,10 +342,8 @@ def firetimer():
     global timerreturned
     global timer
     global PC
-    oldPC = PC
-    #if timerreturned == 1:
+    oldPC = PC   
     zcode.screen.currentWindow.flushTextBuffer()
-    #frame.screen.update()
     timerreturned = 0
     timer = True
     interruptstack.append(timerroutine)

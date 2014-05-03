@@ -80,7 +80,6 @@ def execloop(debug=False):
 
 def execstart(debug=False): # sets up the Z-Machine to start executing instructions
     global quit # if set to 1, game ends
-    global input # if set to 1, pause opcode loop for read input. If set to 2, pause for read_char input.
     global restart
     if zcode.header.zversion() != 6:
         zcode.game.PC = zcode.header.initialPC()

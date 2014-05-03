@@ -846,7 +846,7 @@ def z_read():
     for a in range(leftover):
         instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
-    while inchar not in zcode.input.gettermchars() and inchar != 13:
+    while inchar not in zcode.input.gettermchars() and inchar != 13 and zcode.game.timervalue == False:
         if len(instring) < maxinput:
             display = True
         else:
@@ -859,7 +859,11 @@ def z_read():
         elif inchar and display:
             instring.append(inchar)
 
-    termchar = instring.pop()
+    if zcode.game.timervalue == True:
+        termchar = 0
+        zcode.game.timervalue = False
+    else:
+        termchar = instring.pop()
     io.pygame.stoptimer()
 
     instring = [chr(a) for a in instring]
@@ -886,7 +890,7 @@ def z_read():
 def z_read_char():
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.line_count = 0
-    if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1:
+    if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
         t = zcode.instructions.operands[1]
         r = zcode.instructions.operands[2]
         zcode.game.timerroutine = r
@@ -894,7 +898,11 @@ def z_read_char():
         io.pygame.starttimer(t, zcode.game.firetimer)
     inchar = None
     while inchar == None:
-        inchar = zcode.input.getinput(False)
+        if zcode.game.timervalue == True:
+            inchar = 0
+            zcode.game.timervalue = False
+        else:
+            inchar = zcode.input.getinput(False)
     io.pygame.stoptimer()
     zcode.instructions.store(inchar)
 

@@ -27,7 +27,7 @@ import zcode
 
 def decode(address, debug=False):
     global operands
-    if zcode.routines.input != -1 and debug == True:
+    if debug == True:
         print(hex(address), end=' ')
     operands = []
     optype = zcode.memory.getbyte(address)

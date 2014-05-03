@@ -75,7 +75,6 @@ class Channel(io.pygame.soundChannel):
             self.stop()
             zcode.game.interruptstack.append(self.routine)
             zcode.game.interrupt_call()
-            zcode.routines.input = 0
             zcode.routines.execloop()
             
 
