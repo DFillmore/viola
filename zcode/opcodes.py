@@ -55,9 +55,14 @@ def z_art_shift():
 
 def z_buffer_mode():
     flag = zcode.instructions.operands[0]
-    if zcode.header.zversion() != 6: # this opcode does nothing in z6 (although it could)
+    if zcode.header.zversion() != 6:
         window = zcode.screen.getWindow(0)
-        window.setattributes(1, 1) # set the buffer attribute for the lower window
+    else:
+        window = zcode.screen.currentWindow
+    if flag == 0:
+        flag = 2
+        window.flushTextBuffer()
+    window.setattributes(8, flag) # set the buffer attribute for the lower window
 
 def z_buffer_screen(): # Works as per standard, but doesn't actually do anything.
     zcode.instructions.store(0)

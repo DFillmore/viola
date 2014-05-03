@@ -296,9 +296,10 @@ class window:
 
 
     def printText(self, text):
-        self.buffertext(text) # assume that all text gets buffered for now
-        if text.find('\r') != -1:
-            self.flushTextBuffer() # flush the text buffer if a new line has been printed
+        self.buffertext(text) 
+        buffering = self.testattributes(8)
+        if text.find('\r') != -1 or buffering == False:
+            self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
      
 
     def drawText(self, text):
