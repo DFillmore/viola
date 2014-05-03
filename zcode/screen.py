@@ -944,11 +944,10 @@ class window(io.pygame.window):
         if self.line_count != -999:
             self.line_count+=1
         
-           
         # put the cursor at the current left margin
 
-        self.x_cursor = self.left_margin + 1
-        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()):
+        self.setCursor(self.left_margin + 1, self.getCursor()[1])
+        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1:
             self.line_count = 0
             self.drawText('[MORE]')
             while zcode.input.getinput() != 32:
