@@ -828,7 +828,6 @@ def z_read():
         r = zcode.instructions.operands[3]
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
-        zcode.game.timer = True
         io.pygame.starttimer(t, zcode.game.firetimer)
 
 
@@ -892,7 +891,6 @@ def z_read_char():
         r = zcode.instructions.operands[2]
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
-        zcode.game.timer = True
         io.pygame.starttimer(t, zcode.game.firetimer)
     inchar = None
     while inchar == None:
