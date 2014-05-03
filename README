@@ -1,47 +1,28 @@
-VIOLA
+VIOLA 1.8
+
+Written by David Fillmore.
 
 Viola is a Z-Machine Interpreter. That is, it interprets programs written for the virtual
 machine known as the Z-Machine. There's a brief history of the Z-Machine at the bottom of
 this file, for some reason.
 
-Viola conforms to the Z-Machine Standards Document version 1.1 for Z-Machine versions 1-8,
-barring bugs.
+The latest code for Viola is available at https://github.com/DFillmore/viola.
 
+FEATURES
+
+* Z-Machine Versions 1-8 support
+* Z-Machine Standards Document 1.1 compliance
+* Blorb Resource Format 2.0 compliance
+* Quetzal Saved Game Format 1.4 compliance
+* Support (via Blorb) for sounds and, in Version 6, images.
 
 
 INSTALLATION
 
-A few random notes on getting the program up and running.
+Some brief notes on getting the program up and running.
 
 You will need Python (version 3.3.5), which you can get at http://www.python.org, and
 pygame, which you can get at http://www.pygame.org/.
-
-NOTES
-
-Viola more or less complies with the Z-Machine Standards Document 1.1, barring a few bugs.
-Quite a few bugs, actually. It also does not handle unexpected behaviour from z-code files
-terribly well.
-
-Viola also implements several features from the recent proposal for a Z-Machine 1.2
-Standard. The 1.2 standard has not been finalised, so these features should be used with
-caution. They were mainly implemented to test the viability of the standard.
-
-Viola supports Blorb 2.0 for pictures and sound, and Quetzal 1.4 saved games.
-
-
-BUGS
-
-Timed input stops the interpreter from closing. No, I don't have a clue what's going on
-there.
-
-The coordinates are slightly messed up, as Viola is under the mistaken impression that the
-top left of the screen is at 0,0, rather than 1,1. 
-
-Text decoding probably doesn't work properly for z1 and z2.
-
-External file handling doesn't prompt for a filename when it should.
-
-Any comments, new bugs, etc. should be sent to marvin@frobnitz.co.uk
 
 BRIEF HISTORY OF THE Z-MACHINE FOR SOME REASON
 
