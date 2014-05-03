@@ -607,7 +607,7 @@ class window(io.pygame.window):
         fo = 16
         bo = 16
         if foreground == -3:
-            foreground = self.getPixelColour(currentWindow.x_cursor, currentWindow.y_cursor)
+            foreground = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
             fg = self.getTrueFromReal(foreground)
         else:
             fg = foreground
@@ -615,7 +615,7 @@ class window(io.pygame.window):
 
         if background == -3:
 
-            background = self.getPixelColour(currentWindow.x_cursor, currentWindow.y_cursor)
+            background = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
             bg = self.getTrueFromReal(background)
         elif background != -4:
             bg = background
@@ -708,9 +708,9 @@ class window(io.pygame.window):
         return (self.x_cursor + 1, self.y_cursor + 1)
 
     def getPixelColour(self, x, y):
-        x += self.getPosition()[0]
-        y += self.getPosition()[1]
-        return self.screen.getPixel(x-3,y-3)
+        x += self.getPosition()[0] - 1
+        y += self.getPosition()[1] - 1
+        return self.screen.getPixel(x - 1, y - 1)
 
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
@@ -1025,7 +1025,7 @@ class window(io.pygame.window):
         
     def drawpic(self, picture_number, x, y):
         pic = self.getpic(picture_number)
-        pic.draw(self, (self.getPosition()[0] + x), (self.getPosition()[1] + y))
+        pic.draw(self, (self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1))
 
     def erasepic(self, picture_data, x, y, scale=1):
         pic = io.pygame.image(picture_data)
@@ -1033,7 +1033,7 @@ class window(io.pygame.window):
         newheight = pic.getHeight() * scale
 
         if self.realbackground != -4:
-            area = ((self.getPosition()[0] + x), (self.getPosition()[1] + y), newwidth, newheight)
+            area = ((self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1), newwidth, newheight)
             ioScreen.erase(self.realbackground, area)
 
     def eraseline(self, len):
