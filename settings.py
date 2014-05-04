@@ -26,10 +26,15 @@ title = ""
 height = 480
 width = 640
 code = ""
-filename = os.path.join(os.path.expandvars("$HOME"), ".violarc")
 
-if os.path.exists(filename) != 1:
-    filename = None
+locations = ["$HOME", "$USERPROFILE"]
+
+for l in locations:
+    filename = os.path.join(os.path.expandvars(l), ".violarc")
+    if os.path.exists(filename) == 1:
+        break
+    else:
+        filename = None
 
 
 def getcode(gamedata):
@@ -77,7 +82,7 @@ def getheight(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+7:match.end()].strip()
+        return int(match.string[match.start()+7:match.end()].strip())
 
 def getwidth(gamesettings):
     expr = r'width:.*?$'
@@ -86,7 +91,7 @@ def getwidth(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+6:match.end()].strip()
+        return int(match.string[match.start()+6:match.end()].strip())
 
 def getterpnum(gamesettings):
     expr = r'terpnum:.*?$'
@@ -113,7 +118,7 @@ def setup(gamedata):
     if filename == None:
         filetext = ''
     else:
-        file = open(filename, "rb")
+        file = open(filename, "r")
         filesize = os.stat(filename).st_size
         filetext = file.read(filesize)
         file.close()
