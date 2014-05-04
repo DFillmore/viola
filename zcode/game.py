@@ -34,6 +34,17 @@ LARGEST_STACK = 0
 
 interruptstack = []
 
+INT_INPUT = 1
+INT_NEWLINE = 2
+INT_SOUND = 3
+
+class interruptdata:
+    def __init__(self, itype, routine):
+        self.routine = routine
+        self.type = itype
+    routine = None
+    type = 0
+
 
 def setup():
     global PC, evalstack, callstack, lvars, retPC, numargs, interruptroutine, currentframe, timerroutine, timer
@@ -78,30 +89,8 @@ def save_undo():
     return 1
 
 def restore(filename=None, prompt=1):
-    if filename == None:
-        return quetzal.restore()
-
-    filename = filename.upper()
-    if filename.find('.') == -1:
-        filename = filename + '.AUX'
-    if prompt == 1:
-        rd = io.pygame.FileDialog(io.pygame.frame, "Restore", os.getcwd(), style=io.pygame.OPEN,
-                           wildcard="All files (*.*)|*.*", defaultFile=filename)
-        if rd.ShowModal() == io.pygame.ID_OK: # if the user clicks on OK
-            rname = rd.GetPath() # get the name of the save file to restore from
-            rd.Destroy() # destroy the save dialog box doodad
-        else:
-            rd.Destroy()
-            return 0
-    else:
-        rname = filename
-    try:
-        rfile=open(rname, 'rb') # open a new file with the name chosen by the user
-        data = rfile.read()
-        rfile.close() # close file
-        return data
-    except:
-        return 0
+    f = io.pygame.openfile(zcode.screen.currentWindow, 'r')
+    return quetzal.restore(f)
 
 def restore_undo():
     global callstack, currentframe, PC
@@ -180,8 +169,10 @@ def setglobal(varnum, value):
 
 def interrupt_call():
     if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine
-        zcode.game.PC = zcode.routines.oldpc
-        address = interruptstack.pop()
+        i = interruptstack.pop()
+        if i.type == INT_INPUT:
+            zcode.game.PC = zcode.routines.oldpc
+        address = i.routine
         call(address, [], 0, 1)
 
         
@@ -325,7 +316,8 @@ def firetimer():
     zcode.screen.currentWindow.flushTextBuffer()
     timerreturned = 0
     timer = True
-    interruptstack.append(timerroutine)
+    i = interruptdata(INT_INPUT, timerroutine)
+    interruptstack.append(i)
     zcode.game.interrupt_call()
     zcode.routines.input = 0
     zcode.routines.timerreturn = False

@@ -73,7 +73,8 @@ class Channel(io.pygame.soundChannel):
     def Notify(self):
         if self.getbusy() == False and self.routine != None and self.routine != 0:
             self.stop()
-            zcode.game.interruptstack.append(self.routine)
+            i = zcode.game.interruptdata(zcode.game.INT_SOUND, self.routine)
+            zcode.game.interruptstack.append(i)
             zcode.game.interrupt_call()
             zcode.routines.execloop()
             
@@ -144,7 +145,8 @@ class effectsChannel(Channel):
         self.getbusy()
         if self.getbusy() == False and self.routine != None and self.routine != 0:
             #self.stop()
-            zcode.game.interruptstack.append(self.routine)
+            i = zcode.game.interruptdata(zcode.game.INT_SOUND, self.routine)
+            zcode.game.interruptstack.append(i)
             zcode.game.interrupt_call()
             zcode.routines.input = 0
             zcode.routines.execloop()
