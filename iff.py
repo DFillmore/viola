@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2003 David Fillmore
+# Copyright (C) 2001 - 2014 David Fillmore
 #
 # This file is part of Viola.
 #
