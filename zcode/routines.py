@@ -63,10 +63,10 @@ def execloop(debug=False):
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
         zcode.instructions.runops(oldpc, debug)
         zcode.header.updateFontSize()
-        #if (zcode.output.streams[2].active == False) and (zcode.header.getflag(2,0) == 1): # if the transcription bit has just been set, start transcription
-        #    zcode.output.openstream(2)
-        #if (zcode.output.streams[2].active) and (zcode.header.getflag(2,0) == 0): # if however it has just been unset, stop transcription
-        #    zcode.output.closestream(2)
+        if (zcode.output.streams[2].active == False) and (zcode.header.getflag(2,0) == 1): # if the transcription bit has just been set, start transcription
+            zcode.output.openstream(2)
+        if (zcode.output.streams[2].active) and (zcode.header.getflag(2,0) == 0): # if however it has just been unset, stop transcription
+            zcode.output.closestream(2)
         if (zcode.screen.fixedpitchbit == False) and (zcode.header.getflag(2,1) == 1):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = True

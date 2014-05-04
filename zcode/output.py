@@ -49,15 +49,22 @@ class transcriptstream(outputstream):
 
     def open(self):
         if self.filename == None:
-            self.filename = io.pygame.opentranscript('TRANSCRIPT.log') # send a suggested filename, and get the actual filename back
+            file = io.pygame.openfile(zcode.screen.currentWindow, 'w', 'TRANSCRIPT.log')
+            self.filename = self.file.name
+            file.close()
         self.active = True
         zcode.header.setflag(2,0,1)
 
     def output(self, data):
-        file = open(self.filename, 'ab')
-        file.write(data)
+        file = io.pygame.openfile(zcode.screen.currentWindow, 'w', self.filename)
+        file.write(data.encode('utf-8'))
         file.close()
-        zcode.header.setflag(2,0,0)
+
+    def close(self):
+        self.active = False
+        zcode.header.setflag(2,0,0) # make sure the transcripting bit reflects the current state of transcription
+
+
 
 class memorystream(outputstream):
     location = None
@@ -245,10 +252,10 @@ def openstream(stream, location=None, width=None): # area is only used for strea
     elif stream == 5:
         streams[5].open(location)
     else:
-        try:
+        if stream >= len(streams) or stream < 1:
+            pass # ignore any attempts to open a stream we don't understand
+        else:
             streams[stream].open()
-        except: # ignore any attempts to open a stream we don't understand
-            pass
 
 
 def closestream(stream):
@@ -258,8 +265,7 @@ def closestream(stream):
     else:
         m = streams[3].pop()
         m.close()
-        zcode.header.setflag(2,0,0) # make sure the transcripting bit reflects the current state of transcription
-
+        
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)
     streams[2].write(text)
