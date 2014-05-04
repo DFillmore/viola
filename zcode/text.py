@@ -241,10 +241,11 @@ def zcharstozscii(address):
 
     y = [5,6]
     y.extend(codes[-2:]) # this matches the last four codes being a 10-bit character code, so we don't accidentally chop the end off one of those
-    while y != codes[-4:] and (codes[-1] == 4 or codes[-1] == 5):
-        codes.pop()
-        y = [5,6]  
-        y.extend(codes[-2:])
+    if len(codes) >= 4:
+        while y != codes[-4:] and (codes[-1] == 4 or codes[-1] == 5):
+            codes.pop()
+            y = [5,6]  
+            y.extend(codes[-2:])
 
     
     # codes should now be a list of the z-characters, with Unicode string bytes
