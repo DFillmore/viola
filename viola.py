@@ -51,15 +51,6 @@ def checkgamefile(gamefile):
     else:
         return 'unknown'
 
-def findfile(filename):
-    paths = [os.curdir]
-    paths.extend(os.path.expandvars("$INFOCOM_PATH").split(":"))
-    for a in paths:
-        x = os.path.isfile(os.path.join(a, filename))
-        if x == 1:
-            return os.path.join(a, filename)
-    return False
-
 class UnknownGameType(Exception):
     def __init__(self, value):
         self.value = value
@@ -74,7 +65,7 @@ class UnsupportedGameType(Exception):
 
 def getgame(filename):
     global blorbs
-    f = findfile(filename)
+    f = io.pygame.findfile(filename)
     if f == False:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
@@ -173,7 +164,7 @@ def rungame(gamedata):
         width = gameset[1]
     
     if gameset[3] != None:
-        blorbs.append(findfile(gameset[3]))
+        blorbs.append(io.pygame.findfile(gameset[3]))
 
     for a in range(len(blorbs)):
         if blorbs[a] == False:

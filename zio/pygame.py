@@ -34,6 +34,16 @@ SOUNDEVENT = pygame.USEREVENT + 1
 
 mousebuttonmapping = {1:0,2:2,3:1}
 
+def findfile(filename):
+    paths = [os.curdir]
+    paths.extend(os.path.expandvars("$INFOCOM_PATH").split(":"))
+    for a in paths:
+        x = os.path.isfile(os.path.join(a, filename))
+        if x == 1:
+            return os.path.join(a, filename)
+    return False
+
+
 class ZTimer:
     routine = 0
 
@@ -459,7 +469,7 @@ def getinput(screen):
 def openfile(window, mode, filename=None, prompt=None):
     # if filename == None, prompt for a filename
     # returns a file object to be read/written
-    mode = mode + 'b'
+
     if filename == None: # should prompt for filename
         prompt = True
 
@@ -488,12 +498,14 @@ def openfile(window, mode, filename=None, prompt=None):
         t.pop()
         filename = ''.join(t)
 
+    if mode == 'a':
+        if findfile(filename) == False:
+            mode = 'w'
+    mode = mode + 'b'
+
     return open(filename, mode) 
 
     
-
-def opentranscript(filename=None):
-    pass
 
         
 def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
