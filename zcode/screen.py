@@ -911,6 +911,7 @@ class window(io.pygame.window):
         if self.screen.resized:
             self.screen.resized = False
             resize()
+        self.screen.update()
 
     maxfontheight = 0
 
@@ -979,6 +980,7 @@ class window(io.pygame.window):
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
         area = ((self.getPosition()[0] + self.getCursor()[0]) - 1, (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
         ioScreen.erase(self.realbackground, area)
+        self.screen.update()
     
     
   

@@ -336,6 +336,9 @@ class screen:
         self.screen.fill(0xFFFFFF)
         self.width = width
         self.height = height
+        self.update()
+
+    def update(self):
         pygame.display.update()
 
     def getWidth(self):
@@ -386,7 +389,7 @@ class screen:
         self.screen.blit(backup, (0,0))
         self.screen.set_clip(None)
         self.resized = True
-        pygame.display.update()
+        self.update()
 
 
 
