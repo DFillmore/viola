@@ -173,6 +173,11 @@ def rungame(gamedata):
     
     if gameset[3] != None:
         blorbs.append(findfile(gameset[3]))
+
+    for a in range(len(blorbs)):
+        if blorbs[a] == False:
+            blorbs.pop(a)
+
         
     terpnum = gameset[4]
 
@@ -223,6 +228,7 @@ def rungame(gamedata):
         title = ''
 
     pic = None
+
     for a in blorbs:
         pic = a.gettitlepic()
 
