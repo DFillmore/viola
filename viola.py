@@ -125,16 +125,16 @@ def handle_parameters(argv): # handles command line parameters
     return gamedata
 
 def setupmodules(gamefile):
-    global terpnum
+    global terpnum, title
     io.pygame.setup()
     if zcode.memory.setup(gamefile) == False:
         return False
 
 
-    # set up the various module
+    # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
-    zcode.screen.setup(blorbs, width, height)
+    zcode.screen.setup(blorbs, width, height, title=title)
     zcode.input.setup()
 
     zcode.objects.setup()
@@ -191,54 +191,22 @@ def rungame(gamedata):
                 else:
                     title = ' - ' + title
 
+    if title == None:
+        title = 'Viola'
+    else:
+        title = 'Viola - ' + title
 
     if setupmodules(gamedata) == False:
-        zcode.error.fatal('Couldn\'t open gamefile ' + sys.argv[1])
-
-#    for a in blorbs:
-#        winsizes = a.getWinSizes() 
-#        if winsizes != None:
-#            bheight = winsizes[1]
-#            bwidth = winsizes[0]
-#        else:
-#            bheight = None
-#            bwidth = None
-
-#        if width == None and bwidth != None:
-#            diff = float(screenwidth) // bwidth
-#            width = bwidth * diff
-#            height = bheight * diff
-            
-
-#    if width != None:
-#        screenwidth = width
-#    if height != None:
-#        screenheight = height
-    
+        zcode.error.fatal('Couldn\'t open gamefile ' + sys.argv[1])  
        
-    if title == None:
-        title = ''
+
 
     pic = None
 
     for a in blorbs:
         pic = a.gettitlepic()
 
-    #try:
-    #    icon = wx.EmptyIcon()
-    #    icon.CopyFromBitmap(pic)
-    #    icon.SetWidth(32)
-    #    icon.SetHeight(32)
-    #    frame.SetIcon(icon)
-    #except:
-    #    pass
-    if pic != None:
-        x = (screenwidth // 2) - (pic.GetWidth() // 2)
-        y = (screenheight // 2) - (pic.GetHeight() // 2)
-        zscreen.blit(pic.ConvertToBitmap(), (x, y))
-        titlepic = 1
-    else:
-        titlepic = 0
+
     zcode.routines.execstart(debug)
     return 1
 

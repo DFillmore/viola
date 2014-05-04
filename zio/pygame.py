@@ -27,7 +27,6 @@ import sys
 from pygame.locals import *
 pygame.init()
 
-tfont = None
 
 TIMEREVENT = pygame.USEREVENT
 SOUNDEVENT = pygame.USEREVENT + 1
@@ -43,9 +42,6 @@ def findfile(filename):
             return os.path.join(a, filename)
     return False
 
-
-class ZTimer:
-    routine = 0
 
 class image():
     data = None
@@ -332,8 +328,9 @@ class window:
 
 class screen:
     updates = []
-    def __init__(self, width, height):
+    def __init__(self, width, height, title=''):
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        pygame.display.set_caption(title)
         self.screen.fill(0xFFFFFF)
         self.width = width
         self.height = height
@@ -381,7 +378,7 @@ class screen:
             oldwidth = screenwidth
         if screenheight < oldheight:
             oldheight = screenheight
-        #screen.resize()
+
         backup.blit(self.screen, (0,0))
         self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
         self.screen.set_clip(None)

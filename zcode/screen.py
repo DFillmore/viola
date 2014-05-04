@@ -23,7 +23,7 @@ import settings
 import zcode
 
 
-def setup(b, width=800, height=600, foreground=2, background=9):
+def setup(b, width=800, height=600, foreground=2, background=9, title=''):
     global zwindow
     global statusline
     global currentWindow
@@ -42,7 +42,7 @@ def setup(b, width=800, height=600, foreground=2, background=9):
         width = 800
     if not height:
         height = 600
-    ioScreen = io.pygame.screen(width, height)
+    ioScreen = io.pygame.screen(width, height, title)
     blorbs = b
 
     zwindow = []
