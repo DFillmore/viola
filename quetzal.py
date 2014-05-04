@@ -1,4 +1,20 @@
-# Various file-related opcodes
+# Copyright (C) 2001 - 2014 David Fillmore
+#
+# This file is part of Viola.
+#
+# Viola is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Viola is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Viola; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import iff
 import os
@@ -200,6 +216,14 @@ class formchunk(iff.chunk):
     ID = 'FORM'
     subID = 'IFZS'
     data = []
+
+    release = 0
+    serial = '      '
+    checksum = 0
+    memory = []
+    omemory = []
+    callstack = []
+    currentframe = None
     
     def write(self, release, serial, checksum, PC, memory, omemory, callstack, currentframe):
         self.data.append(ord('I')) 
@@ -259,31 +283,22 @@ class formchunk(iff.chunk):
 
 
 
-def save():
-    sd = io.pygame.FileDialog(io.pygame.frame, "Save as", os.getcwd(), style=io.pygame.SAVE,
-                        wildcard="Save games (*.qut)|*.qut|All files (*.*)|*.*") # show the save dialog box doodad
-    if sd.ShowModal() == io.pygame.ID_OK: # If the user clicks on OK
-        sname = sd.GetPath() # Get the name of the file to save the game to
-        sd.Destroy() # destroy the save dialog box doodad
-        sfile=open(sname, 'wb') # open a new file with the name chosen by the user
-        data = []
-        cchunk = formchunk() # cchunk is a form chunk
-        cchunk.dowrite() # fill cchunk.data with data
-        id = cchunk.writeID() # find cchunk's id
-        for b in range(len(id)):
-            data.append(ord(id[b])) # write ID to data
-        clen = cchunk.writelen() # find cchunk's length
-        for b in range(len(clen)):
-            data.append(clen[b]) # write length to data
-        for b in range(len(cchunk.data)):
-            data.append(cchunk.data[b]) # write cchunk's data to data
-        for a in range(len(data)):
-            sfile.write(chr(data[a])) # write data to file
-        sfile.close() # close file
-        condition = True
-    else:
-        sd.Destroy()
-        condition = False
+def save(sfile):
+    data = []
+    cchunk = formchunk() # cchunk is a form chunk
+    cchunk.dowrite() # fill cchunk.data with data
+    id = cchunk.writeID() # find cchunk's id
+    for b in range(len(id)):
+        data.append(ord(id[b])) # write ID to data
+    clen = cchunk.writelen() # find cchunk's length
+    for b in range(len(clen)):
+        data.append(clen[b]) # write length to data
+    for b in range(len(cchunk.data)):
+        data.append(cchunk.data[b]) # write cchunk's data to data
+    for a in range(len(data)):
+        sfile.write(chr(data[a])) # write data to file
+    sfile.close() # close file
+    condition = True
     return condition
 
 def restore():
