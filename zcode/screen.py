@@ -921,7 +921,6 @@ class window(io.pygame.window):
         # call the interrupt routine (if it's time to do so)
 
         if zcode.header.getterpnum() != 6 or story != '393.890714':
-            print('pre')
             self.cdown = self.countdown()
 
     def postNewline(self):
@@ -930,7 +929,6 @@ class window(io.pygame.window):
         # call the interrupt routine (if it's time to do so)
         story = settings.code
         if zcode.header.getterpnum() == 6 and story == '393.890714':
-            print('post')
             self.cdown = self.countdown()
 
     def newline(self):

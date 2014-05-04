@@ -134,6 +134,7 @@ def handle_parameters(argv): # handles command line parameters
     return gamedata
 
 def setupmodules(gamefile):
+    global terpnum
     io.pygame.setup()
     if zcode.memory.setup(gamefile) == False:
         return False
@@ -145,19 +146,19 @@ def setupmodules(gamefile):
     zcode.screen.setup(blorbs, width, height)
     zcode.input.setup()
 
-    if terpnum != None:
-        zcode.header.setterpnum(int(terpnum))
     zcode.objects.setup()
     
     zcode.text.setup()
     zcode.optables.setup()
     zcode.sounds.setup(blorbs)
     zcode.header.setup()
+    if terpnum != None:
+        zcode.header.setterpnum(int(terpnum))
 
     return True
 
 def rungame(gamedata):
-    global height, width, title
+    global height, width, title, terpnum
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
     gameset = settings.getsettings(settings.findgame())
