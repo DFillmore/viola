@@ -49,16 +49,13 @@ class transcriptstream(outputstream):
 
     def open(self):
         if self.filename == None:
-            file = io.pygame.openfile(zcode.screen.currentWindow, 'w', 'TRANSCRIPT.log')
-            self.filename = self.file.name
-            file.close()
+            self.filename = writefile(b"", filename="TRANSCRIPT.LOG", prompt=True, append=False)
         self.active = True
         zcode.header.setflag(2,0,1)
 
     def output(self, data):
-        file = io.pygame.openfile(zcode.screen.currentWindow, 'w', self.filename)
-        file.write(data.encode('utf-8'))
-        file.close()
+        file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
+        writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
     def close(self):
         self.active = False
@@ -121,15 +118,15 @@ class memorystream(outputstream):
 
 class commandstream(outputstream):
     filename = None
+
     def open(self):
         if self.filename == None:
-            self.filename = io.pygame.opentranscript('TRANSCRIPT.rec') # send a suggested filename, and get the actual filename back
+            self.filename = writefile(b"", filename="COMMANDS.REC", prompt=True, append=False)
         self.active = True
 
     def output(self, data):
-        file = open(self.filename, 'ab')
-        file.write(data)
-        file.close()
+        file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
+        writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
 class istreamdata():
     data = []
@@ -278,13 +275,16 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
 
 
     
-def writefile(data, filename=None, prompt=False, append=False): 
+def writefile(data, filename=None, prompt=False, append=False):
+    """Opens a file, writes data to it, and returns the filename"""
     if append:
         f = io.pygame.openfile(zcode.screen.currentWindow, 'a', filename, prompt)
     else:
         f = io.pygame.openfile(zcode.screen.currentWindow, 'w', filename, prompt)
     f.write(data)
+    filename = f.name
     f.close()
+    return filename
 
             
         

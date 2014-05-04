@@ -482,7 +482,7 @@ def openfile(window, mode, filename=None, prompt=None):
         i = None
         c = None
         if filename:
-            t = filename.split()
+            t = list(filename)
             window.printText(filename)
             window.flushTextBuffer()
         else:
