@@ -132,14 +132,6 @@ class istreamdata():
     data = []
 
 
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-
-source_lan = "en"
-output_lan = "fr"
-
-
-
 class gibberize(istreamdata):
     ident = 'GIBBERIZE:'
     def processdata(self, data):
