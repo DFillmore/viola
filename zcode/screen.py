@@ -622,7 +622,7 @@ class window(io.pygame.window):
 
         if background == -4:
             bg = -4
-            bo = 15
+            bo = 15           
 
         
         
@@ -630,6 +630,7 @@ class window(io.pygame.window):
         self.true_foreground_colour = fg
         self.true_background_colour = bg
         self.setColours(foreground, background)
+
 
     def getTrueColours(self):
         return (self.true_foreground_colour, self.true_background_colour)
@@ -648,14 +649,6 @@ class window(io.pygame.window):
         self.right_margin = right
         self.setCursorToMargin()
 
-    realforeground = (0,0,0)
-    realbackground = (255,255,255)
-
-    def setrealcolours(self, foreground, background, flush=True):
-        if flush:
-            self.flushTextBuffer()
-        self.realforeground = foreground
-        self.realbackground = background
 
 
     reversevideo = False
@@ -916,18 +909,12 @@ class window(io.pygame.window):
     maxfontheight = 0
 
     def preNewline(self):
-        if self.text_style & 1 == 1: # don't reverse colours on newlines
-            self.setColours(self.realforeground, self.realbackground)
         story = settings.code
         # call the interrupt routine (if it's time to do so)
-
         if zcode.header.getterpnum() != 6 or story != '393.890714':
             self.cdown = self.countdown()
 
     def postNewline(self):
-        if self.text_style & 1 == 1:
-            self.setColours(self.realbackground, self.realforeground)
-        # call the interrupt routine (if it's time to do so)
         story = settings.code
         if zcode.header.getterpnum() == 6 and story == '393.890714':
             self.cdown = self.countdown()
@@ -979,7 +966,7 @@ class window(io.pygame.window):
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
         area = ((self.getPosition()[0] + self.getCursor()[0]) - 1, (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
-        ioScreen.erase(self.realbackground, area)
+        ioScreen.erase(self.getColours()[1], area)
         self.screen.update()
     
     
@@ -1033,28 +1020,28 @@ class window(io.pygame.window):
         newwidth = pic.getWidth() * scale
         newheight = pic.getHeight() * scale
 
-        if self.realbackground != -4:
+        if self.getColours()[1] != -4:
             area = ((self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1), newwidth, newheight)
-            ioScreen.erase(self.realbackground, area)
+            ioScreen.erase(self.getColours()[1], area)
 
     def eraseline(self, len):
-        if self.realbackground != -4:
-            ioScreen.erase(self.realbackground, (self.getCursor()[0], self.getCursor()[1], len, self.getFont().getHeight()))
+        if self.getColours()[1] != -4:
+            ioScreen.erase(self.getColours()[1], (self.getCursor()[0], self.getCursor()[1], len, self.getFont().getHeight()))
     fontlist = []
 
 
 def eraseWindow(winnum):
-    if zcode.numbers.neg(winnum) < 0 and currentWindow.realbackground == -4:
+    if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1] == -4:
         pass
     elif zcode.numbers.neg(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
-        ioScreen.erase(currentWindow.realbackground)
+        ioScreen.erase(currentWindow.getColours()[1])
         split(0)
         for a in range(len(zwindow)):
             zwindow[a].setCursor(1, 1)
             zwindow[a].line_count = 0
     elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
-        io.pygame.erase(currentWindow.realbackground)
-    elif getWindow(winnum).realbackground != -4:        
+        io.pygame.erase(currentWindow.getColours()[1])
+    elif getWindow(winnum).getColours()[1] != -4:        
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
             self.setCursor(self.getCursor()[0], self.getSize()[1] - self.getFont().getHeight())

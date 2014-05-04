@@ -261,6 +261,7 @@ class window:
         self.line_count = 0
         self.x_cursor = 0
         self.y_cursor = 0
+        self.screen.update()
 
 
     def getFont(self):
@@ -357,6 +358,7 @@ class screen:
             area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
         self.screen.fill(colour, area)
         self.updates.append(area)
+        self.update()
 
     background = 0xFFFFFF
     resized = False
