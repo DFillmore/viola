@@ -873,6 +873,8 @@ def z_read():
 
     instring = [chr(a) for a in instring]
     instring = ''.join(instring)
+    zcode.output.streams[4].write(instring)
+    zcode.output.streams[4].write('\n')
     
     inp = instring.lower()
 
