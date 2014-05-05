@@ -981,7 +981,7 @@ def z_restart():
     zcode.game.setup() # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
-    zcode.screen.setup(zcode.screen.blorbs, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
+    zcode.screen.setup(zcode.screen.blorbs, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight(), restarted=True)
     zcode.text.setup()
     zcode.optables.setup()
     zcode.routines.restart = 1

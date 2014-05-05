@@ -23,7 +23,7 @@ import settings
 import zcode
 
 
-def setup(b, width=800, height=600, foreground=2, background=9, title=''):
+def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
     global currentWindow
@@ -42,7 +42,9 @@ def setup(b, width=800, height=600, foreground=2, background=9, title=''):
         width = 800
     if not height:
         height = 600
-    ioScreen = io.pygame.screen(width, height, title)
+    if restarted == False:
+        ioScreen = io.pygame.screen(width, height, title)
+
     blorbs = b
 
     zwindow = []
@@ -904,7 +906,7 @@ class window(io.pygame.window):
         if self.screen.resized:
             self.screen.resized = False
             resize()
-        self.screen.update()
+        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
     maxfontheight = 0
 
