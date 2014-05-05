@@ -82,8 +82,8 @@ def save():
     sd.serial = zcode.header.serial()
     sd.checksum = zcode.header.getchecksum()
     sd.PC = PC
-    sd.memory = zcode.memory.data[:]
-    sd.omemory = zcode.memory.originaldata[:]
+    sd.memory = zcode.memory.data[:zcode.header.statmembase()]
+    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase()]
     sd.callstack = copy.deepcopy(callstack)
     sd.currentframe = copy.deepcopy(currentframe)
     return quetzal.save(f, sd)

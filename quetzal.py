@@ -27,7 +27,6 @@ class umemchunk(iff.chunk):
     data = []
     def write(self):
         self.data = storydata.memory[:]
-        print(len(self.data))
 
     def read(self):
         return self.data[:]
@@ -231,7 +230,7 @@ class formchunk(iff.chunk):
         self.data.append(ord('F'))
         self.data.append(ord('Z'))
         self.data.append(ord('S'))
-        chunks = [ ifhdchunk, cmemchunk, stkschunk ] # chunks to write
+        chunks = [ ifhdchunk, umemchunk, stkschunk ] # chunks to write
         for a in range(len(chunks)):
             cchunk = chunks[a]() # set cchunk to current chunk
             cchunk.dowrite() # write current chunk's data
