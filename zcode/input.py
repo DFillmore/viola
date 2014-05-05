@@ -20,12 +20,9 @@ import sys
 import zio as io
 import zcode
 
-
-
-
-
 stream = 0
-streamfile = 0
+filecommands = []
+
 
 def setup():
     global ioInput
@@ -35,11 +32,16 @@ def setup():
 
 def setstream(number, filename=0):
     global stream
+    global filecommands
     stream = number
     if number == 0 and streamfile != 0:
         streamfile = 0
     elif number == 1:
-        #streamfile = io.pygame.openinfile(filename)
+        streamfile = readfile(-1, filename="COMMANDS.REC", prompt=True).decode('utf-8')
+        filecommands = streamfile.split('\n')
+        while filecommands[-1].strip() == '':
+            filecommands.pop()
+        filecommands.reverse()
         stream = 1
 
 def gettermchars():
@@ -90,6 +92,7 @@ def convertinput(char):
 
 def getinput(display=True):
     global mouse
+    global stream
     termchar = False
     zcode.game.interrupt_call()
     if stream == 0:
@@ -130,13 +133,32 @@ def getinput(display=True):
         
         return zsciivalue
     else:
-        print('File input stream not implemented')
-        sys.exit()
+        currentcommand = filecommands.pop()
+        if len(currentcommand) > 0:
+            c = currentcommand[0]
+            if len(c) == 1:
+                zsciivalue = ord(c)
+            else:
+                zsciivalue = convertinput(c) 
+            currentcommand = currentcommand[1:]
+            filecommands.append(currentcommand)
+            
+            if zsciivalue not in gettermchars() and display:
+                 zcode.output.streams[1].write(chr(zsciivalue))
+            return zsciivalue
+        else:
+            if len(filecommands) == 0:
+                stream = 0
+            zcode.output.streams[1].write('\r')
+            return 13
 
 def readfile(length, filename=None, prompt=False, seek=0): 
     f = io.pygame.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
     f.seek(seek)
-    data = f.read(length)
+    if length == -1:
+        data = f.read()
+    else:
+        data = f.read(length)
     f.close()
     return data
 
