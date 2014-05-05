@@ -24,6 +24,17 @@ import zio as io
 
 import zcode
 
+def setup(startstreams=[False, True, False, False, False]):
+    global streams
+    streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
+    for a in range(len(startstreams)):
+        if startstreams[2]:
+            streams[2].filename = startstreams[2]
+        if startstreams[a]:
+            streams[a].open()
+
+
+
 
 
 class outputstream:
@@ -54,8 +65,9 @@ class transcriptstream(outputstream):
         zcode.header.setflag(2,0,1)
 
     def output(self, data):
-        file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
-        writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
+        if zcode.screen.currentWindow.testattributes(4):
+            file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
+            writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
     def close(self):
         self.active = False
@@ -216,7 +228,7 @@ def checkident(address):
 
 
     
-streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
+
 
 
 def numopenstreams(stream):

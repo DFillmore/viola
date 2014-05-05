@@ -97,19 +97,20 @@ def getgame(filename):
 
 def handle_parameters(argv): # handles command line parameters
     global blorbfiles
-    global height, width, title
+    global height, width, title, transcriptfile
     global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w screen width (pixels)\n  -h screen height (pixels)')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n   -T <filename> output transcript file')
         sys.exit()
 
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:')
+    args = getopt.getopt(argv[1:], 'dh:w:T:')
     options = args[0]
     args = args[1]
+    transcriptfile = False
     for a in options:
         if a[0] == '-d':
             debug = True
@@ -117,6 +118,9 @@ def handle_parameters(argv): # handles command line parameters
             height = int(a[1])
         elif a[0] == '-w':
             width = int(a[1])
+        elif a[0] == '-T':
+            transcriptfile = a[1]
+
 
     gamedata = getgame(args[0])
     for a in range(len(args[1:])):
@@ -125,7 +129,7 @@ def handle_parameters(argv): # handles command line parameters
     return gamedata
 
 def setupmodules(gamefile):
-    global terpnum, title
+    global terpnum, title, transcriptfile
     io.pygame.setup()
     if zcode.memory.setup(gamefile) == False:
         return False
@@ -136,6 +140,7 @@ def setupmodules(gamefile):
     zcode.routines.setup()
     zcode.screen.setup(blorbs, width, height, title=title)
     zcode.input.setup()
+    zcode.output.setup([False, True, transcriptfile])
 
     zcode.objects.setup()
     
