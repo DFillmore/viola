@@ -25,8 +25,9 @@ import zio as io
 class umemchunk(iff.chunk):
     ID = 'UMem'
     data = []
-    def write(self, data):
-        self.data = data[:]
+    def write(self):
+        self.data = storydata.memory[:]
+        print(len(self.data))
 
     def read(self):
         return self.data[:]
@@ -35,10 +36,10 @@ class umemchunk(iff.chunk):
 class cmemchunk(iff.chunk):
     ID = 'CMem'
     data = []
-    def write(self, data, odata):
+    def write(self):
         #mem = []
         commem = []
-        mem = [data[a] ^ odata[a] for a in range(len(data))]
+        mem = [storydata.memory[a] ^ storydata.omemory[a] for a in range(len(storydata.memory))]
 
         while mem[-1] == 0:
             mem.pop()
@@ -87,48 +88,48 @@ class cmemchunk(iff.chunk):
 class stkschunk(iff.chunk):
     ID = 'Stks'
     data = []
-    def write(self, callstack, currentframe):
+    def write(self):
         global zstack
-        for a in range(len(callstack)):
-            self.data.append((callstack[a].retPC >> 16) & 0xff)
-            self.data.append((callstack[a].retPC >> 8) & 0xff)
-            self.data.append(callstack[a].retPC & 0xff)
-            self.data.append(callstack[a].flags)
-            self.data.append(callstack[a].varnum)
+        for a in range(len(storydata.callstack)):
+            self.data.append((storydata.callstack[a].retPC >> 16) & 0xff)
+            self.data.append((storydata.callstack[a].retPC >> 8) & 0xff)
+            self.data.append(storydata.callstack[a].retPC & 0xff)
+            self.data.append(storydata.callstack[a].flags)
+            self.data.append(storydata.callstack[a].varnum)
             args = 1
-            for b in range(callstack[a].numargs):
+            for b in range(storydata.callstack[a].numargs):
                 args *= 2
             args -= 1
             self.data.append(args)
-            self.data.append((callstack[a].evalstacksize >> 8) & 0xff)
-            self.data.append(callstack[a].evalstacksize & 0xff)
+            self.data.append((storydata.callstack[a].evalstacksize >> 8) & 0xff)
+            self.data.append(storydata.callstack[a].evalstacksize & 0xff)
 
-            for x in range(len(callstack[a].lvars)):
-                self.data.append((callstack[a].lvars[x] >> 8) & 255)
-                self.data.append(callstack[a].lvars[x] & 255)
+            for x in range(len(storydata.callstack[a].lvars)):
+                self.data.append((storydata.callstack[a].lvars[x] >> 8) & 255)
+                self.data.append(storydata.callstack[a].lvars[x] & 255)
             
-            for x in range(callstack[a].evalstacksize):
-                self.data.append((callstack[a].evalstack[x] >> 8) & 255)
-                self.data.append(callstack[a].evalstack[x] & 255)
-        self.data.append((currentframe.retPC >> 16) & 0xff)
-        self.data.append((currentframe.retPC >> 8) & 0xff)
-        self.data.append(currentframe.retPC & 0xff)
-        self.data.append(currentframe.flags)
-        self.data.append(currentframe.varnum)
+            for x in range(storydata.callstack[a].evalstacksize):
+                self.data.append((storydata.callstack[a].evalstack[x] >> 8) & 255)
+                self.data.append(storydata.callstack[a].evalstack[x] & 255)
+        self.data.append((storydata.currentframe.retPC >> 16) & 0xff)
+        self.data.append((storydata.currentframe.retPC >> 8) & 0xff)
+        self.data.append(storydata.currentframe.retPC & 0xff)
+        self.data.append(storydata.currentframe.flags)
+        self.data.append(storydata.currentframe.varnum)
         args = 1
-        for a in range(currentframe.numargs):
+        for a in range(storydata.currentframe.numargs):
             args *= 2
         args -= 1
         self.data.append(args)
-        self.data.append((len(currentframe.evalstack) >> 8) & 0xff)
-        self.data.append(len(currentframe.evalstack) & 0xff)
-        for x in range(len(currentframe.lvars)):
-            self.data.append((currentframe.lvars[x] >> 8) & 255)
-            self.data.append(currentframe.lvars[x] & 255)
+        self.data.append((len(storydata.currentframe.evalstack) >> 8) & 0xff)
+        self.data.append(len(storydata.currentframe.evalstack) & 0xff)
+        for x in range(len(storydata.currentframe.lvars)):
+            self.data.append((storydata.currentframe.lvars[x] >> 8) & 255)
+            self.data.append(storydata.currentframe.lvars[x] & 255)
             
-        for x in range(currentframe.evalstacksize):
-            self.data.append((currentframe.evalstack[x] >> 8) & 255)
-            self.data.append(currentframe.evalstack[x] & 255)
+        for x in range(storydata.currentframe.evalstacksize):
+            self.data.append((storydata.currentframe.evalstack[x] >> 8) & 255)
+            self.data.append(storydata.currentframe.evalstack[x] & 255)
 
     def read(self):
         # what we should do here is to read each frame back into a stack object
@@ -178,19 +179,19 @@ class ifhdchunk(iff.chunk):
     checksum = 0
     PC = 0
     data = []
-    def write(self, release, serial, checksum, PC):
-        self.data.append(release >> 8) # release number
-        self.data.append(release & 255)
+    def write(self):
+        self.data.append(storydata.release >> 8) # release number
+        self.data.append(storydata.release & 255)
 
-        for a in serial:
+        for a in storydata.serial:
             self.data.append(ord(a))
 
-        self.data.append(checksum >> 8)
-        self.data.append(checksum & 255)
+        self.data.append(storydata.checksum >> 8)
+        self.data.append(storydata.checksum & 255)
 
-        self.data.append(PC >> 16)  # Initial PC
-        self.data.append(PC >> 8)
-        self.data.append(PC & 255)
+        self.data.append((storydata.PC >> 16) & 255)   # Initial PC
+        self.data.append((storydata.PC >> 8) & 255)
+        self.data.append(storydata.PC & 255)
 
 
     def read(self, release, serial):
@@ -225,26 +226,25 @@ class formchunk(iff.chunk):
     callstack = []
     currentframe = None
     
-    def write(self, release, serial, checksum, PC, memory, omemory, callstack, currentframe):
+    def write(self):
         self.data.append(ord('I')) 
         self.data.append(ord('F'))
         self.data.append(ord('Z'))
         self.data.append(ord('S'))
-        c1 = ifhdchunk()
-        c2 = umemchunk()
-        c3 = stkschunk()
-        c1.write(release, serial, checksum, PC)
-        c2.write(memory)
-        c3.write(callstack, currentframe)
-        id = cchunk.writeID() # set id to current chunk's ID
-        for b in range(len(id)):
-            self.data.append(ord(id[b])) # write current chunk's ID to data
-        clen = cchunk.writelen() # write current
+        chunks = [ ifhdchunk, cmemchunk, stkschunk ] # chunks to write
+        for a in range(len(chunks)):
+            cchunk = chunks[a]() # set cchunk to current chunk
+            cchunk.dowrite() # write current chunk's data
+            id = cchunk.writeID() # set id to current chunk's ID
+            for b in range(len(id)):
+                self.data.append(ord(id[b])) # write current chunk's ID to data
+            clen = cchunk.writelen() # write current
+
             
-        for b in range(len(clen)):
-            self.data.append(clen[b])
-        for b in range(len(cchunk.data)):
-            self.data.append(cchunk.data[b])
+            for b in range(len(clen)):
+                self.data.append(clen[b])
+            for b in range(len(cchunk.data)):
+                self.data.append(cchunk.data[b])
 
     def read(self):
         # okay, first, we need to check if this is an IFZS file
@@ -282,8 +282,19 @@ class formchunk(iff.chunk):
                 return -1
 
 
+class qdata:
+    release = None
+    serial = None
+    checksum = None
+    PC = None 
+    memory = None
+    omemory = None
+    callstack = None
+    currentframe = None
 
-def save(sfile):
+def save(sfile, qd):
+    global storydata
+    storydata = qd
     data = []
     cchunk = formchunk() # cchunk is a form chunk
     cchunk.dowrite() # fill cchunk.data with data
@@ -295,8 +306,7 @@ def save(sfile):
         data.append(clen[b]) # write length to data
     for b in range(len(cchunk.data)):
         data.append(cchunk.data[b]) # write cchunk's data to data
-    for a in range(len(data)):
-        sfile.write(chr(data[a])) # write data to file
+    sfile.write(bytes(data)) # write data to file
     sfile.close() # close file
     condition = True
     return condition
@@ -327,12 +337,3 @@ def restore():
             return 1
     else:
         return 0
-
-
-class Quetzal:
-    def __init__(self, frameclass, omem): # frameclass is the class used by the VM for stack frames. omem is a list of the game's original memory
-        self.frameclass = frameclass
-        self.omem = omem
-
-    def save(self, path):
-        pass
