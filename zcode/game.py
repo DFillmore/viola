@@ -77,7 +77,16 @@ class undoframe:
 
 def save():
     f = io.pygame.openfile(zcode.screen.currentWindow, 'w')
-    return quetzal.save(f)
+    sd = quetzal.qdata()
+    sd.release = zcode.header.release()
+    sd.serial = zcode.header.serial()
+    sd.checksum = zcode.header.getchecksum()
+    sd.PC = PC
+    sd.memory = zcode.memory.data[:]
+    sd.omemory = zcode.memory.originaldata[:]
+    sd.callstack = copy.deepcopy(callstack)
+    sd.currentframe = copy.deepcopy(currentframe)
+    return quetzal.save(f, sd)
 
 def save_undo():
     undodata = undoframe()
