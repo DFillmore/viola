@@ -124,7 +124,11 @@ def getinput(display=True):
 
         if isinstance(input, io.pygame.keypress) and zsciivalue in zcode.text.inputvalues:
             if zsciivalue not in gettermchars() and display and zsciivalue in zcode.text.outputvalues:
+                 if zsciivalue == 13:
+                     zcode.screen.currentWindow.hideCursor()
+
                  zcode.output.streams[1].write(chr(zsciivalue))
+
                  zcode.screen.currentWindow.flushTextBuffer()
                  if zcode.header.zversion != 6:
                      zcode.output.streams[2].write(chr(zsciivalue))
