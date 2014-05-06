@@ -201,7 +201,7 @@ def setglobal(varnum, value):
 def interrupt_call():
     if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine
         i = interruptstack.pop()
-        if i.type == INT_INPUT:
+        if zcode.instructions.inputInstruction:
             zcode.game.PC = zcode.routines.oldpc
         address = i.routine
         call(address, [], 0, 1)

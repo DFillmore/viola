@@ -145,8 +145,11 @@ def decodeextended(address):
             pass
     address += 1
     return address
+
+inputInstruction = False
     
 def runops(address, debug=False):
+    global inputInstruction
     optype = zcode.memory.getbyte(address)
     if optype < 0x80:
         if debug == True:
@@ -170,6 +173,11 @@ def runops(address, debug=False):
     elif optype < 0x100:
         if zcode.routines.input != -1 and debug:
             print(zcode.optables.opvar[optype & 0x1f].__name__)
+        if optype & 0x1f == 4 or optype & 0x1f == 16:
+            inputInstruction = True
+        else:
+            inputInstruction = False
+
         zcode.optables.opvar[optype & 0x1f]()
 
 def store(value):
