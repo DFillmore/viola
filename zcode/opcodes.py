@@ -816,6 +816,7 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
+    zcode.screen.currentWindow.showCursor()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -863,6 +864,7 @@ def z_read():
                 zcode.screen.currentWindow.backspace(chr(c))
         elif inchar and display:
             zcode.input.instring.append(inchar)
+            zcode.screen.currentWindow.showCursor()
 
     if zcode.game.timervalue == True:
         termchar = 0
@@ -893,6 +895,8 @@ def z_read():
 
     if zcode.header.zversion() >= 5:
         zcode.instructions.store(termchar)
+
+
             
 
 def z_read_char():
@@ -912,7 +916,9 @@ def z_read_char():
         else:
             inchar = zcode.input.getinput(False)
     io.pygame.stoptimer()
+    zcode.screen.currentWindow.showCursor()
     zcode.instructions.store(inchar)
+
 
 def z_read_file():
     nameloc = zcode.instructions.operands[0]
