@@ -98,7 +98,10 @@ class musicChannel(Channel):
         pygame.mixer.music.set_volume(volume)
 
     def stop(self, sound):
+        if self.sound == None:
+            return False
         if self.sound.number == sound.number:
+            self.routine = None
             self.sound.stop()
             self.sound = None
             self.cleanup()
@@ -135,10 +138,13 @@ class effectsChannel(Channel):
         self.channelobj.set_volume(volume)
 
     def stop(self, sound):
+        if self.sound == None:
+            return False
         if self.sound.number == sound.number:
+            self.routine = None
             self.channelobj.stop()
             self.sound = None
-            self.routine = None
+
             self.cleanup()
 
     def Notify(self):
@@ -203,4 +209,9 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
         except:
             return False
 
+
+def stopall():
+    for a in soundchannels:
+        for b in a:
+            b.stop(b.sound)
 
