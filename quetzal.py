@@ -16,9 +16,12 @@
 # along with Viola; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import iff
+import copy
 import os
-import zio as io
+
+import iff
+
+
 
 
             
@@ -29,6 +32,8 @@ class umemchunk(iff.chunk):
         self.data = storydata.memory[:]
 
     def read(self):
+        global storydata
+        storydata.memory = self.data[:]
         return self.data[:]
 
 
@@ -61,7 +66,8 @@ class cmemchunk(iff.chunk):
                 zerorun = 1
         self.data = commem[:]
 
-    def read(self, odata):
+    def read(self):
+        global storydata
         commem = self.data[:]
         obmem = []
         zerorun = False
@@ -76,13 +82,23 @@ class cmemchunk(iff.chunk):
                 zerorun = True
             else:
                 obmem.append(commem[a])
-        while len(obmem) < len(odata):
+        while len(obmem) < len(storydata.omemory):
             obmem.append(0)
         mem = []
         
-        mem = [obmem[a] ^ odata[a] for a in range(len(obmem))]
+        mem = [obmem[a] ^ storydata.omemory[a] for a in range(len(obmem))]
+        storydata.memory = mem[:]
         return mem
 
+class frame:
+    retPC = 0
+    flags = 0
+    varnum = 0
+    numargs = 0
+    evalstacksize = 0
+    lvars = []
+    evalstack = []
+    interrupt = False
             
 class stkschunk(iff.chunk):
     ID = 'Stks'
@@ -131,6 +147,7 @@ class stkschunk(iff.chunk):
             self.data.append(storydata.currentframe.evalstack[x] & 255)
 
     def read(self):
+        global storydata
         # what we should do here is to read each frame back into a stack object
         # but, obviously, not *the* stack object, just in case something goes wrong.
         callstack = []
@@ -165,6 +182,8 @@ class stkschunk(iff.chunk):
                 
                 callstack[-1].evalstack.append((self.data[place] << 8) + self.data[place+1])
                 place += 2
+        storydata.callstack = copy.deepcopy(callstack)
+        storydata.currentframe = storydata.callstack.pop()
         return callstack
         
         
@@ -193,14 +212,16 @@ class ifhdchunk(iff.chunk):
         self.data.append(storydata.PC & 255)
 
 
-    def read(self, release, serial):
-        if ((self.data[0] << 8) + self.data[1]) != memory.getword(0x2): # if the release number is wrong, fail
+    def read(self):
+        global storydata
+        if ((self.data[0] << 8) + self.data[1]) != storydata.release: # if the release number is wrong, fail
             return -1
-        for a in range(6):
-            if self.data[a+2] != memory.getbyte(a+0x12): # if the serial number is wrong, fail
-                return -1
-        PC = (self.data[10] << 16) + (self.data[11] << 8) + self.data[12] 
-        return PC
+
+        if self.data[2:8] != storydata.serial.encode('utf-8'): # if the serial number is wrong, fail
+            return -1
+        storydata.PC = (self.data[10] << 16) + (self.data[11] << 8) + self.data[12] 
+        print('quetzal PC', storydata.PC)
+        return storydata.PC
 
 class intdchunk(iff.chunk):
     ID = 'IntD'
@@ -310,29 +331,13 @@ def save(sfile, qd):
     condition = True
     return condition
 
-def restore():
-    rd = openfile
-    if rd.ShowModal() == io.pygame.ID_OK: # if the user clicks on OK
-        rname = rd.GetPath() # get the name of the save file to restore from
-        rd.Destroy()
-        rfile=open(rname, 'rb')
-        data = formchunk()
-        filelen = os.path.getsize(rfile.name)
-        rfile.seek(8)
-        for a in range(filelen-8):
-            data.data.append(ord(rfile.read(1)))
-        if data.read() == -1:
-            return 0
-        else:
-            # Right, everything's apparently gone correctly, so now we take the values we've extracted
-            # from the save file and shove them into the real thing
-            for a in range(len(mem)):
-                memory.data[a] = mem[a]
-            game.PC = PC
-            # with any luck, the top frame of the callstack should just slot nicely into the game.currentframe global
-            game.currentframe = callstack.pop()
-            game.callstack = callstack
-            
-            return 1
-    else:
-        return 0
+def restore(savedata, qd):
+    global storydata
+    storydata = qd
+    fchunk = formchunk()
+    fchunk.data = savedata[8:]
+    if fchunk.read() == -1:
+        return False
+    else:         
+        return storydata
+

@@ -98,8 +98,29 @@ def save_undo():
     return 1
 
 def restore(filename=None, prompt=1):
+    global PC, callstack, currentframe, interruptstack
+    zcode.sounds.stopall()
+    bis = interruptstack[:] 
+    interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
     f = io.pygame.openfile(zcode.screen.currentWindow, 'r')
-    return quetzal.restore(f)
+    sd = quetzal.qdata()
+    sd.release = zcode.header.release()
+    sd.serial = zcode.header.serial()
+    sd.checksum = zcode.header.getchecksum()
+    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase()]
+
+    sd = quetzal.restore(f.read(), sd)
+    if sd == False:
+        interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
+        return 0
+
+    zcode.memory.setarray(0, sd.memory)
+    PC = sd.PC
+    callstack = copy.deepcopy(sd.callstack)
+    currentframe = copy.deepcopy(sd.currentframe)
+
+    return 1
+
 
 def restore_undo():
     global callstack, currentframe, PC
@@ -175,6 +196,7 @@ def setglobal(varnum, value):
     value = zcode.numbers.unneg(value)
     table = zcode.header.globalsloc()
     zcode.memory.setword(table + (varnum * 2), value)
+
 
 def interrupt_call():
     if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine

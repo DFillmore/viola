@@ -46,7 +46,7 @@ class chunk:
         id = []
         for a in range(4):
             id.append(chr(self.data[a]))
-        id2 = join(id, '')
+        id2 = ''.join(id)
         return id2
 
     def readlen(self):

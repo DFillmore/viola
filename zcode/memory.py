@@ -92,7 +92,7 @@ def getarray(offset, length):
     return data[offset:offset+length]
 
 def setarray(offset, newdata):
-    #data[offset:offset+len(newdata)] = newdata
+    global data
     for a in range(len(newdata)):
         data[offset+a] = newdata[a]
 
