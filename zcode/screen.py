@@ -136,6 +136,11 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if zcode.header.zversion() < 4:
         statusline.setBasicColours(background, foreground, flush=False)
         statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
+    
+    # give the lower window in versions other than 6 a margin
+    if zcode.header.zversion() != 6:
+        getWindow(0).left_margin = 5
+        getWindow(0).right_margin = 5
    
 
 pixelunits = False # should units be pixels? Generally only set True in z6 games, but also when z5 want to change font sizes
@@ -315,24 +320,24 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
             value += 1
     return value
 
-font1 = font("fonts//FreeSerif.ttf",
-             boldfile="fonts//FreeSerifBold.ttf",
-             italicfile="fonts//FreeSerifItalic.ttf",
-             bolditalicfile="fonts//FreeSerifBoldItalic.ttf",
-             fixedfile="fonts//FreeMono.ttf", 
-             boldfixedfile="fonts//FreeMonoBold.ttf", 
-             italicfixedfile="fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile="fonts//FreeMonoBoldOblique.ttf",
+font1 = font(io.pygame.getBaseDir() + "//fonts//FreeSerif.ttf",
+             boldfile=io.pygame.getBaseDir() + "//fonts//FreeSerifBold.ttf",
+             italicfile=io.pygame.getBaseDir() + "//fonts//FreeSerifItalic.ttf",
+             bolditalicfile=io.pygame.getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
+             fixedfile=io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
             )
 
-font4 = font("fonts//FreeMono.ttf", 
-             boldfile="fonts//FreeMonoBold.ttf", 
-             italicfile="fonts//FreeMonoOblique.ttf",
-             bolditalicfile="fonts//FreeMonoBoldOblique.ttf",
-             fixedfile="fonts//FreeMono.ttf", 
-             boldfixedfile="fonts//FreeMonoBold.ttf", 
-             italicfixedfile="fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile="fonts//FreeMonoBoldOblique.ttf",
+font4 = font(io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+             fixedfile=io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
             )
 
 fontlist = [ None, 
