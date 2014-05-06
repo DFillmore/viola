@@ -632,3 +632,7 @@ class soundChannel():
 
     def Notify(self):
         pass
+
+
+def stopallsounds():
+    pygame.mixer.stop()

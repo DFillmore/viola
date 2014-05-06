@@ -797,6 +797,8 @@ def z_put_wind_prop():
     window.setprops(propnum, value)
 
 def z_quit():
+    zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we're supposed to have quit
+    zcode.sounds.stopall()
     zcode.screen.currentWindow.getFont().resetSize()
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
@@ -975,6 +977,8 @@ def z_remove_obj():
             zcode.objects.setsibling(eldersibling, sibling)
 
 def z_restart():
+    zcode.sounds.stopall()
+    zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we've restarted
     zcode.screen.eraseWindow(zcode.numbers.unneg(-1))
     # should really make sure the transcription bit stays set 
     zcode.memory.data = zcode.memory.originaldata[:] # reset the memory contents
@@ -1019,7 +1023,7 @@ def z_restore():
                 zcode.memory.setbyte(table+a, data[a])
             zcode.instructions.store(len(data))
                  
-    else:
+    else:       
         result = zcode.game.restore()
         if result == 0:
             if zcode.header.zversion() < 5:
