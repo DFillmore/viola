@@ -103,12 +103,20 @@ unitable = { 155: 0xe4,
              223: 0xbf
            }
 
-outputvalues = [9, 11, 13]
+outputvalues = [0, 9, 11, 13]
 outputvalues.extend(list(range(32, 127)))
-outputvalues.extend(list(range(129, 133)))
-outputvalues.extend(list(range(133, 145)))
-outputvalues.extend(list(range(145, 155)))
+#outputvalues.extend(list(range(129, 133)))
+#outputvalues.extend(list(range(133, 145)))
+#outputvalues.extend(list(range(145, 155)))
 outputvalues.extend(list(range(155, 252)))
+
+inputvalues = [8, 13, 27]
+inputvalues.extend(list(range(32, 127)))
+inputvalues.extend(list(range(129, 133)))
+inputvalues.extend(list(range(133, 145)))
+inputvalues.extend(list(range(145, 155)))
+inputvalues.extend(list(range(155, 252)))
+inputvalues.extend(list(range(252, 255)))
 
 def setupunitable():
     global unitable

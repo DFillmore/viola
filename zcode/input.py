@@ -122,7 +122,7 @@ def getinput(display=True):
             mouse.xpos = zcode.screen.pix2units(input.xpos + 1, horizontal=True, coord=True)
             mouse.ypos = zcode.screen.pix2units(input.ypos + 1, horizontal=False, coord=True)
 
-        if isinstance(input, io.pygame.keypress) and zsciivalue in zcode.text.outputvalues:
+        if isinstance(input, io.pygame.keypress) and zsciivalue in zcode.text.inputvalues:
             if zsciivalue not in gettermchars() and display:
                  zcode.output.streams[1].write(chr(zsciivalue))
                  zcode.screen.currentWindow.flushTextBuffer()
