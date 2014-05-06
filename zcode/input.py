@@ -24,6 +24,9 @@ stream = 0
 filecommands = []
 instring = []
 
+commandhistory = []
+chplace = -1
+
 
 def setup():
     global ioInput
@@ -94,6 +97,8 @@ def convertinput(char):
 def getinput(display=True):
     global mouse
     global stream
+    global instring
+    global chplace
     termchar = False
     zcode.game.interrupt_call()
     if stream == 0:
@@ -101,6 +106,33 @@ def getinput(display=True):
         zsciivalue = None
 
         if isinstance(input, io.pygame.keypress):
+            if input.value == 273: # pressed up key
+                if chplace < len(commandhistory) -1:
+                    chplace += 1
+                    for c in instring:
+                        zcode.screen.currentWindow.backspace(chr(c))
+                    instring = commandhistory[chplace]
+                    for c in instring:
+                        zcode.output.streams[1].write(chr(c))
+                    zcode.screen.currentWindow.flushTextBuffer()
+                return None
+            if input.value == 274: # pressed up key
+                if chplace >= 0:
+                    if chplace >= 0:
+                        chplace -= 1
+                        newstring = commandhistory[chplace]
+                    if chplace == -1:
+                        newstring = []
+
+                    for c in instring:
+                        zcode.screen.currentWindow.backspace(chr(c))
+                    instring = newstring
+                    for c in instring:
+                        zcode.output.streams[1].write(chr(c))
+                    zcode.screen.currentWindow.flushTextBuffer()
+
+                return None
+                    
             if len(input.character) == 1:
                 zsciivalue = ord(input.character)
             else:

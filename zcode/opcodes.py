@@ -872,9 +872,15 @@ def z_read():
         termchar = zcode.input.instring.pop()
     io.pygame.stoptimer()
 
+    zcode.input.commandhistory.reverse()
+    zcode.input.commandhistory.append(zcode.input.instring)
+    zcode.input.commandhistory.reverse()
+
     inp = [chr(a) for a in zcode.input.instring]
-    inp = ''.join(inp)  
+    inp = ''.join(inp)
     inp = inp.lower()
+
+
 
     zcode.output.streams[4].write(inp)
     zcode.output.streams[4].write('\n')
