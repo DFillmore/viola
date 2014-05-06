@@ -109,8 +109,16 @@ def getinput(display=True):
             if input.value == 273: # pressed up key
                 if chplace < len(commandhistory) -1:
                     chplace += 1
-                    for c in instring:
-                        zcode.screen.currentWindow.backspace(chr(c))
+
+                    inp = [chr(a) for a in zcode.input.instring]
+                    inp = ''.join(inp)
+                    w = zcode.screen.currentWindow.getStringLength(inp)
+                    h = zcode.screen.currentWindow.getStringHeight(inp)
+                    x = zcode.screen.currentWindow.getCursor()[0] - w
+                    y = zcode.screen.currentWindow.getCursor()[1]
+                    zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
+                    zcode.screen.currentWindow.setCursor(x,y)
+
                     instring = commandhistory[chplace]
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
@@ -124,8 +132,15 @@ def getinput(display=True):
                     if chplace == -1:
                         newstring = []
 
-                    for c in instring:
-                        zcode.screen.currentWindow.backspace(chr(c))
+                    inp = [chr(a) for a in zcode.input.instring]
+                    inp = ''.join(inp)
+                    w = zcode.screen.currentWindow.getStringLength(inp)
+                    h = zcode.screen.currentWindow.getStringHeight(inp)
+                    x = zcode.screen.currentWindow.getCursor()[0] - w
+                    y = zcode.screen.currentWindow.getCursor()[1]
+                    zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
+                    zcode.screen.currentWindow.setCursor(x,y)
+
                     instring = newstring
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))

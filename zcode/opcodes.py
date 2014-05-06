@@ -865,6 +865,7 @@ def z_read():
         elif inchar and display:
             zcode.input.instring.append(inchar)
             zcode.screen.currentWindow.showCursor()
+    zcode.screen.currentWindow.hideCursor()
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -886,6 +887,8 @@ def z_read():
     zcode.output.streams[4].write('\n')
 
     zcode.input.instring = []
+
+    chplace = -1
 
     for a in range(len(inp)):
         zcode.memory.setbyte(text + start + a, ord(inp[a]))

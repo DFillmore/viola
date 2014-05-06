@@ -23,6 +23,7 @@ os.environ['PYGAME_FREETYPE'] = '1'
 import pygame
 import io
 import sys
+import inspect
 
 from pygame.locals import *
 pygame.init()
@@ -32,6 +33,19 @@ TIMEREVENT = pygame.USEREVENT
 SOUNDEVENT = pygame.USEREVENT + 1
 
 mousebuttonmapping = {1:0,2:2,3:1}
+
+def getBaseDir():
+   if getattr(sys,"frozen",False):
+       # If this is running in the context of a frozen (executable) file, 
+       # we return the path of the main application executable
+       return os.path.dirname(os.path.abspath(sys.executable))
+   else:
+       # If we are running in script or debug mode, we need 
+       # to inspect the currently executing frame. This enable us to always
+       # derive the directory of main.py no matter from where this function
+       # is being called
+       thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+       return os.path.abspath(os.path.join(thisdir, os.pardir))
 
 def findfile(filename):
     paths = [os.curdir]
@@ -268,6 +282,15 @@ class window:
         self.screen.update()
 
 
+    def eraseArea(self, x, y, w, h):
+        x = self.x_coord + x
+        y = self.y_coord + y
+        area = pygame.Rect(x, y, w, h)
+        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.updates.append(area)
+        self.screen.update()
+
+
     def getFont(self):
         return font
 
@@ -329,10 +352,10 @@ class window:
         self.screen.updates.append(area)
 
     def getStringLength(self, text):
-        return self.font.getStringLength(text)
+        return self.getFont().getStringLength(text)
 
     def getStringHeight(self, text):
-        return self.font.getHeight()
+        return self.getFont().getHeight()
 
 class screen:
     updates = []
