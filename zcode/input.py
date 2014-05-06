@@ -107,13 +107,15 @@ def getinput(display=True):
                 zsciivalue = convertinput(input.value) 
 
         if isinstance(input, io.pygame.mousedown):
-            mouse.buttons[input.button] = 1
-            zsciivalue = 254 # mouse down == single click
-            zcode.header.setmousex(mouse.xpos)
-            zcode.header.setmousey(mouse.ypos)
+            if input.button:
+                mouse.buttons[input.button] = 1
+                zsciivalue = 254 # mouse down == single click
+                zcode.header.setmousex(mouse.xpos)
+                zcode.header.setmousey(mouse.ypos)
 
         if isinstance(input, io.pygame.mouseup):
-            mouse.buttons[input.button] = 0
+            if input.button:
+                mouse.buttons[input.button] = 0
 
 
         if isinstance(input, io.pygame.mousemove):
@@ -131,6 +133,8 @@ def getinput(display=True):
                     zsciivalue = reverseunitable[keys]
                 else:
                     return None
+        else:
+            return None
         
         return zsciivalue
     else:

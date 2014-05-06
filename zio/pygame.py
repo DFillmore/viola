@@ -411,12 +411,18 @@ class mousemove:
 
 class mousedown:
     def __init__(self, event):
-        self.button = mousebuttonmapping[event.button]
+        try:
+            self.button = mousebuttonmapping[event.button]
+        except:
+            self.button = None
     button = None
 
 class mouseup:
     def __init__(self, event):
-        self.button = mousebuttonmapping[event.button]
+        try:
+            self.button = mousebuttonmapping[event.button]
+        except:
+            self.button = None
     button = None
 
 
