@@ -865,7 +865,6 @@ def z_read():
         elif inchar and display:
             zcode.input.instring.append(inchar)
             zcode.screen.currentWindow.showCursor()
-
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -895,6 +894,7 @@ def z_read():
 
     if zcode.header.zversion() >= 5:
         zcode.instructions.store(termchar)
+    
 
 
             
@@ -909,6 +909,7 @@ def z_read_char():
         zcode.game.timerreturned = 1
         io.pygame.starttimer(t, zcode.game.firetimer)
     inchar = None
+    zcode.screen.currentWindow.showCursor()
     while inchar == None:
         if zcode.game.timervalue == True:
             inchar = 0
@@ -916,7 +917,7 @@ def z_read_char():
         else:
             inchar = zcode.input.getinput(False)
     io.pygame.stoptimer()
-    zcode.screen.currentWindow.showCursor()
+    zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
 

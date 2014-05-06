@@ -213,6 +213,16 @@ class window:
         self.screen = screen
         self.setFont(font)
 
+    def showCursor(self):
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        print('show', self.x_cursor, self.y_cursor)
+        pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
+
+    def hideCursor(self):
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        print('hide', self.x_cursor, self.y_cursor)
+        pygame.draw.rect(self.screen.screen, self.background_colour, area)
+
     def setFont(self, f):
         self.font = f
 

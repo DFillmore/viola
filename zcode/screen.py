@@ -845,6 +845,7 @@ class window(io.pygame.window):
 
 
     def flushTextBuffer(self):
+        #self.hideCursor()
         self.setCursorToMargin()
 
         self.alterTabs()
@@ -902,11 +903,13 @@ class window(io.pygame.window):
                     self.x_cursor += self.getStringLength(linebuffer)
                 if self.cdown:
                     return 1
-        #io.pygame.showcursor()
+        
         if self.screen.resized:
             self.screen.resized = False
             resize()
+        #self.showCursor()
         #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
+
 
     maxfontheight = 0
 
@@ -964,6 +967,7 @@ class window(io.pygame.window):
 
  
     def backspace(self, char):
+        self.hideCursor()
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
@@ -1046,7 +1050,7 @@ def eraseWindow(winnum):
     elif getWindow(winnum).getColours()[1] != -4:        
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
-            self.setCursor(self.getCursor()[0], self.getSize()[1] - self.getFont().getHeight())
+            getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getSize()[1] - getWindow(0).getFont().getHeight())
 
 
 
