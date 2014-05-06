@@ -38,13 +38,13 @@ debug = False
 def checkgamefile(gamefile):
     gamefile.seek(0)
     id = gamefile.read(4)
-    if id.decode('ascii') == 'FORM': # The file is an IFF FORM file
+    if id.decode('latin-1') == 'FORM': # The file is an IFF FORM file
         gamefile.seek(8)
-        if gamefile.read(4).decode('ascii') == 'IFRS': # The file is a Blorb resource file
+        if gamefile.read(4).decode('latin-1') == 'IFRS': # The file is a Blorb resource file
             return 'blorb'
         else:
             return 'unknown'
-    elif id.decode('ascii') == 'GLUL':
+    elif id.decode('latin-1') == 'GLUL':
         return 'glulx'
     elif id[0] >= 1 and id[0] <= 8:
         return 'zcode'
