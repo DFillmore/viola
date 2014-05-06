@@ -206,6 +206,7 @@ def interrupt_call():
         address = i.routine
         call(address, [], 0, 1)
 
+
         
 def call(address, args, useret, introutine=0, initial=0): # initial is for the initial routine call by z6 games
     global LARGEST_STACK
@@ -308,6 +309,13 @@ def ret(value):
         # not sure how, but anyway, if the program has printed, we reprint the
         # input text so far. If the program has not printed, we do not reprint
         # the input text. Yay.
+        if zcode.output.streams[1].interruptprinted:
+            inp = [chr(a) for a in zcode.input.instring]
+            inp = ''.join(inp)  
+            inp = inp.lower()
+            zcode.output.streams[1].write(inp)
+            zcode.output.streams[1].interruptprinted = False
+            zcode.screen.currentWindow.flushTextBuffer()
 
 
 timervalue = False        

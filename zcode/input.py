@@ -22,6 +22,7 @@ import zcode
 
 stream = 0
 filecommands = []
+instring = []
 
 
 def setup():

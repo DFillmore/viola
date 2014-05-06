@@ -822,8 +822,6 @@ def z_read():
 
     zcode.screen.currentWindow.flushTextBuffer()
 
-    instring = []
-
     text = zcode.instructions.operands[0]
     if len(zcode.instructions.operands) > 1:
         parse = zcode.instructions.operands[1]
@@ -851,35 +849,36 @@ def z_read():
         start = 2
 
     for a in range(leftover):
-        instring.append(zcode.memory.getbyte(text+2+a))
+        zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
     while inchar not in zcode.input.gettermchars() and inchar != 13 and zcode.game.timervalue == False:
-        if len(instring) < maxinput:
+        if len(zcode.input.instring) < maxinput:
             display = True
         else:
             display = False
         inchar = zcode.input.getinput(display)
         if inchar == 8:
-            if instring:
-                c = instring.pop()
+            if zcode.input.instring:
+                c = zcode.input.instring.pop()
                 zcode.screen.currentWindow.backspace(chr(c))
         elif inchar and display:
-            instring.append(inchar)
+            zcode.input.instring.append(inchar)
 
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
     else:
-        termchar = instring.pop()
+        termchar = zcode.input.instring.pop()
     io.pygame.stoptimer()
 
-    instring = [chr(a) for a in instring]
-    instring = ''.join(instring)
-    zcode.output.streams[4].write(instring)
-    zcode.output.streams[4].write('\n')
-    
-    inp = instring.lower()
+    inp = [chr(a) for a in zcode.input.instring]
+    inp = ''.join(inp)  
+    inp = inp.lower()
 
+    zcode.output.streams[4].write(inp)
+    zcode.output.streams[4].write('\n')
+
+    zcode.input.instring = []
 
     for a in range(len(inp)):
         zcode.memory.setbyte(text + start + a, ord(inp[a]))
