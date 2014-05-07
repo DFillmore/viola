@@ -17,7 +17,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
-import string
 import blorb
 import zio as io
 import zcode
@@ -529,7 +528,7 @@ def z_make_menu():
             itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in range(stringlen)]
             #for b in range(stringlen):
             #    itemlist.append(chr(zcode.memory.getbyte(stringaddress+b)))
-            item = string.join(itemlist, '')
+            item = ''.join(itemlist)
             items.append(item)
             address += 2
         result = io.pygame.makemenu(items[0], items[1:len(items)], number)

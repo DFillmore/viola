@@ -548,12 +548,12 @@ def openfile(window, mode, filename=None, prompt=None):
     
 
         
-def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
+def makemenu(title, items, number): # title is a string, items is a list of strings, number is the id number
     return 0
 #    if number < 3 or number > 10:
 #        return 0
 #    if menus[number] != 0:
-#        self.destroymenu(number)
+#        destroymenu(number)
 #    menus[number] = wx.Menu()
 #    for a in xrange(len(items)):
 #        num = number * 100 + a
@@ -562,7 +562,7 @@ def makemenu(self, title, items, number): # title is a string, items is a list o
 #        menubar.Insert(number-2, menus[number], title)
 #        return 1
 
-def destroymenu(self, number):
+def destroymenu(number):
     return 0
 #    if number < 3 or number > 10:
 #        return 0
