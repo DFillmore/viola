@@ -1056,7 +1056,7 @@ def eraseWindow(winnum):
             zwindow[a].setCursor(1, 1)
             zwindow[a].line_count = 0
     elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
-        io.pygame.erase(currentWindow.getColours()[1])
+        currentWindow.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1] != -4:        
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
