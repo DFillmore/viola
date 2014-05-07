@@ -39,7 +39,7 @@ for l in locations:
 
 def getcode(gamedata):
     release = (gamedata[2] << 8) + gamedata[3]
-    serial = gamedata[0x12:0x18].decode('ascii')
+    serial = gamedata[0x12:0x18].decode('latin-1')
     return str(release) + '.' + serial
 
 def findgame():
