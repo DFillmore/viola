@@ -526,7 +526,7 @@ def z_make_menu():
             stringlen = zcode.memory.getbyte(stringaddress)
             stringaddress += 1
             #itemlist = []
-            itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in xrange(stringlen)]
+            itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in range(stringlen)]
             #for b in range(stringlen):
             #    itemlist.append(chr(zcode.memory.getbyte(stringaddress+b)))
             item = string.join(itemlist, '')
