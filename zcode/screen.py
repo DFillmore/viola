@@ -481,26 +481,32 @@ def reverseSpectrumLookup(colour):
 
 
 def fittext(text, width, wrapping=True, buffering=True):
+    # if the text doesn't already fit, we make an educated guess at the right size
+    # by dividing the width of the window in pixels by the width of the '0' character
+    # in pixels. Then, if it is too small, we add characters until it fits, or if
+    # it is too big, we remove characters until it fits.
     if width <= 0 or len(text) == 0:
         return 0
     elif currentWindow.getStringLength(text) <= width:
         x = len(text)
     else:
-        x = len(text)
+        charlen = currentWindow.getStringLength('0')
+        x = width // charlen
         stringlen = currentWindow.getStringLength(text[:x])
-        if currentWindow.font_number == 2: # picture font
-            stringlen = 0
-            for letter in text:
-                pic = currentWindow.getpic(ord(letter))
-                if pic:
-                    stringlen += pic.getWidth()
-        while stringlen > width:
-            stringlen = currentWindow.getStringLength(text[:x])
-            x -= 1 # find how many characters from the text buffer will fit on the current line
-            if wrapping and buffering:
-                x = text[:x].rfind(' ') 
-            if x == -1:            
-                x = 0
+            
+        if stringlen < width:
+            while stringlen < width:
+                stringlen = currentWindow.getStringLength(text[:x])
+                x += 1
+            x -= 1
+        if stringlen > width:
+            while stringlen > width:
+                stringlen = currentWindow.getStringLength(text[:x])
+                x -= 1
+        if x == -1:            
+            x = 0
+        if wrapping and buffering:
+            x = text[:x].rfind(' ')         
     return x
 
 # Windows. Yay!
@@ -514,7 +520,6 @@ def truetofull(incolour):
     g = (g << 3) | (g >> 2)
     outcolour=(r,g,b)
     return outcolour
-
 
 
 
@@ -699,7 +704,6 @@ class window(io.pygame.window):
         return (self.x_coord + 1, self.y_coord + 1)
 
     def setCursor(self, x, y):
-        #self.flushTextBuffer() # this breaks newlines
         self.x_cursor = x - 1
         self.y_cursor = y - 1
 
@@ -885,7 +889,7 @@ class window(io.pygame.window):
             self.textbuffer = ''
             
         else:
-            while (len(self.textbuffer) > 0) and (zcode.routines.scrolling == 0):
+            while (len(self.textbuffer) > 0) and (zcode.routines.scrolling == 0):                
                 winwidth = (self.x_size - self.x_cursor - self.right_margin)
                 x = fittext(self.textbuffer[:], winwidth, buffering=buffering)
                 definitescroll = 0
@@ -895,6 +899,8 @@ class window(io.pygame.window):
                     definitescroll = 1
                 linebuffer = self.textbuffer[:x]
                 self.textbuffer = self.textbuffer[len(linebuffer):]
+                
+                
                 
 
                 if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
@@ -942,9 +948,8 @@ class window(io.pygame.window):
             self.line_count+=1
         
         # put the cursor at the current left margin
-
         self.setCursor(self.left_margin + 1, self.getCursor()[1])
-        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1:
+        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
             self.drawText('[MORE]')
             while zcode.input.getinput() != 32:
@@ -953,8 +958,8 @@ class window(io.pygame.window):
             moreypos = self.getCursor()[1] + self.getPosition()[1]
             currentWindow.flushTextBuffer()
 
-         
         self.postNewline()
+
 
 
 

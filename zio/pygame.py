@@ -62,9 +62,9 @@ class image():
     def __init__(self, data, filename=False):
         if type(data) == bytes:
             if filename:
-                self.picture = pygame.image.load(data)
+                self.picture = pygame.image.load(data).convert()
             else:
-                self.picture = pygame.image.load(io.BytesIO(data))
+                self.picture = pygame.image.load(io.BytesIO(data)).convert()
             
         else: # assume pygame surface
             self.picture = data
@@ -197,6 +197,7 @@ class font:
         fon = pygame.font.Font(self.usefile, self.size)
         return fon
 
+
 class window:
     y_coord = 0
     x_coord = 0
@@ -279,7 +280,6 @@ class window:
         self.line_count = 0
         self.x_cursor = 0
         self.y_cursor = 0
-        self.screen.update()
 
 
     def eraseArea(self, x, y, w, h):
@@ -351,6 +351,7 @@ class window:
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
+
     def getStringLength(self, text):
         return self.getFont().getStringLength(text)
 
@@ -386,7 +387,7 @@ class screen:
             area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
         self.screen.fill(colour, area)
         self.updates.append(area)
-        self.update()
+
 
     background = 0xFFFFFF
     resized = False
