@@ -104,9 +104,9 @@ def getinput(display=True, ignore=False):
     if stream == 0:
         input = ioInput.getinput()
         if ignore:
-            if input:
+            if isinstance(input, io.pygame.keypress):
                 return input.value
-            return input
+            return None
         zsciivalue = None
 
         if isinstance(input, io.pygame.keypress):
