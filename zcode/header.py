@@ -211,42 +211,93 @@ def setflag(bitmap, bit, value):
             else:
                 zcode.memory.setword(headerextloc() + 8, zcode.memory.getword(headerextloc() + 8 & ~flag))
 
+high_memory = None
+
 def highmembase():
-    return zcode.memory.getword(0x4)
+    global high_memory
+    if not high_memory:
+        high_memory = zcode.memory.getword(0x4)
+    return high_memory
+
+initial_PC = None
 
 def initialPC(): # for non z6
-    return zcode.memory.getword(0x6)
+    global initial_PC
+    if not initial_PC:
+        initial_PC = zcode.memory.getword(0x6)
+    return initial_PC
+
+main_routine = None
 
 def mainroutine(): # for z6
-    return zcode.memory.getword(0x6)
+    global main_routine
+    if not main_routine:
+        main_routine = zcode.memory.getword(0x6)
+    return main_routine
+
+dictionary_location = None
 
 def dictionaryloc():
-    return zcode.memory.getword(0x8)
+    global dictionary_location
+    if not dictionary_location:
+        dictionary_location = zcode.memory.getword(0x8)
+    return dictionary_location
+
+object_table = None
 
 def objtableloc():
-    return zcode.memory.getword(0xA)
+    global object_table
+    if not object_table:
+        object_table = zcode.memory.getword(0xA)
+    return object_table
+
+globals_location = None
 
 def globalsloc():
-    return zcode.memory.getword(0xC)
+    global globals_location
+    if not globals_location:
+        globals_location = zcode.memory.getword(0xC)
+    return globals_location
+
+static_memory = None
 
 def statmembase():
-    return zcode.memory.getword(0xE)
+    global static_memory
+    if not static_memory:
+        static_memory = zcode.memory.getword(0xE)
+    return static_memory
+
+abbreviations_table = None
 
 def abbrevtableloc():
-    return zcode.memory.getword(0x18)
+    global abbreviations_table
+    if not abbreviations_table:
+        abbreviations_table = zcode.memory.getword(0x18)
+    return abbreviations_table
+
+file_length = None
 
 def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually. But it doesn't.
-    l = (zcode.memory.getbyte(0x1a) << 8) + zcode.memory.getbyte(0x1b)
+    global file_length
+    if not file_length:
+        l = (zcode.memory.getbyte(0x1a) << 8) + zcode.memory.getbyte(0x1b)
+        if l == 0:
+            file_length = len(memory.data)
+        elif zversion() < 4: # versions 1 to 3
+            file_length = l * 2
+        elif zversion() < 6: # versions 4 and 5
+            file_length = l * 4
+        else: # versions 6, 7 and 8
+            file_length = l * 8
+    return file_length
 
-    if zversion() < 4: # versions 1 to 3
-        return l * 2
-    elif zversion() < 6: # versions 4 and 5
-        return l * 4
-    else: # versions 6, 7 and 8
-        return l * 8
+checksum = None
 
 def getchecksum():
-    return zcode.memory.getword(0x1C)
+    global checksum
+    if not checksum:
+        checksum = zcode.memory.getword(0x1C)
+    return checksum
 
 def setterpnum(number):
     zcode.memory.setbyte(0x1E, number)
@@ -310,11 +361,20 @@ def setfontheight(units):
     else:
         zcode.memory.setbyte(0x27, units)
     
+routines_offset = None
 def routineoffset(): # z6 only
-    return zcode.memory.getword(0x28) * 8
+    global routines_offset
+    if not routines_offset:
+        routines_offset = zcode.memory.getword(0x28) * 8
+    return routines_offset
+
+strings_offset = None
 
 def stringoffset(): # z6 only
-    return zcode.memory.getword(0x2A) * 8
+    global strings_offset
+    if not strings_offset:
+        strings_offset = zcode.memory.getword(0x2A) * 8
+    return strings_offset
 
 def setdefbgcolour(colour):
     zcode.memory.setbyte(0x2c, colour)
@@ -328,8 +388,13 @@ def getdefbgcolour():
 def getdeffgcolour():
     return zcode.memory.getbyte(0x2D)
 
+terminating_characters = None
+
 def termcharloc():
-    return zcode.memory.getword(0x2E)
+    global terminating_characters
+    if terminating_characters == None:
+        terminating_characters = zcode.memory.getword(0x2E)
+    return terminating_characters
 
 def settextwidth(len): # total width in units of text sent to output stream 3
     zcode.memory.setword(0x30, len)
@@ -343,21 +408,36 @@ def getstandardnum():
     m = zcode.memory.getbyte(0x33)
     return (n,m)
 
+alphabet_table = None
+
 def alphatableloc():
-    return zcode.memory.getword(0x34)
+    global alphabet_table
+    if alphabet_table == None:
+        alphabet_table = zcode.memory.getword(0x34)
+    return alphabet_table
+
+header_extension = None
 
 def headerextloc():
-    return zcode.memory.getword(0x36)
+    global header_extension
+    if header_extension == None:
+        header_extension = zcode.memory.getword(0x36)
+    return header_extension
 
 
     
 # header extension stuff 
 
+header_extension_size = None
+
 def headerextsize():
-    if headerextloc() == 0:
-        return 0
-    words = zcode.memory.getword(headerextloc())
-    return words
+    global header_extension_size
+    if header_extension_size == None:
+        if headerextloc() == 0:
+            header_extension_size = 0
+        else:
+            header_extension_size = zcode.memory.getword(headerextloc())    
+    return header_extension_size
 
 def setHeaderExtWord(word, value):  
     if headerextsize() < word:
@@ -377,9 +457,13 @@ def setmousex(xpos):
 def setmousey(ypos):
     setHeaderExtWord(2, ypos)
 
+unicode_table = None
 
 def unicodetableloc():
-    return getHeaderExtWord(3)
+    global unicode_table
+    if unicode_table == None:
+        unicode_table = getHeaderExtWord(3)
+    return unicode_table
 
 
     
