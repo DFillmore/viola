@@ -600,6 +600,7 @@ def z_picture_data():
     array = zcode.instructions.operands[1]
     if picnum == 0:
         picindex = {}
+        relnum = 0
         for a in zcode.screen.blorbs:
             keys = list(a.resindex[b'Pict'].keys())
             for key in keys:
