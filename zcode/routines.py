@@ -53,7 +53,6 @@ def execloop(debug=False):
     global restart
     global oldpc
     global timerreturn
-    #debug = False
 
     zcode.screen.cursoroff()
     while (restart == 0) and (quit == 0) and (timerreturn == False) and (scrolling == 0):
@@ -61,20 +60,7 @@ def execloop(debug=False):
             zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
-        zcode.instructions.runops(oldpc, debug)
-        zcode.header.updateFontSize()
-        if (zcode.output.streams[2].active == False) and (zcode.header.getflag(2,0) == 1): # if the transcription bit has just been set, start transcription
-            zcode.output.openstream(2)
-        if (zcode.output.streams[2].active) and (zcode.header.getflag(2,0) == 0): # if however it has just been unset, stop transcription
-            zcode.output.closestream(2)
-        if (zcode.screen.fixedpitchbit == False) and (zcode.header.getflag(2,1) == 1):
-            zcode.screen.currentWindow.flushTextBuffer()
-            zcode.screen.fixedpitchbit = True
-        if (zcode.screen.fixedpitchbit) and (zcode.header.getflag(2,1) == 0):
-            zcode.screen.currentWindow.flushTextBuffer()
-            zcode.screen.fixedpitchbit = False
-        if input > 0:
-            zcode.game.PC = oldpc # if we've hit an input instruction, we'll need to call it again
+        zcode.instructions.runops(oldpc, debug)                  
     timerreturn = False
 
 
