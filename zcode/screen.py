@@ -1029,7 +1029,8 @@ class window(io.pygame.window):
         
     def drawpic(self, picture_number, x, y):
         pic = self.getpic(picture_number)
-        pic.draw(self, (self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1))
+        if pic:
+            pic.draw(self, (self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1))
 
     def erasepic(self, picture_data, x, y, scale=1):
         pic = io.pygame.image(picture_data)
