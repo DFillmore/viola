@@ -187,7 +187,7 @@ def gettextlength(address): # this determines how much space an encoded string t
 
 def getZSCIIchar(code):
     if code == 0:
-        return ' '
+        return ''
     if code == 1 and zcode.header.zversion() == 1:
         return '\r'
     elif code == 9:
