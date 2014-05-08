@@ -936,7 +936,6 @@ class window(io.pygame.window):
             self.cdown = self.countdown()
 
     def newline(self):
-        global morexpos, moreypos
         self.preNewline()
         # move to the new line
         self.setCursor(self.getCursor()[0], self.getCursor()[1] + self.getFont().getHeight())
@@ -952,10 +951,13 @@ class window(io.pygame.window):
         if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
             self.drawText('[MORE]')
-            while zcode.input.getinput() != 32:
+            while zcode.input.getinput(ignore=True) != 32:
                 pass
-            morexpos = self.getCursor()[0] + self.getPosition()[0]
-            moreypos = self.getCursor()[1] + self.getPosition()[1]
+            x = self.getCursor()[0] + self.getPosition()[0] - 1
+            y = self.getCursor()[1] + self.getPosition()[1] - 1
+            w = zcode.screen.currentWindow.getStringLength('[MORE]')
+            h = zcode.screen.currentWindow.getStringHeight('[MORE]')
+            zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
             currentWindow.flushTextBuffer()
 
         self.postNewline()

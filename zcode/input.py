@@ -94,7 +94,7 @@ def convertinput(char):
     return None
 
 
-def getinput(display=True):
+def getinput(display=True, ignore=False):
     global mouse
     global stream
     global instring
@@ -103,6 +103,10 @@ def getinput(display=True):
     zcode.game.interrupt_call()
     if stream == 0:
         input = ioInput.getinput()
+        if ignore:
+            if input:
+                return input.value
+            return input
         zsciivalue = None
 
         if isinstance(input, io.pygame.keypress):
