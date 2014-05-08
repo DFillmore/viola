@@ -89,7 +89,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
     # Z-machine Standard number
     # not bug free enough to fully support even 1.0
     # although even 1.2 is partially implemented
-    setstandardnum(0, 0)
+    setstandardnum(1, 2)
 
 def updateFontSize():
     if zversion() > 4:
@@ -527,6 +527,7 @@ def gestalt(id, arg1=0, arg2=0, arg3=0):
         return 0 # we don't yet support the font size opcode
     if id == 12: # unicode strings (using the unicode escape character)
         return 1 # we support unicode string. In theory. In practice, it's kinda broken.
+    return 0
 
      
 #def setFontMetric(value):
