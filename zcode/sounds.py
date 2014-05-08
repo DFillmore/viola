@@ -154,7 +154,6 @@ class effectsChannel(Channel):
             i = zcode.game.interruptdata(zcode.game.INT_SOUND, self.routine)
             zcode.game.interruptstack.append(i)
             zcode.game.interrupt_call()
-            zcode.routines.input = 0
             zcode.routines.execloop()
 
 

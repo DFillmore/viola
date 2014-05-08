@@ -171,7 +171,7 @@ def runops(address, debug=False):
             print(zcode.optables.op2[optype & 0x1f].__name__)
         zcode.optables.op2[optype & 0x1f]()
     elif optype < 0x100:
-        if zcode.routines.input != -1 and debug:
+        if debug:
             print(zcode.optables.opvar[optype & 0x1f].__name__)
         if optype & 0x1f == 4 or optype & 0x1f == 16:
             inputInstruction = True

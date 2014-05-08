@@ -358,7 +358,6 @@ def firetimer():
     i = interruptdata(INT_INPUT, timerroutine)
     interruptstack.append(i)
     zcode.game.interrupt_call()
-    zcode.routines.input = 0
     zcode.routines.timerreturn = False
     zcode.routines.execloop()
     PC = oldPC
