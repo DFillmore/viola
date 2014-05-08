@@ -137,10 +137,13 @@ def serial():
 def identifier():
     return str(release()) + "." + serial()
 
-    
+zmachine_version = None    
 
 def zversion():
-    return zcode.memory.getbyte(0)
+    global zmachine_version
+    if zmachine_version == None:
+        zmachine_version = zcode.memory.getbyte(0)
+    return zmachine_version
 
 
 def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags 1, bit is the bit number to check, such as bit 1 for z3 status line type checking
