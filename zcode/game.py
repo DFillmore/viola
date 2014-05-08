@@ -134,42 +134,32 @@ def restore_undo():
     return 2
 
 def getvar(varnum, indirect=False):
-    global currentframe
     if varnum == 0:
-        if indirect == True:
-            return currentframe.evalstack[-1]
-        try:
-            return currentframe.evalstack.pop()
-        except:
-            zcode.error.strictz("Tried to get a value from an empty stack.")
-            return 0
+        return getstack(indirect)
     elif varnum < 0x10:
-        return currentframe.lvars[varnum - 1]
+        return getlocal(varnum - 1)
     else:
-        table = zcode.header.globalsloc()
-        return zcode.memory.getword(table + ((varnum - 0x10) * 2))
+        return getglobal(varnum - 0x10)
 
-
-def setvar(varnum, value, indirect=False):
-    global currentframe
-    value = zcode.numbers.unneg(value)
+def setvar(varnum, value, indirect=False):   
     if varnum == 0:
-        if indirect == True:
-            currentframe.evalstack[-1] = value
-        else:
-            currentframe.evalstack.append(value)
+        putstack(value, indirect)
     elif varnum < 0x10:
-        currentframe.lvars[varnum-1] = value
+        setlocal(varnum - 1, value)
     else:
-        table = zcode.header.globalsloc()
-        zcode.memory.setword(table + ((varnum-0x10) * 2), value)
+        setglobal(varnum - 0x10, value)
 
 def getstack(indirect=False):
     global currentframe
-    if indirect == True:
-        return currentframe.evalstack[-1]
-    else:
-        return currentframe.evalstack.pop()
+    try:
+        if indirect == True:
+            return currentframe.evalstack[-1]
+        else:
+            return currentframe.evalstack.pop()
+    except:
+        zcode.error.strictz("Tried to get a value from an empty stack.")
+        return 0
+
 
 def putstack(value, indirect=False):
     global currentframe
