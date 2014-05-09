@@ -245,16 +245,7 @@ def zcharstozscii(address):
             if b == 0:
                 unistring = False
             codes.append(b)
-
-    y = [5,6]
-    y.extend(codes[-2:]) # this matches the last four codes being a 10-bit character code, so we don't accidentally chop the end off one of those
-    if len(codes) >= 4:
-        while y != codes[-4:] and (codes[-1] == 4 or codes[-1] == 5):
-            codes.pop()
-            y = [5,6]  
-            y.extend(codes[-2:])
-
-    
+ 
     # codes should now be a list of the z-characters, with Unicode string bytes
     # Need to convert this to ZSCII (and Unicode strings bytes)
     ZSCII = []
@@ -327,7 +318,6 @@ def zcharstozscii(address):
             if temporary == True:
                 currentalpha = previousalpha
                 temporary = False
-
     return ZSCII
 
 def zsciitounicode(zscii):
