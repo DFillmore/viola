@@ -101,7 +101,7 @@ def handle_parameters(argv): # handles command line parameters
     global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n   -T <filename> output transcript file')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file')
         sys.exit()
 
     if len(argv) <= 1:
