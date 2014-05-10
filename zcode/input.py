@@ -183,9 +183,9 @@ def getinput(display=True, ignore=False):
                  zcode.screen.currentWindow.flushTextBuffer()
                  if zcode.header.zversion != 6:
                      zcode.output.streams[2].write(chr(zsciivalue))
-            if zsciivalue > 255:
+            if zsciivalue > 126:
                 if zsciivalue in list(zcode.text.reverseunitable.keys()):
-                    zsciivalue = reverseunitable[keys]
+                    zsciivalue = zcode.text.reverseunitable[zsciivalue]
                 else:
                     return None
         else:
