@@ -134,7 +134,7 @@ def z_clear_attr():
         zcode.error.strictz('Tried to clear an attribute in object 0')
     else:
         attribute = zcode.instructions.operands[1]
-        zcode.objects.clearattr(object, attribute)
+        zcode.objects.clearAttribute(object, attribute)
 
 def z_copy_table():
     first = zcode.instructions.operands[0]
@@ -293,7 +293,7 @@ def z_get_child():
         zcode.instructions.store(0)
         zcode.instructions.branch(0)
     else:
-        child = zcode.objects.getchild(object)
+        child = zcode.objects.getChild(object)
         zcode.instructions.store(child)
         if child == 0:
             zcode.instructions.branch(0)
@@ -317,19 +317,19 @@ def z_get_next_prop():
     else:
         property = zcode.instructions.operands[1]
         if property == 0:
-            address = zcode.objects.getfirstprop(object)
-            num = zcode.objects.getpropnum(address)
+            address = zcode.objects.getFirstProperty(object)
+            num = zcode.objects.getPropertyNumber(address)
         else:
-            address = zcode.objects.getpropaddr(object, property)
-            address = zcode.objects.getnextprop(address)
-            num = zcode.objects.getpropnum(address)
+            address = zcode.objects.getPropertyAddress(object, property)
+            address = zcode.objects.getNextProperty(address)
+            num = zcode.objects.getPropertyNumber(address)
         zcode.instructions.store(num)
 
 def z_get_parent():
     object = zcode.instructions.operands[0]
     if object == 0:
         zcode.error.strictz('Tried to find the parent of object 0')
-    parent = zcode.objects.getparent(object)
+    parent = zcode.objects.getParent(object)
     zcode.instructions.store(parent)
 
 def z_get_prop():
@@ -340,17 +340,17 @@ def z_get_prop():
         zcode.instructions.store(0)
     else:
         property = zcode.instructions.operands[1]
-        address = zcode.objects.getpropaddr(object, property)
+        address = zcode.objects.getPropertyAddress(object, property)
         if address == 0:
-            result = zcode.objects.getdefault(property)
+            result = zcode.objects.getDefaultProperty(property)
         else:
-            size = zcode.objects.getpropsize(address)
+            size = zcode.objects.getPropertySize(address)
             if size == 1:
-                result = zcode.memory.getbyte(zcode.objects.getpropdataaddr(object, property))
+                result = zcode.memory.getbyte(zcode.objects.getPropertyDataAddress(object, property))
             elif size == 2:
-                result = zcode.memory.getword(zcode.objects.getpropdataaddr(object, property))
+                result = zcode.memory.getword(zcode.objects.getPropertyDataAddress(object, property))
             else:
-                result = zcode.memory.getword(zcode.objects.getpropdataaddr(object, property))
+                result = zcode.memory.getword(zcode.objects.getPropertyDataAddress(object, property))
                 zcode.error.strictz('Tried to read from a property with length > 2')
         zcode.instructions.store(result)
     
@@ -361,7 +361,7 @@ def z_get_prop_addr():
         zcode.instructions.store(0)
     else:
         property = zcode.instructions.operands[1]
-        result = zcode.objects.getpropdataaddr(object, property)
+        result = zcode.objects.getPropertyDataAddress(object, property)
         zcode.instructions.store(result)
     
 
@@ -370,9 +370,9 @@ def z_get_prop_len():
     if propaddr == 0:
         result = 0
     elif zcode.header.zversion() > 3 and (zcode.memory.getbyte(zcode.instructions.operands[0]-1) >> 7) & 1 == 1:
-        result = zcode.objects.getpropsize(propaddr - 2)
+        result = zcode.objects.getPropertySize(propaddr - 2)
     else:
-        result = zcode.objects.getpropsize(propaddr - 1)
+        result = zcode.objects.getPropertySize(propaddr - 1)
     zcode.instructions.store(result)
 
 def z_get_sibling():
@@ -382,7 +382,7 @@ def z_get_sibling():
         zcode.instructions.store(0)
         zcode.instructions.branch(0)
     else:
-        sibling = zcode.objects.getsibling(object)
+        sibling = zcode.objects.getSibling(object)
         zcode.instructions.store(sibling)
         if sibling == 0:
             zcode.instructions.branch(0)
@@ -421,22 +421,22 @@ def z_insert_obj():
         zcode.error.strictz('Tried to insert object 0 into an object')
     else:
         # first we have to remove the object from its old parent and siblings
-        oldparent = zcode.objects.getparent(object)
-        oldsibling = zcode.objects.getsibling(object)
-        oldeldersibling = zcode.objects.geteldersibling(object)
+        oldparent = zcode.objects.getParent(object)
+        oldsibling = zcode.objects.getSibling(object)
+        oldeldersibling = zcode.objects.getElderSibling(object)
         if oldeldersibling != 0: # the object had a valid parent and was not the eldest child
-            zcode.objects.setsibling(oldeldersibling, oldsibling) # fill in the gap of siblings left by remove this object
-        elif zcode.objects.getchild(oldparent) == object: # if the object was the eldest child
-            zcode.objects.setchild(oldparent, oldsibling) # make the object's sibling the new eldest child, filling in the gap
+            zcode.objects.setSibling(oldeldersibling, oldsibling) # fill in the gap of siblings left by remove this object
+        elif zcode.objects.getChild(oldparent) == object: # if the object was the eldest child
+            zcode.objects.setChild(oldparent, oldsibling) # make the object's sibling the new eldest child, filling in the gap
 
         # then we have to put the object in the new parent
         newparent = zcode.instructions.operands[1]
-        newsibling = zcode.objects.getchild(newparent)
+        newsibling = zcode.objects.getChild(newparent)
         if newsibling == object:
             newsibling = oldsibling
-        zcode.objects.setparent(object, newparent) # set the object's parent to newparent
-        zcode.objects.setchild(newparent, object) # set the new parent's child to object
-        zcode.objects.setsibling(object, newsibling) # set the object's sibling to newsibling
+        zcode.objects.setParent(object, newparent) # set the object's parent to newparent
+        zcode.objects.setChild(newparent, object) # set the new parent's child to object
+        zcode.objects.setSibling(object, newsibling) # set the object's sibling to newsibling
 
 def z_je():
     condition = 0
@@ -458,7 +458,7 @@ def z_jin():
     obj2 = zcode.instructions.operands[1]
     if obj1 == 0:
         zcode.error.strictz('Tried to find the parent of object 0')
-    if zcode.objects.getparent(obj1) == obj2:
+    if zcode.objects.getParent(obj1) == obj2:
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
@@ -488,15 +488,15 @@ def z_load():
     zcode.instructions.store(zcode.game.getvar(var, True))
 
 def z_loadb():
+    array = zcode.numbers.neg(zcode.instructions.operands[0])
     array = zcode.instructions.operands[0]
-    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    byteindex = zcode.instructions.operands[1]
     zcode.instructions.store(zcode.memory.getbyte(array + byteindex))
 
 def z_loadw():
-    array = zcode.instructions.operands[0]
-    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    array = zcode.numbers.neg(zcode.instructions.operands[0])
+    wordindex = zcode.instructions.operands[1]
     zcode.instructions.store(zcode.memory.getword(array + (2 * wordindex)))
-    #print hex(zcode.memory.getword(array + (2 * wordindex)))
 
 def z_log_shift():
     number = zcode.instructions.operands[0]
@@ -694,8 +694,7 @@ def z_print_obj():
     if object == 0:
         zcode.error.strictz('Tried to print short name of object 0')
     else:
-        result = zcode.objects.getshortname(object)
-        zcode.output.printtext(zcode.objects.getshortname(object))
+        zcode.output.printtext(zcode.objects.getShortName(object))
 
 def z_print_paddr():
     packedaddress = zcode.instructions.operands[0]
@@ -777,17 +776,17 @@ def z_put_prop():
     else:
         property = zcode.instructions.operands[1]
         value = zcode.instructions.operands[2]
-        address = zcode.objects.getpropaddr(object, property)
+        address = zcode.objects.getPropertyAddress(object, property)
         if address == 0:
             zcode.error.strictz('Tried to write to a non-existent property')
-        propsize = zcode.objects.getpropsize(address)
+        propsize = zcode.objects.getPropertySize(address)
         if propsize == 1:
-            zcode.memory.setbyte(zcode.objects.getpropdataaddr(object, property), value)
+            zcode.memory.setbyte(zcode.objects.getPropertyDataAddress(object, property), value)
         elif propsize == 2:
-            zcode.memory.setword(zcode.objects.getpropdataaddr(object, property), value)
+            zcode.memory.setword(zcode.objects.getPropertyDataAddress(object, property), value)
         else:
             zcode.error.strictz('Tried to write to a property of length > 2')
-            zcode.memory.setword(zcode.objects.getpropdataaddr(object, property), value)
+            zcode.memory.setword(zcode.objects.getPropertyDataAddress(object, property), value)
 
 
 def z_put_wind_prop():
@@ -981,15 +980,15 @@ def z_remove_obj():
     if object == 0:
         zcode.error.strictz('Tried to remove object 0 from the object tree')
     else:
-        parent = zcode.objects.getparent(object) # find out what the parent is
-        sibling = zcode.objects.getsibling(object) # find out what the sibling is
-        eldersibling = zcode.objects.geteldersibling(object) # find out what the elder sibling is
+        parent = zcode.objects.getParent(object) # find out what the parent is
+        sibling = zcode.objects.getSibling(object) # find out what the sibling is
+        eldersibling = zcode.objects.getElderSibling(object) # find out what the elder sibling is
 
-        zcode.objects.setparent(object, 0) # set the object's parent to 0
+        zcode.objects.setParent(object, 0) # set the object's parent to 0
         if eldersibling == 0: # if there was no elder sibling, sibling is now the child of parent
-            zcode.objects.setchild(parent, sibling)
+            zcode.objects.setChild(parent, sibling)
         else: # otherwise, sibling is now the sibling of eldersibling
-            zcode.objects.setsibling(eldersibling, sibling)
+            zcode.objects.setSibling(eldersibling, sibling)
 
 def z_restart():
     zcode.sounds.stopall()
@@ -1151,7 +1150,7 @@ def z_set_attr():
         zcode.error.strictz('Tried to set an attribute in object 0')
     else:
         attribute = zcode.instructions.operands[1]
-        zcode.objects.setattr(object, attribute)
+        zcode.objects.setAttribute(object, attribute)
 
 
 
@@ -1378,14 +1377,14 @@ def z_store():
     zcode.game.setvar(var, value, True)
 
 def z_storeb():
-    array = zcode.instructions.operands[0]
-    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    array = zcode.numbers.neg(zcode.instructions.operands[0])    
+    byteindex = zcode.instructions.operands[1]
     value = zcode.instructions.operands[2]
     zcode.memory.setbyte(array + byteindex, value)
 
 def z_storew():
-    array = zcode.instructions.operands[0]
-    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    array = zcode.numbers.neg(zcode.instructions.operands[0])    
+    wordindex = zcode.instructions.operands[1]
     value = zcode.instructions.operands[2]
     zcode.memory.setword(array + (2 * wordindex), value)
 
@@ -1410,7 +1409,7 @@ def z_test_attr():
         zcode.instructions.branch(0)
     else:
         attribute = zcode.instructions.operands[1]
-        if zcode.objects.testattr(object, attribute):
+        if zcode.objects.testAttribute(object, attribute):
             zcode.instructions.branch(1)
         else:
             zcode.instructions.branch(0)

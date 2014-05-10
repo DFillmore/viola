@@ -18,7 +18,6 @@
 
 import sys
 
-
 import zcode
 
 
@@ -31,82 +30,87 @@ def setup():
     else:
         objstart = propdef + 126
 
-def getdefault(propnum):
+def getDefaultProperty(propnum):
     address = ((propnum - 1) * 2) + propdef
     return zcode.memory.getword(address)
 
-def findobject(obj): # returns the address in memory of the object numbered obj
+def findObject(obj):
+    """returns the address in memory of the object with the number given"""
     if zcode.header.zversion() < 4:
         address = objstart + (9 * obj) - 9
     else:
         address = objstart + (14 * obj) - 14
     return address
 
-def getparent(obj): # returns the number of the parent of the object with number obj
-    address = findobject(obj)
+def getParent(obj):
+    """returns the number of the parent object of the object with the number given"""
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         return zcode.memory.getbyte(address + 4)
     else:
         return zcode.memory.getword(address + 6)
         
-def getsibling(obj): # returns the number of the sibling of the object with number obj
-    address = findobject(obj)
+def getSibling(obj): 
+    """returns the number of the sibling object of the object with the number given"""
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         return zcode.memory.getbyte(address + 5)
     else:
         return zcode.memory.getword(address + 8)
 
-def getchild(obj): # return the number of the child of the object with number obj
-    address = findobject(obj)
+def getChild(obj):
+    """returns the number of the child object of the object with the number given"""
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         return zcode.memory.getbyte(address + 6)
     else:
         return zcode.memory.getword(address + 10)
 
-def geteldersibling(obj): # returns the number of the object to which this object is the sibling
-    parent = getparent(obj)
-    if parent == 0: # there is no parent, so there is no elder sibling (hopefully)
+def getElderSibling(obj):
+    """returns the number of the object to which the object with the number given is the sibling"""
+    parent = getParent(obj)
+    if parent == 0: # there is no parent, so there is no elder sibling
         return 0 
-    eldestchild = getchild(parent)
+    eldestchild = getChild(parent)
     if eldestchild == obj: # there is no elder sibling
         return 0
-    sibling = getsibling(eldestchild)
+    sibling = getSibling(eldestchild)
     eldersibling = eldestchild
     while sibling != obj:
-        eldersibling = getsibling(eldersibling)
-        sibling = getsibling(eldersibling)
+        eldersibling = getSibling(eldersibling)
+        sibling = getSibling(eldersibling)
     return eldersibling
 
-def setparent(obj, parent): # sets obj's parent to parent
-    address = findobject(obj)
+def setParent(obj, parent): # sets obj's parent to parent
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 4, parent)
     else:
         zcode.memory.setword(address + 6, parent)
 
-def setsibling(obj, sibling): # sets obj's sibling to sibling
-    address = findobject(obj)
+def setSibling(obj, sibling): # sets obj's sibling to sibling
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 5, sibling)
     else:
         zcode.memory.setword(address + 8, sibling)
 
-def setchild(obj, child): # sets obj's child to child
-    address = findobject(obj)
+def setChild(obj, child): # sets obj's child to child
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 6, child)
     else:
         zcode.memory.setword(address + 10, child)
 
-def getpropertiesaddress(obj): # returns the address of the properties table for the object numbered obj
-    address = findobject(obj)
+def getPropertiesAddress(obj): # returns the address of the properties table for the object numbered obj
+    address = findObject(obj)
     if zcode.header.zversion() < 4:
         return zcode.memory.getword(address + 7)
     else:
         return zcode.memory.getword(address + 12)
 
-def setattr(obj, attr): # sets attribute number attr in object number obj
-    address = findobject(obj)
+def setAttribute(obj, attr): # sets attribute number attr in object number obj
+    address = findObject(obj)
     if attr < 16:
         flags = zcode.memory.getword(address)
         shift = attr
@@ -130,8 +134,8 @@ def setattr(obj, attr): # sets attribute number attr in object number obj
     elif attr < 48:
         zcode.memory.setword(address+4, flags)
 
-def clearattr(obj, attr): # clears attribute number attr in object number obj
-    address = findobject(obj)
+def clearAttribute(obj, attr): # clears attribute number attr in object number obj
+    address = findObject(obj)
     if attr < 16:
         flags = zcode.memory.getword(address)
         shift = attr
@@ -159,8 +163,8 @@ def clearattr(obj, attr): # clears attribute number attr in object number obj
 
 
 
-def testattr(obj, attr): # tests if attribute number attr is on in object number obj
-    address = findobject(obj)
+def testAttribute(obj, attr): # tests if attribute number attr is on in object number obj
+    address = findObject(obj)
     if attr < 16:
         flags = zcode.memory.getword(address)
         shift = attr
@@ -179,10 +183,10 @@ def testattr(obj, attr): # tests if attribute number attr is on in object number
     else:
         return 0
 
-def getshortname(obj): # returns the decoded short name of the object
+def getShortName(obj): # returns the decoded short name of the object
     if obj == 0:
         return 0
-    address = getpropertiesaddress(obj) + 1
+    address = getPropertiesAddress(obj) + 1
     if zcode.memory.getbyte(address-1) == 0:
         return 'NoName'
     return zcode.text.decodetext(address)
@@ -190,7 +194,7 @@ def getshortname(obj): # returns the decoded short name of the object
 # now we get to the properties themselves. This is a bit more difficult
 
 
-def getpropsize(address): # given the address of the size byte of a property, returns the size
+def getPropertySize(address): # given the address of the size byte of a property, returns the size
     if zcode.header.zversion() < 4:
         size = (zcode.memory.getbyte(address) >> 5) + 1
     else:
@@ -205,14 +209,14 @@ def getpropsize(address): # given the address of the size byte of a property, re
                 size = 1
     return size
 
-def getpropnum(address): # given the address of the size byte of a property, returns the property number
+def getPropertyNumber(address): # given the address of the size byte of a property, returns the property number
     if zcode.header.zversion() < 4:
         size = zcode.memory.getbyte(address) & 0x1F
     else:
         size = zcode.memory.getbyte(address) & 0x3f
     return size
 
-def getnextprop(address):
+def getNextProperty(address):
     if zcode.header.zversion() < 4:
         sizelen = 1 # for z3 and earlier games, there is only one size byte
     else: #  in higher versions of the z-machine there may be either one or two bytes
@@ -220,30 +224,31 @@ def getnextprop(address):
             sizelen = 2
         else: # if it is unset, there is only one size byte
             sizelen = 1
-    address += sizelen + getpropsize(address)
-    return address
 
-def getfirstprop(obj): # returns the address of obj's first property
-    address = getpropertiesaddress(obj) # find the start of the properties header
+    newaddress = address + sizelen + getPropertySize(address)
+    return newaddress
+
+def getFirstProperty(obj): # returns the address of obj's first property
+    address = getPropertiesAddress(obj) # find the start of the properties header
     headerlen = zcode.memory.getbyte(address) * 2 # find the length of the short name
     address = address + 1 + headerlen # find the first byte after the short name
     return address
 
-def getpropaddr(obj, prop): # returns the address of the property prop of the object obj (this returns the address of the first byte of the size info, not the first byte of the data)
-    address = getfirstprop(obj)
-    num = getpropnum(address)
+def getPropertyAddress(obj, prop): # returns the address of the property prop of the object obj (this returns the address of the first byte of the size info, not the first byte of the data)
+    address = getFirstProperty(obj)
+    num = getPropertyNumber(address)
     if num == 0:
         return 0
     while num != prop:
-        address = getnextprop(address)
-        num = getpropnum(address) # find out what property this is
+        address = getNextProperty(address)
+        num = getPropertyNumber(address) # find out what property this is
         if num == 0:
             prop = 0
             address = 0
     return address
 
-def getpropdataaddr(obj, prop): # returns the address of the first byte of the data of the given property of the given object. No, really.
-    sizeaddr = getpropaddr(obj, prop)
+def getPropertyDataAddress(obj, prop): # returns the address of the first byte of the data of the given property of the given object. No, really.
+    sizeaddr = getPropertyAddress(obj, prop)
     if sizeaddr == 0:
         return 0
     if zcode.header.zversion() < 4:
@@ -252,3 +257,4 @@ def getpropdataaddr(obj, prop): # returns the address of the first byte of the d
         return sizeaddr + 2
     else:
         return sizeaddr + 1
+
