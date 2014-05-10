@@ -21,8 +21,9 @@ INSTALLATION
 
 Some brief notes on getting the program up and running.
 
-You will need Python (version 3.3.5), which you can get at http://www.python.org, and
-pygame, which you can get at http://www.pygame.org/.
+You will need Python 3 (I use version 3.3.5), which you can get at http://www.python.org, and
+pygame (I use version 1.9.2), which you can get at http://www.pygame.org/. I genuinely don't
+know if the setup.py file does anything useful.
 
 BRIEF HISTORY OF THE Z-MACHINE FOR SOME REASON
 
