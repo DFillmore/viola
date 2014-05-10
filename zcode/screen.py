@@ -950,13 +950,14 @@ class window(io.pygame.window):
         self.setCursor(self.left_margin + 1, self.getCursor()[1])
         if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
-            self.drawText('[MORE]')
+            morestring = '[MORE]'
+            self.drawText(morestring)
             while zcode.input.getinput(ignore=True) != 32:
                 pass
             x = self.getCursor()[0] + self.getPosition()[0] - 1
             y = self.getCursor()[1] + self.getPosition()[1] - 1
-            w = zcode.screen.currentWindow.getStringLength('[MORE]')
-            h = zcode.screen.currentWindow.getStringHeight('[MORE]')
+            w = zcode.screen.currentWindow.getStringLength(morestring)
+            h = zcode.screen.currentWindow.getStringHeight(morestring)
             zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
             currentWindow.flushTextBuffer()
 
@@ -1081,10 +1082,10 @@ def split(size): # this is wrong. Infocom's terps and Frotz do not change the wi
     oldycoord = zwindow[0].getPosition()[1]
 
     zwindow[0].setPosition(1, size + 1)
-    zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight() - size)
+    zwindow[0].setSize(zwindow[0].getSize()[0], ioScreen.getHeight() - size)
 
     zwindow[1].setPosition(1, 1)
-    zwindow[1].setSize(ioScreen.getWidth(), size)
+    zwindow[1].setSize(zwindow[1].getSize()[0], size)
 
 
 
