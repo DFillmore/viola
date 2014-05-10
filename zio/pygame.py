@@ -62,9 +62,9 @@ class image():
     def __init__(self, data, filename=False):
         if type(data) == bytes:
             if filename:
-                self.picture = pygame.image.load(data).convert()
+                self.picture = pygame.image.load(data)
             else:
-                self.picture = pygame.image.load(io.BytesIO(data)).convert()
+                self.picture = pygame.image.load(io.BytesIO(data))
             
         else: # assume pygame surface
             self.picture = data
