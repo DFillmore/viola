@@ -1418,6 +1418,7 @@ def z_throw():
     frame = zcode.instructions.operands[1]
     while len(zcode.game.callstack) > frame:
         zcode.game.callstack.pop() # remove frames from the stack until the top frame is the one in value
+    zcode.game.currentframe = zcode.game.callstack.pop()
     zcode.game.ret(value)
 
 def z_tokenise():
