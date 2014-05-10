@@ -488,13 +488,12 @@ def z_load():
     zcode.instructions.store(zcode.game.getvar(var, True))
 
 def z_loadb():
-    array = zcode.numbers.neg(zcode.instructions.operands[0])
     array = zcode.instructions.operands[0]
     byteindex = zcode.instructions.operands[1]
     zcode.instructions.store(zcode.memory.getbyte(array + byteindex))
 
 def z_loadw():
-    array = zcode.numbers.neg(zcode.instructions.operands[0])
+    array = zcode.instructions.operands[0]
     wordindex = zcode.instructions.operands[1]
     zcode.instructions.store(zcode.memory.getword(array + (2 * wordindex)))
 
@@ -1377,13 +1376,13 @@ def z_store():
     zcode.game.setvar(var, value, True)
 
 def z_storeb():
-    array = zcode.numbers.neg(zcode.instructions.operands[0])    
+    array = zcode.instructions.operands[0]
     byteindex = zcode.instructions.operands[1]
     value = zcode.instructions.operands[2]
     zcode.memory.setbyte(array + byteindex, value)
 
 def z_storew():
-    array = zcode.numbers.neg(zcode.instructions.operands[0])    
+    array = zcode.instructions.operands[0]
     wordindex = zcode.instructions.operands[1]
     value = zcode.instructions.operands[2]
     zcode.memory.setword(array + (2 * wordindex), value)

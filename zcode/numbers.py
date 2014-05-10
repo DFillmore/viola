@@ -110,7 +110,7 @@ def getrandom(max): # returns a number from the z-machine random number generato
             value = 1
         else:
             value = random.randrange(1, max+1)
-    elif seed < 1000: #  if the mode is predictable and the seed is less than 100, max is ignored (it should be the same as seed in any case)
+    elif seed < 1000: #  if the mode is predictable and the seed is less than 1000, max is ignored (it should be the same as seed in any case)
         value = sequence
         sequence += 1
         if sequence > seed:
