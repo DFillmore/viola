@@ -60,16 +60,22 @@ def verify():
 
 def getbyte(offset):
     global data
-    if offset < 0:
-        zcode.error.fatal("Tried to read a byte beyond available memory at " + str(offset) + ".")
+
+    offset = zcode.numbers.unneg(offset)
+
     if offset == 0x26 or offset == 0x27:
         zcode.header.updateFontSize() 
+
     if offset >= len(data):
         zcode.error.fatal("Tried to read a byte beyond available memory at " + hex(offset) + ".")
+
     return data[offset]
 
 def setbyte(offset, byte):
     global data
+
+    offset = zcode.numbers.unneg(offset)
+
     if offset == 0x11:
         # if the transcription bit is being set, start transcription
         if byte & 1 and (zcode.output.streams[2].active == False):
@@ -84,21 +90,23 @@ def setbyte(offset, byte):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset < 0:
-        zcode.error.fatal("Tried to write a byte beyond available memory at " + str(offset) + ".")
     if offset >= len(data):
         zcode.error.fatal("Tried to write a byte beyond available memory at " + hex(offset) + ".")
+
     byte = zcode.numbers.unneg(byte) & 0xFF 
     data[offset] = int(byte)
 
 def getword(offset):
     global data
+
+    offset = zcode.numbers.unneg(offset)
+
     if offset == 0x26:
         zcode.header.updateFontSize() 
-    if offset < 0:
-        zcode.error.fatal("Tried to read a word beyond available memory at " + str(offset) + ".")
+
     if offset >= len(data):
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
+
     if WORDSIZE == 2:
         return (data[offset] << 8) + data[offset+1]
     else:
@@ -106,6 +114,9 @@ def getword(offset):
 
 def setword(offset, word):
     global data
+
+    offset = zcode.numbers.unneg(offset)
+
     if offset == 0x10:
         # if the transcription bit is being set, start transcription
         if word & 1 and (zcode.output.streams[2].active == False):
@@ -119,8 +130,6 @@ def setword(offset, word):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset < 0:
-        zcode.error.fatal("Tried to write a word beyond available memory at " + str(offset) + ".")
     if offset >= len(data):
         zcode.error.fatal("Tried to write a word beyond available memory at " + hex(offset) + ".")
     word = zcode.numbers.unneg(word)
@@ -128,10 +137,12 @@ def setword(offset, word):
         data[offset+a] = (int(word) >> ((WORDSIZE-(a+1))*8)) & 0xFF
 
 def getarray(offset, length):
+    offset = zcode.numbers.unneg(offset)
     return data[offset:offset+length]
 
 def setarray(offset, newdata):
     global data
+    offset = zcode.numbers.unneg(offset)
     for a in range(len(newdata)):
         data[offset+a] = newdata[a]
 
