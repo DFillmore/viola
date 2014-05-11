@@ -395,7 +395,7 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
     else:
         type = 0
     statusline.setCursor(2 * statusline.getFont().getWidth() + 1, 1)
-    location = zcode.objects.getshortname(zcode.game.getglobal(0))
+    location = zcode.objects.getShortName(zcode.game.getglobal(0))
     statusline.printText(location)    
     statusline.flushTextBuffer()
     if type == 0:
