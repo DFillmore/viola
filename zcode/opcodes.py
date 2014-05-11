@@ -489,12 +489,12 @@ def z_load():
 
 def z_loadb():
     array = zcode.instructions.operands[0]
-    byteindex = zcode.instructions.operands[1]
+    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
     zcode.instructions.store(zcode.memory.getbyte(array + byteindex))
 
 def z_loadw():
     array = zcode.instructions.operands[0]
-    wordindex = zcode.instructions.operands[1]
+    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
     zcode.instructions.store(zcode.memory.getword(array + (2 * wordindex)))
 
 def z_log_shift():
@@ -1377,13 +1377,13 @@ def z_store():
 
 def z_storeb():
     array = zcode.instructions.operands[0]
-    byteindex = zcode.instructions.operands[1]
+    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
     value = zcode.instructions.operands[2]
     zcode.memory.setbyte(array + byteindex, value)
 
 def z_storew():
     array = zcode.instructions.operands[0]
-    wordindex = zcode.instructions.operands[1]
+    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
     value = zcode.instructions.operands[2]
     zcode.memory.setword(array + (2 * wordindex), value)
 
