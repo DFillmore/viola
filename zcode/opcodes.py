@@ -922,7 +922,7 @@ def z_read_char():
             inchar = 0
             zcode.game.timervalue = False
         else:
-            inchar = zcode.input.getinput(False)
+            inchar = zcode.input.getinput(False, chistory=False)
     io.pygame.stoptimer()
     zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)

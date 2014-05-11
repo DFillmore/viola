@@ -94,7 +94,7 @@ def convertinput(char):
     return None
 
 
-def getinput(display=True, ignore=False):
+def getinput(display=True, ignore=False, chistory=True):
     global mouse
     global stream
     global instring
@@ -110,7 +110,7 @@ def getinput(display=True, ignore=False):
         zsciivalue = None
 
         if isinstance(input, io.pygame.keypress):
-            if input.value == 273: # pressed up key
+            if chistory and input.value == 273: # pressed up key
                 if chplace < len(commandhistory) -1:
                     chplace += 1
 
@@ -128,7 +128,7 @@ def getinput(display=True, ignore=False):
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
                 return None
-            if input.value == 274: # pressed up key
+            if chistory and input.value == 274: # pressed down key
                 if chplace >= 0:
                     if chplace >= 0:
                         chplace -= 1
@@ -155,7 +155,9 @@ def getinput(display=True, ignore=False):
             if len(input.character) == 1:
                 zsciivalue = ord(input.character)
             else:
-                zsciivalue = convertinput(input.value) 
+                zsciivalue = input.value
+            if zsciivalue > 126:
+                zsciivalue = convertinput(zsciivalue)
 
         if isinstance(input, io.pygame.mousedown):
             if input.button:
@@ -183,11 +185,7 @@ def getinput(display=True, ignore=False):
                  zcode.screen.currentWindow.flushTextBuffer()
                  if zcode.header.zversion != 6:
                      zcode.output.streams[2].write(chr(zsciivalue))
-            if zsciivalue > 126:
-                if zsciivalue in list(zcode.text.reverseunitable.keys()):
-                    zsciivalue = zcode.text.reverseunitable[zsciivalue]
-                else:
-                    return None
+
         else:
             return None
         
