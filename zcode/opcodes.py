@@ -1227,17 +1227,29 @@ def z_set_cursor():
 
 def z_set_font():
     font = zcode.instructions.operands[0]
+
+
     if zcode.header.zversion() != 6:
-        zcode.screen.zwindow[0].setFontByNumber(font)
-        result = zcode.screen.zwindow[1].setFontByNumber(font)
-        zcode.instructions.store(result)
+        if font == 0:
+            zcode.instructions.store(zcode.screen.getWindow(0).getFontNumber())
+        else:
+            zcode.screen.getWindow(0).setFontByNumber(font)
+            result = zcode.screen.getWindow(1).setFontByNumber(font)
+            if result == 0 and zcode.use_standard < 2: # Standard 0.2 or lower
+                result = zcode.screen.getWindow(0).getFontNumber()
+            zcode.instructions.store(result)
     else:
         if len(zcode.instructions.operands) > 1:
             window = zcode.screen.getWindow(zcode.instructions.operands[1])
         else:
             window = zcode.screen.currentWindow
-        result = window.setFontByNumber(font)
-        zcode.instructions.store(result)
+        if font == 0:
+            zcode.instructions.store(window.getFontNumber())
+        else:
+            result = window.setFontByNumber(font)
+            if result == 0 and zcode.use_standard < 2: # Standard 0.2 or lower
+                result = zcode.screen.window.getFontNumber()
+            zcode.instructions.store(result)
 
 
 def z_set_margins():
