@@ -26,7 +26,8 @@ strictzlevel = 1
 errors = []
 
 def fatal(message):
-    zcode.output.printtext('Fatal Error: ' + str(message))
+    for a in range(1,3):
+        zcode.output.streams[a].write('Fatal Error: ' + str(message))
     print('Fatal Error:', message, file=sys.stderr)
     sys.exit()
 
@@ -36,13 +37,17 @@ def strictz(message):
         pass
     elif strictzlevel == 1: # report first error 
         if message not in errors:
-            zcode.output.printtext('Warning: ' + str(message) + ' (will ignore further occurences)\r')
+            for a in range(1,3):
+                zcode.output.streams[a].write('Warning: ' + str(message) + ' (will ignore further occurences)\r')
             errors.append(message)
     elif strictzlevel == 2: # report all errors
-        zcode.output.printtext('Warning: ' + str(message) + '\r')
+        for a in range(1,3):
+            zcode.output.streams[a].write('Warning: ' + str(message) + '\r')
     else: # exit after any error
-        zcode.output.printtext('Fatal Error: ' + str(message) + '\r')
+        for a in range(1,3):
+            zcode.output.streams[a].write('Fatal Error: ' + str(message) + '\r')
         routines.quit = 1
 
 def warning(message):
-    print('Warning:', message, file=sys.stderr)
+    for a in range(1,3):
+        zcode.output.streams[a].write('Warning: ' + str(message) + '\r')
