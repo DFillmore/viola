@@ -95,9 +95,11 @@ def getgame(filename):
 
     return game
 
+specs = ['0', '0.2', '1.0', '1.1', '1.2']
+
 def handle_parameters(argv): # handles command line parameters
     global blorbfiles
-    global height, width, title, transcriptfile
+    global height, width, title, transcriptfile, usespec
     global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
@@ -107,10 +109,11 @@ def handle_parameters(argv): # handles command line parameters
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:T:')
+    args = getopt.getopt(argv[1:], 'dh:w:T:', 'spec=')
     options = args[0]
     args = args[1]
     transcriptfile = False
+    usespec = 3
     for a in options:
         if a[0] == '-d':
             debug = True
@@ -120,6 +123,15 @@ def handle_parameters(argv): # handles command line parameters
             width = int(a[1])
         elif a[0] == '-T':
             transcriptfile = a[1]
+        elif a[0] == '--spec':
+            specversion = a[1]
+            if specversion not in specs:
+                print("The spec selected must be one of:")
+                for a in specs:
+                    print(a)
+                sys.exit()
+            usespec = specs.index(specversion)
+    
 
 
     gamedata = getgame(args[0])
@@ -131,10 +143,11 @@ def handle_parameters(argv): # handles command line parameters
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
     io.pygame.setup()
+    zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
 
-
+    
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
@@ -144,10 +157,11 @@ def setupmodules(gamefile):
 
     zcode.objects.setup()
     
-    zcode.text.setup()
+
     zcode.optables.setup()
     zcode.sounds.setup(blorbs)
     zcode.header.setup()
+    zcode.text.setup()
     if terpnum != None:
         zcode.header.setterpnum(int(terpnum))
 

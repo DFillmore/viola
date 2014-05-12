@@ -250,9 +250,22 @@ def numopenstreams(stream):
 def openstream(stream, location=None, width=None): # area is only used for stream 3, width only for z6 stream 3
     global streams
     if stream == 3:
-        m = memorystream()
-        m.open(location, width)
-        streams[3].append(m)
+        if zcode.use_standard < 2:
+            if len(streams[3]) == 0:
+                m = memorystream()
+                streams[3].append(m)
+            try:
+                streams[3][0].close()
+            except:
+                pass
+            streams[3][0].open(location, width)
+        else:
+            if len(streams[3]) < 16:
+                m = memorystream()
+                m.open(location, width)
+                streams[3].append(m)
+            else:
+                zcode.error.fatal('Tried to open too many memory streams.')
     elif stream == 5:
         streams[5].open(location)
     else:
@@ -267,8 +280,14 @@ def closestream(stream):
     if stream != 3:
         streams[stream].close()
     else:
-        m = streams[3].pop()
-        m.close()
+        if zcode.use_standard < 2:
+            try:
+                streams[3][0].close()
+            except:
+                pass
+        else:
+            m = streams[3].pop()
+            m.close()
         
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)

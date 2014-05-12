@@ -1021,10 +1021,13 @@ def z_restore():
             filename = ''.join(filename)
         else:
             filename = None
-        try:
-            prompt = zcode.instructions.operands[3]
-        except:
+        if zcode.use_standard < 3: # Standard 1.0 and lower
             prompt = 1
+        else:
+            try:
+                prompt = zcode.instructions.operands[3]
+            except:
+                prompt = 1
         #data = zcode.game.restore(''.join(filename), prompt)
         data = zcode.input.readfile(bytes, filename, prompt)
             
@@ -1092,10 +1095,13 @@ def z_save():
                 filename = ''.join(filename)
             else:
                 filename = None
-            try:
-                prompt = zcode.instructions.operands[3]
-            except:
+            if zcode.use_standard < 3: # Standard 1.0 and lower
                 prompt = 1
+            else:
+                try:
+                    prompt = zcode.instructions.operands[3]
+                except:
+                    prompt = 1
             try:
                 zcode.output.writefile(data, filename, prompt, False)
                 result = 1

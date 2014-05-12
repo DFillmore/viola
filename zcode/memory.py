@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os
+import sys
 import array
 import zcode
 
@@ -34,6 +35,9 @@ def setup(gamedata):
     data = gamedata[:]
 
     version = data[0]
+    if version > 6 and zcode.use_standard == 0:
+        print('Versions 7 and 8 of the Z-Machine are not available before Standard 0.2')
+        sys.exit()
     if version < 1 or version > 8:
         return False
     if version == 9:
@@ -73,7 +77,6 @@ def getbyte(offset):
 
 def setbyte(offset, byte):
     global data
-
     offset = zcode.numbers.unneg(offset)
 
     if offset == 0x11:
@@ -90,8 +93,8 @@ def setbyte(offset, byte):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset >= len(data):
-        zcode.error.fatal("Tried to write a byte beyond available memory at " + hex(offset) + ".")
+    if offset >= zcode.header.statmembase():
+        zcode.error.fatal("Tried to write a byte beyond dynamic memory at " + hex(offset) + ".")
 
     byte = zcode.numbers.unneg(byte) & 0xFF 
     data[offset] = int(byte)
@@ -114,14 +117,13 @@ def getword(offset):
 
 def setword(offset, word):
     global data
-
     offset = zcode.numbers.unneg(offset)
 
     if offset == 0x10:
         # if the transcription bit is being set, start transcription
         if word & 1 and (zcode.output.streams[2].active == False):
             zcode.output.openstream(2)
-        elif word & 1 == 0 and (zcode.output.streams[2].active): # if however it has just been unset, stop transcription
+        elif word & 1 == 0 and (zcode.output.streams[2].active): # if however it being unset, stop transcription
             zcode.output.closestream(2)
         if word & 2 and zcode.screen.fixedpitchbit == False:
             zcode.screen.currentWindow.flushTextBuffer()
@@ -130,8 +132,8 @@ def setword(offset, word):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset >= len(data):
-        zcode.error.fatal("Tried to write a word beyond available memory at " + hex(offset) + ".")
+    if offset >= zcode.header.statmembase():
+        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
     word = zcode.numbers.unneg(word)
     for a in range(WORDSIZE):
         data[offset+a] = (int(word) >> ((WORDSIZE-(a+1))*8)) & 0xFF
@@ -144,6 +146,8 @@ def setarray(offset, newdata):
     global data
     offset = zcode.numbers.unneg(offset)
     for a in range(len(newdata)):
+        if offset+a >= zcode.header.statmembase():
+            zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
         data[offset+a] = newdata[a]
 
 

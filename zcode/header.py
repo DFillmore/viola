@@ -20,6 +20,9 @@ import string
 
 import zcode
 
+standards = [(0,0), (0,2), (1,0), (1,1), (1,2)]
+
+
 def setup(): # set all the relevant bits and bytes and words in the header
     # Flags 1
     if zversion() == 3:
@@ -30,7 +33,8 @@ def setup(): # set all the relevant bits and bytes and words in the header
         setflag(1, 2, gestalt(4, 2)) # Boldface
         setflag(1, 3, gestalt(4, 4)) # Italic
         setflag(1, 4, gestalt(4, 8)) # Fixed-pitch style
-        setflag(1, 7, gestalt(5)) # Timed input
+        if zcode.use_standard >= 1: # from 0.2 onward
+            setflag(1, 7, gestalt(5)) # Timed input
         if zversion() > 4:
             setflag(1, 0, gestalt(2, 0)) # Colours
         if zversion() == 6:
@@ -87,9 +91,9 @@ def setup(): # set all the relevant bits and bytes and words in the header
         settruedefaultforeground(zcode.screen.spectrum[2])
         settruedefaultbackground(zcode.screen.spectrum[9])
     # Z-machine Standard number
-    # not bug free enough to fully support even 1.0
-    # although even 1.2 is partially implemented
-    setstandardnum(1, 2)
+    m = standards[zcode.use_standard][0]
+    n = standards[zcode.use_standard][1]
+    setstandardnum(m, n)
 
 def updateFontSize():
     if zversion() > 4:

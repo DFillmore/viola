@@ -119,13 +119,26 @@ inputvalues.extend(list(range(252, 255)))
 
 def setupunitable():
     global unitable
-    if zcode.header.zversion() > 4:
-        loc = zcode.header.unicodetableloc()
-        if loc != 0:
-            size = zcode.memory.getbyte(loc)
-            loc += 1
-            for a in range(size):
-                unitable[155+a] = zcode.memory.getword(loc+(a*2))
+    if zcode.use_standard >= 2:
+        if zcode.header.zversion() > 4:
+            loc = zcode.header.unicodetableloc()
+            if loc != 0:
+                size = zcode.memory.getbyte(loc)
+                loc += 1
+                for a in range(size):
+                    unitable[155+a] = zcode.memory.getword(loc+(a*2))
+    elif zcode.use_standard < 1:
+        unitable = { 155: 0xe4,
+                     156: 0xf6,
+                     157: 0xfc,
+                     158: 0xc4,
+                     159: 0xd6,
+                     160: 0xdc,
+                     161: 0xdf,
+                     162: 0xbb,
+                     163: 0xab,
+                   }
+
 
 def setupreverseunitable():
     global reverseunitable
@@ -201,8 +214,13 @@ def getZSCIIchar(code):
     elif code >= 155 and code <= 251: # extra chars. woop
         # should be able to add a check here to see if a given character can be drawn by
         # drawing it to a test area with an exception to use '?'
-        char = unitable[code]
-        char = chr(char)
+        try:
+            char = unitable[code]
+            char = chr(char)
+        except:
+            zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
+            return ''
+
         return char
     else:
         zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
