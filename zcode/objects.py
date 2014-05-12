@@ -201,7 +201,10 @@ def getPropertySize(address): # given the address of the size byte of a property
         if (zcode.memory.getbyte(address) >> 7) & 1 == 1:
             size = (zcode.memory.getbyte(address+1) & 0x3f)
             if size == 0:
-                size = 64
+                if zcode.use_standard > 1: # Standard 1.0 and above
+                    size = 64
+                else:
+                    zcode.error.warning('Property length of 0 (in Standard 1.0 and higher this would mean a length of 64)')
         else:
             if (zcode.memory.getbyte(address) >> 6) & 1 == 1:
                 size = 2
