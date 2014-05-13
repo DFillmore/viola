@@ -160,7 +160,7 @@ def getinput(display=True, ignore=False, chistory=True):
                 zsciivalue = convertinput(zsciivalue)
 
         if isinstance(input, io.pygame.mousedown):
-            if input.button:
+            if input.button != None:
                 mouse.buttons[input.button] = 1
                 zsciivalue = 254 # mouse down == single click
                 zcode.header.setmousex(mouse.xpos)
@@ -175,20 +175,20 @@ def getinput(display=True, ignore=False, chistory=True):
             mouse.xpos = zcode.screen.pix2units(input.xpos + 1, horizontal=True, coord=True)
             mouse.ypos = zcode.screen.pix2units(input.ypos + 1, horizontal=False, coord=True)
 
-        if isinstance(input, io.pygame.keypress) and zsciivalue in zcode.text.inputvalues:
-            if zsciivalue not in gettermchars() and display and zsciivalue in zcode.text.outputvalues:
-                 if zsciivalue == 13:
-                     zcode.screen.currentWindow.hideCursor()
+        if isinstance(input, io.pygame.keypress):
+            if zsciivalue in zcode.text.inputvalues:
+                if zsciivalue not in gettermchars() and display and zsciivalue in zcode.text.outputvalues:
+                    if zsciivalue == 13:
+                        zcode.screen.currentWindow.hideCursor()
 
-                 zcode.output.streams[1].write(chr(zsciivalue))
+                    zcode.output.streams[1].write(chr(zsciivalue))
+    
+                    zcode.screen.currentWindow.flushTextBuffer()
+                    if zcode.header.zversion != 6:
+                        zcode.output.streams[2].write(chr(zsciivalue))
 
-                 zcode.screen.currentWindow.flushTextBuffer()
-                 if zcode.header.zversion != 6:
-                     zcode.output.streams[2].write(chr(zsciivalue))
-
-        else:
-            return None
-        
+            else:
+                return None
         return zsciivalue
     else:
         currentcommand = filecommands.pop()
