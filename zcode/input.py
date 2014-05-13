@@ -167,7 +167,7 @@ def getinput(display=True, ignore=False, chistory=True):
                 zcode.header.setmousey(mouse.ypos)
 
         if isinstance(input, io.pygame.mouseup):
-            if input.button:
+            if input.button != None:
                 mouse.buttons[input.button] = 0
 
 
