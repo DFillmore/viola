@@ -153,32 +153,36 @@ def runops(address, debug=False):
     optype = zcode.memory.getbyte(address)
     if optype < 0x80:
         if debug == True:
-            print(zcode.optables.op2[optype & 0x1f].__name__)
+            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op2[optype & 0x1f]()
     elif optype < 0xb0:
         if debug == True:
-            print(zcode.optables.op1[optype & 0xf].__name__)
+            print(zcode.optables.op1[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op1[optype & 0xf]()
     elif optype < 0xc0:
         if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and debug:
-            print(zcode.optables.op0[optype & 0xf].__name__)
+            print(zcode.optables.op0[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         if zcode.optables.op0[optype & 0xf].__name__ == 'z_extended':
             zcode.optables.op0[optype & 0xf](debug)
         else:
             zcode.optables.op0[optype & 0xf]()
     elif optype < 0xe0:
         if debug:
-            print(zcode.optables.op2[optype & 0x1f].__name__)
+            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op2[optype & 0x1f]()
     elif optype < 0x100:
         if debug:
-            print(zcode.optables.opvar[optype & 0x1f].__name__)
+            print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         if optype & 0x1f == 4 or optype & 0x1f == 16:
             inputInstruction = True
         else:
             inputInstruction = False
 
         zcode.optables.opvar[optype & 0x1f]()
+    if debug:
+        for a in operands:
+            print(a, end=' ')
+        print()
 
 def store(value):
     value = zcode.numbers.unneg(value)
