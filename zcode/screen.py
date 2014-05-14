@@ -32,7 +32,6 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global blorbs
     global pixelunits
 
-
     if zcode.header.zversion() == 6:
         pixelunits = True # in z6, units should be pixels, not characters
     if zcode.header.zversion() >= 5 and zcode.header.getflag(3, 1) == 1:
@@ -95,44 +94,44 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
         statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
         statusline.setPosition(1, 1)
         if zcode.header.zversion() == 3: # version 3
-            zwindow[1].setSize(ioScreen.getWidth(), 0)
-            zwindow[1].setPosition(1, zwindow[1].getFont().getHeight() + 1)
+            getWindow(1).setSize(ioScreen.getWidth(), 0)
+            getWindow(1).setPosition(1, getWindow(1).getFont().getHeight() + 1)
     else: # version 4, 5, 7 and 8
-        zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight())
-        zwindow[0].setPosition(1, 1)
-        zwindow[1].setSize(ioScreen.getWidth(), 0)
-        zwindow[1].setPosition(1, 1)
+        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
+        getWindow(0).setPosition(1, 1)
+        getWindow(1).setSize(ioScreen.getWidth(), 0)
+        getWindow(1).setPosition(1, 1)
 
     # set the cursor in the windows
 
     if zcode.header.zversion() == 6:
         for a in range(len(zwindow)):
-            zwindow[a].setCursor(1,1)
+            getWindow(a).setCursor(1,1)
     elif zcode.header.zversion() < 5:
-        zwindow[0].setCursor(1, zwindow[0].y_size - zwindow[0].getFont().getHeight() + 1)
+        getWindow(0).setCursor(1, getWindow(0).y_size - getWindow(0).getFont().getHeight() + 1)
     else:
-        zwindow[0].setCursor(1, 1)
+        getWindow(0).setCursor(1, 1)
 
     # set up window attributes
 
     if zcode.header.zversion() == 6:
         for a in range(len(zwindow)):
-            zwindow[a].setattributes(8, 0)
-        zwindow[0].setattributes(15, 0)
+            getWindow(a).setattributes(8, 0)
+        getWindow(0).setattributes(15, 0)
     elif zcode.header.zversion() < 4:
-        zwindow[0].setattributes(15,0)
+        getWindow(0).setattributes(15,0)
         statusline.setattributes(0,0)
         if zcode.header.zversion() == 3:
-            zwindow[1].setattributes(4,0)
+            getWindow(1).setattributes(4,0)
     else:
-        zwindow[0].setattributes(15,0)
-        zwindow[1].setattributes(4,0)
+        getWindow(0).setattributes(15,0)
+        getWindow(1).setattributes(4,0)
 
     # set other default window properties
 
     for a in range(len(zwindow)):
-        zwindow[a].setBasicColours(foreground, background, flush=False)
-        zwindow[a].font_size = (zwindow[a].getFont().getHeight() << 8) + zwindow[a].getFont().getWidth()
+        getWindow(a).setBasicColours(foreground, background, flush=False)
+        getWindow(a).font_size = (getWindow(a).getFont().getHeight() << 8) + getWindow(a).getFont().getWidth()
     if zcode.header.zversion() < 4:
         statusline.setBasicColours(background, foreground, flush=False)
         statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
@@ -222,6 +221,8 @@ class font(io.pygame.font):
         if self.reversevideo:
             return f.render(text, antialias, background, colour)
         else:
+            if background == -1:
+                return f.render(text, antialias, colour, (0,100,100))
             return f.render(text, antialias, colour, background)
 
 
@@ -285,9 +286,9 @@ class runicfont(io.pygame.font):
     def drawchar(self, char):
         # once we have the right picture, we need to scale it to exactly the size of the fixed width font
         char = ord(char) - 32
-        x = (char % 32) * fonts[4].getWidth()
+        x = (char % 32) * self.width
         row = char // 32
-        y = row * self.width()
+        y = row * self.width
         w = (self.font_data.getWidth() // 8) * self.width
         h = (self.font_data.getHeight() // 8) * self.height
         c = c.scale(w,h)
@@ -357,8 +358,8 @@ fontlist = [ None,
 
 def resize():
     if zcode.header.zversion != 6:
-        zwindow[0].setSize(ioScreen.getWidth(), ioScreen.getHeight())
-        zwindow[1].setSize(ioScreen.getWidth(), zwindow[1].getSize()[1])
+        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
+        getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
     if zcode.header.zversion() < 4:
         statusline.setSize(ioScreen.getWidth(), statusline.getSize()[1])
 
@@ -418,7 +419,7 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
     statusline.flushTextBuffer()
     # Score: 999  Turns: 9999 #
     #             Time: 20:52 #
-    currentWindow = zwindow[0]
+    currentWindow = getWindow(0)
 
 def printtext(text):
     currentWindow.printText(text)
@@ -622,26 +623,27 @@ class window(io.pygame.window):
             fg = self.getTrueFromReal(foreground)
         else:
             fg = foreground
-            foreground = truetofull(foreground)
+            realfg = truetofull(foreground)
 
         if background == -3:
 
-            background = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
-            bg = self.getTrueFromReal(background)
+            realbg = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
+            bg = self.getTrueFromReal(realbg)
         elif background != -4:
             bg = background
-            background = truetofull(background)
+            realbg = truetofull(background)
 
         if background == -4:
             bg = -4
-            bo = 15           
+            bo = 15
+            realbg = -1
 
         
         
            
         self.true_foreground_colour = fg
         self.true_background_colour = bg
-        self.setColours(foreground, background)
+        self.setColours(realfg, realbg)
 
 
     def getTrueColours(self):
@@ -970,6 +972,7 @@ class window(io.pygame.window):
 
 
     def countdown(self):
+        print('countdown', self.interrupt_countdown)
         if self.interrupt_countdown != 0:
             self.interrupt_countdown -= 1
             if self.interrupt_countdown == 0:
@@ -1003,8 +1006,6 @@ class window(io.pygame.window):
             return prevfont
         else:
             return 0
-
-    #current_font = 1
 
     def getFontNumber(self):
         """Returns the number of the current font."""
@@ -1057,11 +1058,11 @@ def eraseWindow(winnum):
         ioScreen.erase(currentWindow.getColours()[1])
         split(0)
         for a in range(len(zwindow)):
-            zwindow[a].setCursor(1, 1)
-            zwindow[a].line_count = 0
+            getWindow(a).setCursor(1, 1)
+            getWindow(a).line_count = 0
     elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
-        currentWindow.erase(currentWindow.getColours()[1])
-    elif getWindow(winnum).getColours()[1] != -4:        
+        ioScreen.erase(currentWindow.getColours()[1])
+    elif getWindow(winnum).getColours()[1] != -4:
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
             getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getSize()[1] - getWindow(0).getFont().getHeight())
@@ -1078,14 +1079,14 @@ def cursoroff(): # makes the cursor invisible
     #showcursor = 0
     #io.pygame.hidecursor()
 
-def split(size): # this is wrong. Infocom's terps and Frotz do not change the width of the windows
-    oldycoord = zwindow[0].getPosition()[1]
+def split(size): 
+    oldycoord = getWindow(0).getPosition()[1]
 
-    zwindow[0].setPosition(1, size + 1)
-    zwindow[0].setSize(zwindow[0].getSize()[0], ioScreen.getHeight() - size)
+    getWindow(0).setPosition(1, size + 1)
+    getWindow(0).setSize(getWindow(0).getSize()[0], ioScreen.getHeight() - size)
 
-    zwindow[1].setPosition(1, 1)
-    zwindow[1].setSize(zwindow[1].getSize()[0], size)
+    getWindow(1).setPosition(1, 1)
+    getWindow(1).setSize(getWindow(1).getSize()[0], size)
 
 
 
@@ -1094,13 +1095,11 @@ def split(size): # this is wrong. Infocom's terps and Frotz do not change the wi
 
     # move the window's cursor to the same absolute position in was in before the split
 
-    difference = zwindow[0].getPosition()[1] - oldycoord
-    zwindow[0].setCursor(zwindow[0].getCursor()[0], zwindow[0].getCursor()[1] - difference)
+    difference = getWindow(0).getPosition()[1] - oldycoord
+    getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getCursor()[1] - difference)
 
     # if the cursor now lies outside the window, move it to the window origin
 
-    if (zwindow[0].getCursor()[1] > zwindow[0].getSize()[1]) or (zwindow[0].getCursor()[1] < 1):
-        zwindow[0].setCursor(1,1)
-    
-    if (zwindow[1].getCursor()[1] > zwindow[0].getSize()[1]) or (zwindow[1].getCursor()[1] < 1):
-        zwindow[1].setCursor(1,1)
+    for a in (0,1):
+        if (getWindow(a).getCursor()[1] > getWindow(a).getSize()[1]) or (getWindow(a).getCursor()[1] < 1):
+            getWindow(a).setCursor(1,1)
