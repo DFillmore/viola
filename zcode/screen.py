@@ -481,34 +481,7 @@ def reverseSpectrumLookup(colour):
 
 
 
-def fittext(text, width, wrapping=True, buffering=True):
-    # if the text doesn't already fit, we make an educated guess at the right size
-    # by dividing the width of the window in pixels by the width of the '0' character
-    # in pixels. Then, if it is too small, we add characters until it fits, or if
-    # it is too big, we remove characters until it fits.
-    if width <= 0 or len(text) == 0:
-        return 0
-    elif currentWindow.getStringLength(text) <= width:
-        x = len(text)
-    else:
-        charlen = currentWindow.getStringLength('0')
-        x = width // charlen
-        stringlen = currentWindow.getStringLength(text[:x])
-            
-        if stringlen < width:
-            while stringlen < width:
-                stringlen = currentWindow.getStringLength(text[:x])
-                x += 1
-            x -= 1
-        if stringlen > width:
-            while stringlen > width:
-                stringlen = currentWindow.getStringLength(text[:x])
-                x -= 1
-        if x == -1:            
-            x = 0
-        if wrapping and buffering:
-            x = text[:x].rfind(' ')         
-    return x
+
 
 # Windows. Yay!
 
@@ -662,11 +635,6 @@ class window(io.pygame.window):
         self.left_margin = left
         self.right_margin = right
         self.setCursorToMargin()
-
-
-
-    reversevideo = False
-    fixedstyle = False
 
     def setStyle(self, style):
         self.flushTextBuffer()
@@ -855,73 +823,6 @@ class window(io.pygame.window):
         self.textbuffer = self.textbuffer.replace('\t', ' ')
 
 
-    def flushTextBuffer(self):
-        #self.hideCursor()
-        self.setCursorToMargin()
-
-        self.alterTabs()
-     
-
-        if self.x_cursor > self.x_size - self.right_margin:
-            self.x_cursor = self.left_margin + 1
-
-        buffering = self.testattributes(8)
-
-        if not self.testattributes(1): # if wrapping is off
-            linebuffers = []
-            x = 0
-            while x != -1:
-                x = self.textbuffer.find('\r')
-                if x != -1:
-                    linebuffers.append(self.textbuffer[:x])
-                    self.textbuffer = self.textbuffer[x+1:]
-                else:
-                    linebuffers.append(self.textbuffer[:])
-            for a in range(len(linebuffers)):
-                winwidth = (self.x_size - self.x_cursor - self.right_margin)
-                x = fittext(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
-                linebuffer = linebuffers[a][0:x]
-                
-
-                self.drawText(linebuffer)
-                if a < len(linebuffers) - 1:
-                    self.newline()
-                else:
-                    self.x_cursor += self.getStringLength(linebuffer)
-            self.textbuffer = ''
-            
-        else:
-            while (len(self.textbuffer) > 0) and (zcode.routines.scrolling == 0):                
-                winwidth = (self.x_size - self.x_cursor - self.right_margin)
-                x = fittext(self.textbuffer[:], winwidth, buffering=buffering)
-                definitescroll = 0
-                linebuffer = self.textbuffer[:]
-                if linebuffer[:x].find('\r') != -1:
-                    x = linebuffer[:x].find('\r')
-                    definitescroll = 1
-                linebuffer = self.textbuffer[:x]
-                self.textbuffer = self.textbuffer[len(linebuffer):]
-                
-                
-                
-
-                if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
-                    self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
-                
-                self.drawText(linebuffer)
-                self.cdown = False
-                if definitescroll == 1 or len(self.textbuffer) > 0:
-                    self.newline()
-                else:
-                    self.x_cursor += self.getStringLength(linebuffer)
-                if self.cdown:
-                    return 1
-        
-        if self.screen.resized:
-            self.screen.resized = False
-            resize()
-        #self.showCursor()
-        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
 
     maxfontheight = 0
@@ -972,7 +873,6 @@ class window(io.pygame.window):
 
 
     def countdown(self):
-        print('countdown', self.interrupt_countdown)
         if self.interrupt_countdown != 0:
             self.interrupt_countdown -= 1
             if self.interrupt_countdown == 0:

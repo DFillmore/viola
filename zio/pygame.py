@@ -338,7 +338,35 @@ class window:
         buffering = self.testattributes(8)
         if text.find('\r') != -1 or buffering == False:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
-     
+
+    def fitText(self, text, width, wrapping=True, buffering=True):
+        # if the text doesn't already fit, we make an educated guess at the right size
+        # by dividing the width of the window in pixels by the width of the '0' character
+        # in pixels. Then, if it is too small, we add characters until it fits, or if
+        # it is too big, we remove characters until it fits.
+        if width <= 0 or len(text) == 0:
+            return 0
+        elif self.getStringLength(text) <= width:
+            x = len(text)
+        else:
+            charlen = self.getStringLength('0')
+            x = width // charlen
+            stringlen = self.getStringLength(text[:x])
+                
+            if stringlen < width:
+                while stringlen < width:
+                    stringlen = self.getStringLength(text[:x])
+                    x += 1
+                x -= 1
+            if stringlen > width:
+                while stringlen > width:
+                    stringlen = self.getStringLength(text[:x])
+                    x -= 1
+            if x == -1:            
+                x = 0
+            if wrapping and buffering:
+                x = text[:x].rfind(' ')         
+        return x     
 
     def drawText(self, text):
         fg, bg = self.getColours()
@@ -350,6 +378,74 @@ class window:
             self.screen.screen.blit(textsurface, (xpos + xcursor, ypos + ycursor))
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
+
+    def flushTextBuffer(self):
+        #self.hideCursor()
+        self.setCursorToMargin()
+
+        self.alterTabs()
+     
+
+        if self.x_cursor > self.x_size - self.right_margin:
+            self.x_cursor = self.left_margin + 1
+
+        buffering = self.testattributes(8)
+
+        if not self.testattributes(1): # if wrapping is off
+            linebuffers = []
+            x = 0
+            while x != -1:
+                x = self.textbuffer.find('\r')
+                if x != -1:
+                    linebuffers.append(self.textbuffer[:x])
+                    self.textbuffer = self.textbuffer[x+1:]
+                else:
+                    linebuffers.append(self.textbuffer[:])
+            for a in range(len(linebuffers)):
+                winwidth = (self.x_size - self.x_cursor - self.right_margin)
+                x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
+                linebuffer = linebuffers[a][0:x]
+                
+
+                self.drawText(linebuffer)
+                if a < len(linebuffers) - 1:
+                    self.newline()
+                else:
+                    self.x_cursor += self.getStringLength(linebuffer)
+            self.textbuffer = ''
+            
+        else:
+            while (len(self.textbuffer) > 0):                
+                winwidth = (self.x_size - self.x_cursor - self.right_margin)
+                x = self.fitText(self.textbuffer[:], winwidth, buffering=buffering)
+                definitescroll = 0
+                linebuffer = self.textbuffer[:]
+                if linebuffer[:x].find('\r') != -1:
+                    x = linebuffer[:x].find('\r')
+                    definitescroll = 1
+                linebuffer = self.textbuffer[:x]
+                self.textbuffer = self.textbuffer[len(linebuffer):]
+                
+                
+                
+
+                if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
+                    self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
+                
+                self.drawText(linebuffer)
+                self.cdown = False
+                if definitescroll == 1 or len(self.textbuffer) > 0:
+                    self.newline()
+                else:
+                    self.x_cursor += self.getStringLength(linebuffer)
+                if self.cdown:
+                    return 1
+        
+        if self.screen.resized:
+            self.screen.resized = False
+            resize()
+        #self.showCursor()
+        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
 
     def getStringLength(self, text):

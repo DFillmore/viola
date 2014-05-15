@@ -104,7 +104,7 @@ class memorystream(outputstream):
             lines = []
             text = ''.join(self.data)
             while len(text) > 0:
-                x = zcode.screen.fittext(text, self.width)
+                x = zcode.screen.currentWindow.fitText(text, self.width)
                 if text[:x].find('\r') != -1:
                     x = text[:x].find('\r')
                 line = (len(text[:x]), text[:x])
