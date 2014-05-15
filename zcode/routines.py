@@ -20,20 +20,19 @@ import zio as io
 
 quit = 0
 input = 0
-scrolling = 0
 restart = 0
 timerreturn = False
 
 import zcode
 
 def setup():
-    global quit, input, scrolling, restart
+    global quit, input, restart
     quit = 0
     input = 0
-    scrolling = 0
     restart = 0
 
-def setuproutine(address): # sets up the local variables and returns the address of the first instruction
+def setuproutine(address): 
+    """set up the local variables and returns the address of the first instruction"""
     vars = []
     varnum = zcode.memory.getbyte(address)
     address += 1
@@ -55,7 +54,7 @@ def execloop(debug=False):
     global timerreturn
 
     zcode.screen.cursoroff()
-    while (restart == 0) and (quit == 0) and (timerreturn == False) and (scrolling == 0):
+    while (restart == 0) and (quit == 0) and (timerreturn == False):
         if timerreturn == False:
             zcode.game.interrupt_call()
         oldpc = zcode.game.PC
@@ -64,7 +63,8 @@ def execloop(debug=False):
     timerreturn = False
 
 
-def execstart(debug=False): # sets up the Z-Machine to start executing instructions
+def execstart(debug=False): 
+    """set up the Z-Machine to start executing instructions"""
     global quit # if set to 1, game ends
     global restart
     if zcode.header.zversion() != 6:
