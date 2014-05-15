@@ -804,8 +804,6 @@ class window(io.pygame.window):
     stylebuffer = []
     linestylebuffer = []
 
-    chars = 0 # the number of characters printed thus far without a font, colour or style change
-
     def updatestylebuffer():
         pass
 
@@ -813,7 +811,6 @@ class window(io.pygame.window):
         x = list(self.textbuffer)
         x.extend(text)
         self.textbuffer = ''.join(x)
-        #self.chars += len(text)
 
     def alterTabs(self): # changes the tab character to various spaces
         x = list(self.textbuffer)
