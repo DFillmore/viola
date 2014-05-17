@@ -228,7 +228,7 @@ def z_erase_picture():
         pic = a.getPict(picture_number)
         scale = a.getScale(picture_number, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
    
-    if pic != False and zcode.currentWindow.getColours()[1][3] != 0:
+    if pic != False and zcode.screen.currentWindow.getColours()[1][3] != 0:
         zcode.screen.currentWindow.erasepic(pic, x, y, scale)
 
 def z_erase_window():
