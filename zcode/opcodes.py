@@ -23,8 +23,7 @@ import zcode
 
 
 def unfinished():
-    print('unfinished opcode')
-    sys.exit()
+    zcode.error.fatal('Unfinished opcode')
 
 # all the opcodes in alphabetical order
 
@@ -204,12 +203,13 @@ def z_encode_text():
 
 def z_erase_line():
     value = zcode.instructions.operands[0]
-    if value == 1:
-        zcode.screen.currentWindow.eraseline(zcode.screen.currentWindow.getSize()[0])
-    elif zcode.header.zversion() != 6:
-        pass
-    else:
-        zcode.screen.currentWindow.eraseline(value - 1)
+    if zcode.screen.currentWindow.getColours()[1][3] != 0:
+        if value == 1:
+            zcode.screen.currentWindow.eraseline(zcode.screen.currentWindow.getSize()[0])
+        elif zcode.header.zversion() != 6:
+            pass
+        else:
+            zcode.screen.currentWindow.eraseline(value - 1)
         
 
 def z_erase_picture():
@@ -228,12 +228,13 @@ def z_erase_picture():
         pic = a.getPict(picture_number)
         scale = a.getScale(picture_number, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
    
-    if pic != False:
+    if pic != False and zcode.currentWindow.getColours()[1][3] != 0:
         zcode.screen.currentWindow.erasepic(pic, x, y, scale)
 
 def z_erase_window():
     window = zcode.instructions.operands[0]
-    zcode.screen.eraseWindow(window)
+    if zcode.screen.getWindow(window).getColours()[1][3] != 0:
+        zcode.screen.eraseWindow(window)
 
 def z_extended(debug=False): # This isn't really an opcode, but it's easier to treat it as such.
     oldPC = zcode.game.PC
@@ -1160,49 +1161,60 @@ def z_set_attr():
 
 
 def z_set_colour():
+    zcode.screen.currentWindow.flushTextBuffer()
     foreground = zcode.numbers.neg(zcode.instructions.operands[0])
     background = zcode.numbers.neg(zcode.instructions.operands[1])
-    # if the colours are out of the range expected, use the default colours
-    # this can happen if Beyond Zork is run on a terp with an unexpected
-    # interpreter number
-    if foreground > 12:
-        foreground = zcode.header.getdeffgcolour()
-    if background > 12 and background != 15:
-        background = zcode.header.getdefbgcolour()
-    if foreground == 1:
-        foreground = zcode.header.getdeffgcolour()
-    if background == 1:
-        background = zcode.header.getdefbgcolour()
 
-    if zcode.header.zversion() != 6:
-        if foreground == 0:
-            foreground = zcode.screen.zwindow[0].getBasicColours()[1]
-        if background == 0:
-            background = zcode.screen.zwindow[0].getBasicColours()[0]
-        zcode.screen.zwindow[0].setBasicColours(foreground, background)
-        zcode.screen.zwindow[1].setBasicColours(foreground, background)
-    else:
+    real_foreground = None
+    real_background = None
+
+    if zcode.header.zversion() == 6:
         if len(zcode.instructions.operands) > 2:
             window = zcode.screen.getWindow(zcode.instructions.operands[2])
         else:
             window = zcode.screen.currentWindow
-        if foreground == 0:
-            foreground = window.getBasicColours()[1]
-        if background == 0:
-            background = window.getBasicColours()[0]
         if foreground == -1:
-            foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            foreground = window.getTrueFromReal(foreground)
-            foreground = zcode.screen.reverseSpectrumLookup(foreground)
-            if foreground == False:
-                foreground = 16
+            real_foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            foreground = zcode.screen.convertRealToBasicColour(real_foreground)
         if background == -1:
-            background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            background = window.getTrueFromReal(background)
-            background = zcode.screen.reverseSpectrumLookup(background)
-            if background == False:
-                background = 16
-        window.setBasicColours(foreground, background)
+            real_background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            background = zcode.screen.convertRealToBasicColour(real_background)
+
+    # if the colours are out of the range expected, use the default colours
+    # this can happen if Beyond Zork is run on a terp with an unexpected
+    # interpreter number
+    # might be better to just not change colour?
+    if foreground not in zcode.screen.spectrum or foreground == 1:        
+        foreground = zcode.header.getdeffgcolour()
+
+    if background == 15 and zcode.header.zversion() != 6:
+        zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
+        background = 0
+    elif background not in zcode.screen.spectrum or background == 1:
+        background = zcode.header.getdefbgcolour()
+
+    if zcode.header.zversion() != 6:
+        if foreground == 0:
+            foreground = zcode.screen.getWindow(0).getBasicColours()[0]
+        if background == 0:
+            background = zcode.screen.getWindow(0).getBasicColours()[1]
+        if real_foreground == None:
+            real_foreground = zcode.screen.convertBasicToRealColour(foreground)
+        if real_background == None:
+            real_background = zcode.screen.convertBasicToRealColour(background)
+        zcode.screen.getWindow(0).setRealColours(real_foreground, real_background)
+        zcode.screen.getWindow(1).setRealColours(real_foreground, real_background)
+    else:
+        if foreground == 0:
+            foreground = window.getBasicColours()[0]
+        if background == 0:
+            background = window.getBasicColours()[1]
+        if real_foreground == None:
+            real_foreground = zcode.screen.convertBasicToRealColour(foreground)
+        if real_background == None:
+            real_background = zcode.screen.convertBasicToRealColour(background)        
+
+        window.setRealColours(real_foreground, real_background)
     
 
 def z_set_cursor():
@@ -1259,6 +1271,7 @@ def z_set_margins():
         window = zcode.screen.getWindow(zcode.instructions.operands[2])
     else:
         window = zcode.screen.currentWindow
+    window.flushTextBuffer()
     window.setMargins(left, right)
 
 def z_set_text_style():
@@ -1269,34 +1282,58 @@ def z_set_text_style():
     else:
         zcode.screen.currentWindow.setStyle(style)
 
-
 def z_set_true_colour(): # a z-spec 1.1 opcode.
+    zcode.screen.currentWindow.flushTextBuffer()
     foreground = zcode.numbers.neg(zcode.instructions.operands[0])
     background = zcode.numbers.neg(zcode.instructions.operands[1])
-    fgtc=False
-    bgtc=False
 
-    if foreground == -1:
-        foreground = zcode.header.gettruedefaultforeground()
-    if background == -1:
-        background = zcode.header.gettruedefaultbackground()
-    if zcode.header.zversion() != 6:
-        if foreground == -2:
-            foreground = zcode.screen.zwindow[0].getTrueColours()[0]
-        if background == -2:
-            background = zcode.screen.zwindow[0].getTrueColours()[1]
-        zcode.screen.zwindow[0].setTrueColours(foreground, background)
-        zcode.screen.zwindow[1].setTrueColours(foreground, background)
-    else:
+    real_foreground = None
+    real_background = None
+
+    if zcode.header.zversion() == 6:
         if len(zcode.instructions.operands) > 2:
             window = zcode.screen.getWindow(zcode.instructions.operands[2])
         else:
             window = zcode.screen.currentWindow
+        if foreground == -3:
+            real_foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            foreground = zcode.screen.convertRealToTrueColour(real_foreground)
+        if background == -3:
+            real_background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
+            background = zcode.screen.convertRealToTrueColour(real_background)
+
+    if foreground == -1:
+        foreground = zcode.header.gettruedefaultforeground()
+
+    if background == -4 and zcode.header.zversion() != 6:
+        zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
+        background = -2
+    elif background == -1:
+        background = zcode.header.gettruedefaultbackground()
+
+    if zcode.header.zversion() != 6:
+        if foreground == -2:
+            foreground = zcode.screen.getWindow(0).getTrueColours()[0]
+        if background == -2:
+            background = zcode.screen.getWindow(0).getTrueColours()[1]
+        if real_foreground == None:
+            real_foreground = zcode.screen.convertTrueToRealColour(foreground)
+        if real_background == None:
+            real_background = zcode.screen.convertTrueToRealColour(background)
+        zcode.screen.getWindow(0).setRealColours(real_foreground, real_background)
+        zcode.screen.getWindow(1).setRealColours(real_foreground, real_background)
+    else:
         if foreground == -2:
             foreground = window.getTrueColours()[0]
         if background == -2:
             background = window.getTrueColours()[1]
-        window.setTrueColours(foreground, background)
+        if real_foreground == None:
+            real_foreground = zcode.screen.convertTrueToRealColour(foreground)
+        if real_background == None:
+            real_background = zcode.screen.convertTrueToRealColour(background)        
+
+        window.setRealColours(real_foreground, real_background)
+
 
 def z_set_window():
     zcode.screen.currentWindow.flushTextBuffer()

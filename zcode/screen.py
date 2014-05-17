@@ -37,6 +37,9 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if zcode.header.zversion() >= 5 and zcode.header.getflag(3, 1) == 1:
         pixelunits = True # if the game wishes to change font sizes, units should be pixels, not characters
 
+    foreground = convertBasicToRealColour(foreground)
+    background = convertBasicToRealColour(background)
+
     if not width:
         width = 800
     if not height:
@@ -130,10 +133,10 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     # set other default window properties
 
     for a in range(len(zwindow)):
-        getWindow(a).setBasicColours(foreground, background, flush=False)
+        getWindow(a).setRealColours(foreground, background)
         getWindow(a).font_size = (getWindow(a).getFont().getHeight() << 8) + getWindow(a).getFont().getWidth()
     if zcode.header.zversion() < 4:
-        statusline.setBasicColours(background, foreground, flush=False)
+        statusline.setRealColours(background, foreground)
         statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
     
     # give the lower window in versions other than 6 a margin
@@ -221,8 +224,8 @@ class font(io.pygame.font):
         if self.reversevideo:
             return f.render(text, antialias, background, colour)
         else:
-            if background == -1:
-                return f.render(text, antialias, colour, (0,100,100))
+            if background[3] == 0:
+                return f.render(text, antialias, colour)
             return f.render(text, antialias, colour, background)
 
 
@@ -426,7 +429,14 @@ def printtext(text):
 
 mouse_window = 1
 
+# Styles definitions
 
+styles = { 'roman'   : 0, # Selecting this style unselects all other styles.
+           'bold'    : 1, # This style should make the text bold, or otherwise emphasized.
+           'italic'  : 2, # This one should make it italic. Some interpreters make it underlined.
+           'reverse' : 4, # Selecting this style reverses the text colours.
+           'fixed'   : 8, # One of three ways to get fixed-pitch text. 
+         }
 
 # Colour definitions
 
@@ -450,14 +460,11 @@ def checkcolours():
     """Returns 1 if colours are available, 0 if unavailable."""
     return io.pygame.checkcolour()
 
-# Styles definitions
 
-styles = { 'roman'   : 0, # Selecting this style unselects all other styles.
-           'bold'    : 1, # This style should make the text bold, or otherwise emphasized.
-           'italic'  : 2, # This one should make it italic. Some interpreters make it underlined.
-           'reverse' : 4, # Selecting this style reverses the text colours.
-           'fixed'   : 8, # One of three ways to get fixed-pitch text. 
-         }
+
+
+
+# colours
 
 spectrum = { 2 : 0x0000, # Black
              3 : 0x001D, # Red
@@ -470,32 +477,69 @@ spectrum = { 2 : 0x0000, # Black
              10: 0x5AD6, # Light Grey
              11: 0x4631, # Medium Grey
              12: 0x2D6B, # Dark Grey
+             15: -4 # Transparent
            }
 
-def reverseSpectrumLookup(colour):
+last_spectrum_colour = 0
+
+
+def convertBasicToRealColour(basic_colour):
+    true_colour = convertBasicToTrueColour(basic_colour)
+    if true_colour != None:
+        return convertTrueToRealColour(true_colour)
+    return None
+
+def convertRealToBasicColour(real_colour):
+    true_colour = convertRealToTrueColour(real_colour)
+    basic_colour = convertTrueToBasicColour(true_colour)
+    return basic_colour
+
+
+def convertBasicToTrueColour(basic_colour):
+    if basic_colour in spectrum:
+        return spectrum[basic_colour]
+    else:
+        return None
+
+def convertTrueToBasicColour(true_colour):
+    global last_spectrum_colour
+    global spectrum
+    highest_spectrum = 0
     for a in spectrum:
-        if spectrum[a] == colour:
+        if spectrum[a] == true_colour:
             return a
-    return False
-    
 
-
-
-
-
-# Windows. Yay!
-
-def truetofull(incolour):
-    b = incolour >> 10
-    g = (incolour >> 5) & 31
-    r = incolour & 31
+    if last_spectrum_colour == 0 or last_spectrum_colour == 255:
+        last_spectrum_colour = 16
+    else:
+        last_spectrum_colour += 1
+    spectrum[last_spectrum_colour] =  true_colour
+    return last_spectrum_colour
+        
+def convertTrueToRealColour(true_colour):
+    if true_colour == -4:
+        return (0,0,0,0) # transparent
+    b = true_colour >> 10
+    g = (true_colour >> 5) & 31
+    r = true_colour & 31
     r = (r << 3) | (r >> 2)
     b = (b << 3) | (b >> 2)
     g = (g << 3) | (g >> 2)
-    outcolour=(r,g,b)
-    return outcolour
+    a = 0xff # alpha = fully opaque
+    real_colour=(r,g,b,a)
+    return real_colour
+
+def convertRealToTrueColour(colour):
+    if colour[3] == 0:
+        return -4
+    r = colour[0] // 8
+    g = colour[1] // 8
+    b = colour[2] // 8
+    c = (((b << 5) + g) << 5) + r
+    return c
 
 
+# windows
 
 class window(io.pygame.window):
     def __str__(self):
@@ -520,7 +564,9 @@ class window(io.pygame.window):
         self.screen = screen
         self.fontlist = fontlist[:]
         self.setFont(font)
-        self.setBasicColours(2, 9, flush=False)
+        foreground = convertBasicToRealColour(2)
+        background = convertBasicToRealColour(9)
+        self.setRealColours(foreground, background)
         self.getFont().resetSize()
 
     def testfont(self, font):
@@ -566,71 +612,34 @@ class window(io.pygame.window):
         else:
             return False
    
-    def setBasicColours(self, foreground, background, flush=True):
+    def setBasicColours(self, foreground, background):
         self.basic_foreground_colour = foreground
         self.basic_background_colour = background
-        if foreground == 16:
-            foreground = -3
-        else:
-            foreground = spectrum[foreground]
-        if background == 16:
-            background = -3
-        elif background == 15:
-            background = -4
-        else:
-            background = spectrum[background]
-        self.setTrueColours(foreground, background, True, flush=flush)
 
     def getBasicColours(self):
         return (self.basic_foreground_colour, self.basic_background_colour)
 
 
 
-    def setTrueColours(self, foreground, background, fromspectrum=False, flush=True):
-        if flush:
-            self.flushTextBuffer()
-        fo = 16
-        bo = 16
-        if foreground == -3:
-            foreground = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
-            fg = self.getTrueFromReal(foreground)
-        else:
-            fg = foreground
-            realfg = truetofull(foreground)
-
-        if background == -3:
-
-            realbg = self.getPixelColour(self.getCursor()[0], self.getCursor()[1])
-            bg = self.getTrueFromReal(realbg)
-        elif background != -4:
-            bg = background
-            realbg = truetofull(background)
-
-        if background == -4:
-            bg = -4
-            bo = 15
-            realbg = -1
-
-        
-        
-           
-        self.true_foreground_colour = fg
-        self.true_background_colour = bg
-        self.setColours(realfg, realbg)
+    def setTrueColours(self, foreground, background):
+        basic_foreground = convertTrueToBasicColour(foreground)
+        basic_background = convertTrueToBasicColour(background)
+        self.true_foreground_colour = foreground
+        self.true_background_colour = background
+        self.setBasicColours(basic_foreground, basic_background)
 
 
     def getTrueColours(self):
         return (self.true_foreground_colour, self.true_background_colour)
 
+    def setRealColours(self, foreground, background):
+        true_foreground = convertRealToTrueColour(foreground)
+        true_background = convertRealToTrueColour(background)
+        self.setTrueColours(true_foreground, true_background)
+        self.setColours(foreground, background)
 
-    def getTrueFromReal(self, colour):
-        r = colour[0] // 8
-        g = colour[1] // 8
-        b = colour[2] // 8
-        c = (((b << 5) + g) << 5) + r
-        return c
 
-    
+   
     def setMargins(self, left, right):
         self.left_margin = left
         self.right_margin = right
@@ -715,9 +724,9 @@ class window(io.pygame.window):
         elif property == 10:
             self.setStyle(value)
         elif property == 11:
-            fg = value & 255
-            bg = value >> 8
-            self.setBasicColours(fg, bg)
+            fg = convertBasicToRealColour(value & 255)
+            bg = convertBasicToRealColour(value >> 8)
+            self.setRealColours(fg, bg)
         elif property == 12:
             self.setFontByNumber(value)
         elif property == 13:
@@ -949,7 +958,7 @@ class window(io.pygame.window):
 
 
 def eraseWindow(winnum):
-    if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1] == -4:
+    if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
         pass
     elif zcode.numbers.neg(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
         ioScreen.erase(currentWindow.getColours()[1])
@@ -959,7 +968,7 @@ def eraseWindow(winnum):
             getWindow(a).line_count = 0
     elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
         ioScreen.erase(currentWindow.getColours()[1])
-    elif getWindow(winnum).getColours()[1] != -4:
+    elif getWindow(winnum).getColours()[1][3] != 0:
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
             getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getSize()[1] - getWindow(0).getFont().getHeight())
