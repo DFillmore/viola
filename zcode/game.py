@@ -21,7 +21,7 @@ import copy
 import os
 
 import quetzal
-import zio as io
+import zio.pygame as io
 import zcode
 
 
@@ -76,7 +76,7 @@ class undoframe:
     PC = 0
 
 def save():
-    f = io.pygame.openfile(zcode.screen.currentWindow, 'w')
+    f = io.openfile(zcode.screen.currentWindow, 'w')
     sd = quetzal.qdata()
     sd.release = zcode.header.release()
     sd.serial = zcode.header.serial()
@@ -102,7 +102,7 @@ def restore(filename=None, prompt=1):
     zcode.sounds.stopall()
     bis = interruptstack[:] 
     interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
-    f = io.pygame.openfile(zcode.screen.currentWindow, 'r')
+    f = io.openfile(zcode.screen.currentWindow, 'r')
     sd = quetzal.qdata()
     sd.release = zcode.header.release()
     sd.serial = zcode.header.serial()
@@ -294,7 +294,7 @@ def ret(value):
         zcode.routines.timerreturn = True
         if value != 0:
             timervalue = True
-            io.pygame.stoptimer()
+            io.stoptimer()
         # all right, we need to check here if the program has printed anything
         # not sure how, but anyway, if the program has printed, we reprint the
         # input text so far. If the program has not printed, we do not reprint

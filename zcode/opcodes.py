@@ -18,7 +18,7 @@
 
 import sys
 import blorb
-import zio as io
+import zio.pygame as io
 import zcode
 from zcode.constants import *
 
@@ -515,7 +515,7 @@ def z_make_menu():
     number = zcode.instructions.operands[0]
     table = zcode.instructions.operands[1]
     if table == 0:
-        result = io.pygame.destroymenu(number)
+        result = io.destroymenu(number)
         zcode.instructions.branch(result)
     else:
         tablelen = zcode.memory.getword(table)
@@ -532,7 +532,7 @@ def z_make_menu():
             item = ''.join(itemlist)
             items.append(item)
             address += 2
-        result = io.pygame.makemenu(items[0], items[1:len(items)], number)
+        result = io.makemenu(items[0], items[1:len(items)], number)
         zcode.instructions.branch(result)
 
 def z_mod():
@@ -624,7 +624,7 @@ def z_picture_data():
             if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
                 pic = blorb.rect(pic)
             else:
-                pic = io.pygame.image(pic)
+                pic = io.image(pic)
 
             height = int(pic.getHeight()) * scale
             width = int(pic.getWidth()) * scale
@@ -835,7 +835,7 @@ def z_read():
         r = zcode.instructions.operands[3]
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
-        io.pygame.starttimer(t, zcode.game.firetimer)
+        io.starttimer(t, zcode.game.firetimer)
 
 
     if zcode.header.zversion() >= 5:
@@ -872,7 +872,7 @@ def z_read():
         zcode.game.timervalue = False
     else:
         termchar = zcode.input.instring.pop()
-    io.pygame.stoptimer()
+    io.stoptimer()
 
     zcode.input.commandhistory.reverse()
     zcode.input.commandhistory.append(zcode.input.instring)
@@ -917,7 +917,7 @@ def z_read_char():
         r = zcode.instructions.operands[2]
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
-        io.pygame.starttimer(t, zcode.game.firetimer)
+        io.starttimer(t, zcode.game.firetimer)
     inchar = None
     zcode.screen.currentWindow.showCursor()
     while inchar == None:
@@ -926,7 +926,7 @@ def z_read_char():
             zcode.game.timervalue = False
         else:
             inchar = zcode.input.getinput(False, chistory=False)
-    io.pygame.stoptimer()
+    io.stoptimer()
     zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
@@ -1570,7 +1570,7 @@ def z_get_pixel_array():
     x = zcode.instructions.operands[1]
     width = zcode.instructions.operands[2]
     height = zcode.instructions.operands[3]
-    zcode.screen.io.pygame.screen.getpixelarray(x, y, width, height)
+    zcode.screen.io.screen.getpixelarray(x, y, width, height)
 
 def z_draw_pixel_array(): 
     drawfrom = zcode.instructions.operands[0]

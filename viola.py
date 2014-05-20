@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
-import zio as io
+import zio.pygame as io
 import sys
 import getopt
 import os
@@ -65,7 +65,7 @@ class UnsupportedGameType(Exception):
 
 def getgame(filename):
     global blorbs
-    f = io.pygame.findfile(filename)
+    f = io.findfile(filename)
     if f == False:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
@@ -142,7 +142,7 @@ def handle_parameters(argv): # handles command line parameters
 
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
-    io.pygame.setup()
+    io.setup()
     zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
@@ -183,7 +183,7 @@ def rungame(gamedata):
         width = gameset[1]
     
     if gameset[3] != None:
-        blorbs.append(io.pygame.findfile(gameset[3]))
+        blorbs.append(io.findfile(gameset[3]))
 
     for a in range(len(blorbs)):
         if blorbs[a] == False:
@@ -194,6 +194,7 @@ def rungame(gamedata):
 
     if title == None:
         title = gameset[0]
+    icon = None
     if title == None:
         for a in blorbs:
             iFiction = a.getmetadata()
@@ -220,10 +221,11 @@ def rungame(gamedata):
        
 
 
-    pic = None
-
     for a in blorbs:
-        pic = a.gettitlepic()
+        icon = a.gettitlepic()
+    if icon:
+        io.setIcon(icon)
+    
 
 
     zcode.routines.execstart(debug)

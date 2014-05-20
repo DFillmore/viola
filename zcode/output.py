@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import string
-import zio as io
+import zio.pygame as io
 import zcode
 from zcode.constants import *
 
@@ -66,7 +66,7 @@ class transcriptstream(outputstream):
 
     def output(self, data):
         if zcode.screen.currentWindow.testattributes(4):
-            file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
+            file = io.openfile(zcode.screen.currentWindow, 'a', self.filename)
             writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
     def close(self):
@@ -156,7 +156,7 @@ class commandstream(outputstream):
         self.active = True
 
     def output(self, data):
-        file = io.pygame.openfile(zcode.screen.currentWindow, 'a', self.filename)
+        file = io.openfile(zcode.screen.currentWindow, 'a', self.filename)
         writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
 class istreamdata():
@@ -320,9 +320,9 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
 def writefile(data, filename=None, prompt=False, append=False):
     """Opens a file, writes data to it, and returns the filename"""
     if append:
-        f = io.pygame.openfile(zcode.screen.currentWindow, 'a', filename, prompt)
+        f = io.openfile(zcode.screen.currentWindow, 'a', filename, prompt)
     else:
-        f = io.pygame.openfile(zcode.screen.currentWindow, 'w', filename, prompt)
+        f = io.openfile(zcode.screen.currentWindow, 'w', filename, prompt)
     f.write(data)
     filename = f.name
     f.close()

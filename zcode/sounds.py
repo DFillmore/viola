@@ -18,7 +18,7 @@
 
 import pygame
 import blorb
-import zio as io
+import zio.pygame as io
 
 import zcode
 
@@ -32,9 +32,9 @@ def setup(b):
     global AVAILABLE, blorbs
     try:
         pygame.mixer.init()
-        for a in range(io.pygame.maxeffectschannels()):
+        for a in range(io.maxeffectschannels()):
             soundchannels[0].append(effectsChannel(a))
-        for a in range(io.pygame.maxmusicchannels()):
+        for a in range(io.maxmusicchannels()):
             soundchannels[1].append(musicChannel(a))
         AVAILABLE = True
     except:
@@ -63,7 +63,7 @@ def soundhandler():
         for b in a:
             b.Notify()
 
-class Channel(io.pygame.soundChannel):
+class Channel(io.soundChannel):
     sound = None
     routine = None
 
@@ -164,7 +164,7 @@ class Sound:
             sound_data = a.getSnd(sound_number)
             self.type = a.getSndType(sound_number)
         if sound_data:
-            self.sound = io.pygame.sound(sound_data, self.type)
+            self.sound = io.sound(sound_data, self.type)
         else:
             self.sound = None
 

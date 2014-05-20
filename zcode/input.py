@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
-import zio as io
+import zio.pygame as io
 import zcode
 
 stream = 0
@@ -32,7 +32,7 @@ def setup():
     global ioInput
     global mouse
     mouse = mouseTracker()
-    ioInput = io.pygame.input(zcode.screen.ioScreen)
+    ioInput = io.input(zcode.screen.ioScreen)
 
 def setstream(number, filename=0):
     global stream
@@ -104,12 +104,12 @@ def getinput(display=True, ignore=False, chistory=True):
     if stream == 0:
         input = ioInput.getinput()
         if ignore:
-            if isinstance(input, io.pygame.keypress):
+            if isinstance(input, io.keypress):
                 return input.value
             return None
         zsciivalue = None
 
-        if isinstance(input, io.pygame.keypress):
+        if isinstance(input, io.keypress):
             if chistory and input.value == 273: # pressed up key
                 if chplace < len(commandhistory) -1:
                     chplace += 1
@@ -159,23 +159,23 @@ def getinput(display=True, ignore=False, chistory=True):
             if zsciivalue > 126:
                 zsciivalue = convertinput(zsciivalue)
 
-        if isinstance(input, io.pygame.mousedown):
+        if isinstance(input, io.mousedown):
             if input.button != None:
                 mouse.buttons[input.button] = 1
                 zsciivalue = 254 # mouse down == single click
                 zcode.header.setmousex(mouse.xpos)
                 zcode.header.setmousey(mouse.ypos)
 
-        if isinstance(input, io.pygame.mouseup):
+        if isinstance(input, io.mouseup):
             if input.button != None:
                 mouse.buttons[input.button] = 0
 
 
-        if isinstance(input, io.pygame.mousemove):
+        if isinstance(input, io.mousemove):
             mouse.xpos = zcode.screen.pix2units(input.xpos + 1, horizontal=True, coord=True)
             mouse.ypos = zcode.screen.pix2units(input.ypos + 1, horizontal=False, coord=True)
 
-        if isinstance(input, io.pygame.keypress):
+        if isinstance(input, io.keypress):
             if zsciivalue in zcode.text.inputvalues:
                 if zsciivalue not in gettermchars() and display and zsciivalue in zcode.text.outputvalues:
                     if zsciivalue == 13:
@@ -211,7 +211,7 @@ def getinput(display=True, ignore=False, chistory=True):
             return 13
 
 def readfile(length, filename=None, prompt=False, seek=0): 
-    f = io.pygame.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
+    f = io.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
     f.seek(seek)
     if length == -1:
         data = f.read()

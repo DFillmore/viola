@@ -16,8 +16,6 @@
 # along with Viola; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import zio as io
-
 quit = 0
 input = 0
 restart = 0

@@ -18,7 +18,7 @@
 
 import sys
 import string
-import zio as io
+import zio.pygame as io
 import settings
 import zcode
 
@@ -45,7 +45,7 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if not height:
         height = 600
     if restarted == False:
-        ioScreen = io.pygame.screen(width, height, title)
+        ioScreen = io.screen(width, height, title)
 
     blorbs = b
 
@@ -170,7 +170,7 @@ def supportedstyles(arg):
 
 # font 3 needs to be the same size as fixed width font
 
-class font(io.pygame.font):
+class font(io.font):
     def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, fixedfile=None, boldfixedfile=None, italicfixedfile=None, bolditalicfixedfile=None):
         self.size = self.defaultSize()
         self.fontfile = fontfile
@@ -229,11 +229,11 @@ class font(io.pygame.font):
             return f.render(text, antialias, colour, background)
 
 
-class runicfont(io.pygame.font):
+class runicfont(io.font):
     def __init__(self, fontfile, size=14, boldfile=None, italicfile=None, bolditalicfile=None):
         self.default_size = size
         self.size = size
-        self.font_data = io.pygame.image('images\\GfxFont.png', filename=True)
+        self.font_data = io.image('images\\GfxFont.png', filename=True)
         self.width = font[4].getWidth()
         self.height = fonts[4].getHeight()
     
@@ -324,24 +324,24 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
             value += 1
     return value
 
-font1 = font(io.pygame.getBaseDir() + "//fonts//FreeSerif.ttf",
-             boldfile=io.pygame.getBaseDir() + "//fonts//FreeSerifBold.ttf",
-             italicfile=io.pygame.getBaseDir() + "//fonts//FreeSerifItalic.ttf",
-             bolditalicfile=io.pygame.getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
-             fixedfile=io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font1 = font(io.getBaseDir() + "//fonts//FreeSerif.ttf",
+             boldfile=io.getBaseDir() + "//fonts//FreeSerifBold.ttf",
+             italicfile=io.getBaseDir() + "//fonts//FreeSerifItalic.ttf",
+             bolditalicfile=io.getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
+             fixedfile=io.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
             )
 
-font4 = font(io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-             fixedfile=io.pygame.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=io.pygame.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font4 = font(io.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+             fixedfile=io.getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
             )
 
 fontlist = [ None, 
@@ -458,7 +458,7 @@ colours = { 'under_cursor' : -1,
 
 def checkcolours():
     """Returns 1 if colours are available, 0 if unavailable."""
-    return io.pygame.checkcolour()
+    return io.checkcolour()
 
 
 
@@ -541,7 +541,7 @@ def convertRealToTrueColour(colour):
 
 # windows
 
-class window(io.pygame.window):
+class window(io.window):
     def __str__(self):
         return 'window ' + str(self.window_id)
     # window properties (window coordinates are measured from 1,1, not 0,0, oh no. That would be sensible.)
@@ -925,7 +925,7 @@ class window(io.pygame.window):
             scale = a.getScale(picture_number, ioScreen.getWidth(), ioScreen.getHeight())
         if not picture_data:
             return None
-        pic = io.pygame.image(picture_data)
+        pic = io.image(picture_data)
         newwidth = pic.getWidth() * scale
         newheight = pic.getHeight() * scale
         pic = pic.scale(newwidth, newheight)
@@ -943,7 +943,7 @@ class window(io.pygame.window):
             pic.draw(self, (self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1))
 
     def erasepic(self, picture_data, x, y, scale=1):
-        pic = io.pygame.image(picture_data)
+        pic = io.image(picture_data)
         newwidth = pic.getWidth() * scale
         newheight = pic.getHeight() * scale
 
@@ -978,12 +978,12 @@ def eraseWindow(winnum):
 def cursoron(): # makes the cursor visible
     global showcursor
     #showcursor = 1
-    #io.pygame.showcursor()
+    #io.showcursor()
 
 def cursoroff(): # makes the cursor invisible
     global showcursor
     #showcursor = 0
-    #io.pygame.hidecursor()
+    #io.hidecursor()
 
 def split(size): 
     oldycoord = getWindow(0).getPosition()[1]
