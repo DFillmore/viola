@@ -19,6 +19,7 @@
 import string
 
 import zcode
+from zcode.constants import *
 
 standards = [(0,0), (0,2), (1,0), (1,1), (1,2)]
 
@@ -33,7 +34,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
         setflag(1, 2, gestalt(4, 2)) # Boldface
         setflag(1, 3, gestalt(4, 4)) # Italic
         setflag(1, 4, gestalt(4, 8)) # Fixed-pitch style
-        if zcode.use_standard >= 1: # from 0.2 onward
+        if zcode.use_standard >= STANDARD_02: # from 0.2 onward
             setflag(1, 7, gestalt(5)) # Timed input
         if zversion() > 4:
             setflag(1, 0, gestalt(2, 0)) # Colours

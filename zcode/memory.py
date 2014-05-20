@@ -20,6 +20,7 @@ import os
 import sys
 import array
 import zcode
+from zcode.constants import *
 
 
 data = None
@@ -35,7 +36,7 @@ def setup(gamedata):
     data = gamedata[:]
 
     version = data[0]
-    if version > 6 and zcode.use_standard == 0:
+    if version > 6 and zcode.use_standard == STANDARD_00:
         print('Versions 7 and 8 of the Z-Machine are not available before Standard 0.2')
         sys.exit()
     if version < 1 or version > 8:

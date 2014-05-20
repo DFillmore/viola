@@ -20,6 +20,7 @@
 import sys
 
 import zcode
+from zcode.constants import *
 
 def setup():
     setupunitable()
@@ -119,7 +120,7 @@ inputvalues.extend(list(range(252, 255)))
 
 def setupunitable():
     global unitable
-    if zcode.use_standard >= 2:
+    if zcode.use_standard >= STANDARD_10:
         if zcode.header.zversion() > 4:
             loc = zcode.header.unicodetableloc()
             if loc != 0:
@@ -127,7 +128,7 @@ def setupunitable():
                 loc += 1
                 for a in range(size):
                     unitable[155+a] = zcode.memory.getword(loc+(a*2))
-    elif zcode.use_standard < 1:
+    elif zcode.use_standard == STANDARD_00:
         unitable = { 155: 0xe4,
                      156: 0xf6,
                      157: 0xfc,
@@ -205,7 +206,7 @@ def getZSCIIchar(code):
         return '\r'
     elif code == 9:
         return '\t'
-    elif code == 11 and zcode.header.zversion() == 6: # sentence space.
+    elif code == 11 and zcode.header.zversion() == 6: # sentence space. (needs to be smaller when using fixed pitch)
         return '  '
     elif code == 13:
         return '\r'

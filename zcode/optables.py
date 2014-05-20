@@ -18,6 +18,7 @@
 
 
 import zcode
+from zcode.constants import *
         
 def setup():
     global op2, op1, op0, opvar, opext
@@ -231,15 +232,15 @@ def setup():
     for a in range(0x1e, 255):
         opext.append(zcode.opcodes.z_badop)
 
-    if zcode.use_standard < 2: # Standard 0.2 or lower
+    if zcode.use_standard < STANDARD_10: # Standard 0.2 or lower
         opext[0xb] = zcode.opcodes.z_badop # print_unicode
         opext[0xc] = zcode.opcodes.z_badop # check_unicode
 
-    if zcode.use_standard < 3: # Standard 1.0 or lower
+    if zcode.use_standard < STANDARD_11: # Standard 1.0 or lower
         opext[0xd] = zcode.opcodes.z_badop # set_true_colour
         opext[0x1d] = zcode.opcodes.z_badop # buffer_screen
 
-    if zcode.use_standard < 4: # Standard 1.1 or lower
+    if zcode.use_standard < STANDARD_12: # Standard 1.1 or lower
         opext[0xe] = zcode.opcodes.z_badop # sound_channel
         opext[0xf] = zcode.opcodes.z_badop # sound_data
         opext[0x1e] = zcode.opcodes.z_badop # gestalt
