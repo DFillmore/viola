@@ -21,10 +21,10 @@ import zio.pygame as io
 import zcode
 
 stream = 0
-filecommands = []
+file_commands = []
 instring = []
 
-commandhistory = []
+command_history = []
 chplace = -1
 
 
@@ -34,14 +34,14 @@ def setup():
     mouse = mouseTracker()
     ioInput = io.input(zcode.screen.ioScreen)
 
-def setstream(number, filename=0):
+def setStream(number, filename=0):
     global stream
     global filecommands
     stream = number
     if number == 0 and streamfile != 0:
         streamfile = 0
     elif number == 1:
-        streamfile = readfile(-1, filename="COMMANDS.REC", prompt=True).decode('utf-8')
+        streamfile = readFile(-1, filename="COMMANDS.REC", prompt=True).decode('utf-8')
         if streamfile:
             filecommands = streamfile.split('\n')
             while filecommands[-1].strip() == '':
@@ -49,7 +49,7 @@ def setstream(number, filename=0):
             filecommands.reverse()
             stream = 1
 
-def gettermchars():
+def getTerminatingCharacters():
     if zcode.header.zversion() < 5:
         return []
     location = zcode.header.termcharloc()
@@ -74,7 +74,7 @@ class mouseTracker:
     buttons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 
-def convertinput(char):
+def convertInputToZSCII(char):
     if char == 273:
         return 129
     if char == 274:
@@ -95,7 +95,7 @@ def convertinput(char):
     return None
 
 
-def getinput(display=True, ignore=False, chistory=True):
+def getInput(display=True, ignore=False, chistory=True):
     global mouse
     global stream
     global instring
@@ -112,7 +112,7 @@ def getinput(display=True, ignore=False, chistory=True):
 
         if isinstance(input, io.keypress):
             if chistory and input.value == 273: # pressed up key
-                if chplace < len(commandhistory) -1:
+                if chplace < len(command_history) -1:
                     chplace += 1
 
                     inp = [chr(a) for a in zcode.input.instring]
@@ -124,7 +124,7 @@ def getinput(display=True, ignore=False, chistory=True):
                     zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
                     zcode.screen.currentWindow.setCursor(x,y)
 
-                    instring = commandhistory[chplace]
+                    instring = command_history[chplace]
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
@@ -133,7 +133,7 @@ def getinput(display=True, ignore=False, chistory=True):
                 if chplace >= 0:
                     if chplace >= 0:
                         chplace -= 1
-                        newstring = commandhistory[chplace]
+                        newstring = command_history[chplace]
                     if chplace == -1:
                         newstring = []
 
@@ -158,7 +158,7 @@ def getinput(display=True, ignore=False, chistory=True):
             else:
                 zsciivalue = input.value
             if zsciivalue > 126:
-                zsciivalue = convertinput(zsciivalue)
+                zsciivalue = convertInputToZSCII(zsciivalue)
 
         if isinstance(input, io.mousedown):
             if input.button != None:
@@ -178,7 +178,7 @@ def getinput(display=True, ignore=False, chistory=True):
 
         if isinstance(input, io.keypress):
             if zsciivalue in zcode.text.inputvalues:
-                if zsciivalue not in gettermchars() and display and zsciivalue in zcode.text.outputvalues:
+                if zsciivalue not in getTerminatingCharacters() and display and zsciivalue in zcode.text.outputvalues:
                     if zsciivalue == 13:
                         zcode.screen.currentWindow.hideCursor()
 
@@ -198,11 +198,11 @@ def getinput(display=True, ignore=False, chistory=True):
             if len(c) == 1:
                 zsciivalue = ord(c)
             else:
-                zsciivalue = convertinput(c) 
+                zsciivalue = convertInputToZSCII(c) 
             currentcommand = currentcommand[1:]
             filecommands.append(currentcommand)
             
-            if zsciivalue not in gettermchars() and display:
+            if zsciivalue not in getTerminatingCharacters() and display:
                  zcode.output.streams[1].write(chr(zsciivalue))
             return zsciivalue
         else:
@@ -211,7 +211,7 @@ def getinput(display=True, ignore=False, chistory=True):
             zcode.output.streams[1].write('\r')
             return 13
 
-def readfile(length, filename=None, prompt=False, seek=0): 
+def readFile(length, filename=None, prompt=False, seek=0): 
     f = io.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
     if f == None:
         return False

@@ -415,7 +415,7 @@ def z_inc_chk():
 
 def z_input_stream():
     stream = zcode.instructions.operands[0]
-    zcode.input.setstream(stream)
+    zcode.input.setStream(stream)
 
 def z_insert_obj():
     object = zcode.instructions.operands[0]
@@ -805,7 +805,7 @@ def z_quit():
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
     while inp == None:
-        inp = zcode.input.getinput()
+        inp = zcode.input.getInput()
     sys.exit()
 
 def z_random():
@@ -853,12 +853,12 @@ def z_read():
     for a in range(leftover):
         zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
-    while inchar not in zcode.input.gettermchars() and inchar != 13 and zcode.game.timervalue == False:
+    while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
         if len(zcode.input.instring) < maxinput:
             display = True
         else:
             display = False
-        inchar = zcode.input.getinput(display)
+        inchar = zcode.input.getInput(display)
         if inchar == 8:
             if zcode.input.instring:
                 c = zcode.input.instring.pop()
@@ -874,9 +874,9 @@ def z_read():
         termchar = zcode.input.instring.pop()
     io.stoptimer()
 
-    zcode.input.commandhistory.reverse()
-    zcode.input.commandhistory.append(zcode.input.instring)
-    zcode.input.commandhistory.reverse()
+    zcode.input.command_history.reverse()
+    zcode.input.command_history.append(zcode.input.instring)
+    zcode.input.command_history.reverse()
 
     inp = [chr(a) for a in zcode.input.instring]
     inp = ''.join(inp)
@@ -925,7 +925,7 @@ def z_read_char():
             inchar = 0
             zcode.game.timervalue = False
         else:
-            inchar = zcode.input.getinput(False, chistory=False)
+            inchar = zcode.input.getInput(False, chistory=False)
     io.stoptimer()
     zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
@@ -954,7 +954,7 @@ def z_read_file():
     else:
         filename = None
     try:
-        data = zcode.input.readfile(length, filename, prompt, seek)
+        data = zcode.input.readFile(length, filename, prompt, seek)
         zcode.memory.setarray(table, data)
 
         zcode.instructions.store(len(data))
@@ -1031,8 +1031,8 @@ def z_restore():
                 prompt = zcode.instructions.operands[3]
             except:
                 prompt = 1
-        #data = zcode.game.restore(''.join(filename), prompt)
-        data = zcode.input.readfile(bytes, filename, prompt)
+
+        data = zcode.input.readFile(bytes, filename, prompt)
             
         if data == 0:
             zcode.instructions.store(0)

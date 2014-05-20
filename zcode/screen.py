@@ -861,7 +861,7 @@ class window(io.window):
             self.line_count = 0
             morestring = '[MORE]'
             self.drawText(morestring)
-            while zcode.input.getinput(ignore=True) != 32:
+            while zcode.input.getInput(ignore=True) != 32:
                 pass
             x = self.getCursor()[0] + self.getPosition()[0] - 1
             y = self.getCursor()[1] + self.getPosition()[1] - 1
