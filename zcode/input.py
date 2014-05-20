@@ -42,11 +42,12 @@ def setstream(number, filename=0):
         streamfile = 0
     elif number == 1:
         streamfile = readfile(-1, filename="COMMANDS.REC", prompt=True).decode('utf-8')
-        filecommands = streamfile.split('\n')
-        while filecommands[-1].strip() == '':
-            filecommands.pop()
-        filecommands.reverse()
-        stream = 1
+        if streamfile:
+            filecommands = streamfile.split('\n')
+            while filecommands[-1].strip() == '':
+                filecommands.pop()
+            filecommands.reverse()
+            stream = 1
 
 def gettermchars():
     if zcode.header.zversion() < 5:
@@ -212,6 +213,8 @@ def getinput(display=True, ignore=False, chistory=True):
 
 def readfile(length, filename=None, prompt=False, seek=0): 
     f = io.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
+    if f == None:
+        return False
     f.seek(seek)
     if length == -1:
         data = f.read()

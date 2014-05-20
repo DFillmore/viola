@@ -56,6 +56,8 @@ def findfile(filename):
             return os.path.join(a, filename)
     return False
 
+def setIcon(icon):
+    pygame.display.set_icon(icon)
 
 class image():
     data = None
@@ -522,9 +524,10 @@ class screen:
 
 
 class keypress:
-    def __init__(self, value, character):
+    def __init__(self, value, character, modifier):
         self.value = value
         self.character = character
+        self.modifer = modifier
 
     character = None
     value = None
@@ -567,7 +570,7 @@ class input:
         if event.type == QUIT:
             sys.exit()
         if event.type == KEYDOWN:
-            return keypress(event.key, event.unicode)
+            return keypress(event.key, event.unicode, event.mod)
         if event.type == VIDEORESIZE:
             self.screen.resize(event.dict['size'])
         if event.type == MOUSEBUTTONDOWN:
@@ -638,8 +641,13 @@ def openfile(window, mode, filename=None, prompt=None):
         if findfile(filename) == False:
             mode = 'w'
     mode = mode + 'b'
+ 
+    try:
+        f = open(filename, mode)
+    except:
+        f = None
 
-    return open(filename, mode) 
+    return f
 
     
 
