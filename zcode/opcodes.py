@@ -20,6 +20,7 @@ import sys
 import blorb
 import zio as io
 import zcode
+from zcode.constants import *
 
 
 def unfinished():
@@ -682,8 +683,9 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
         linestart += linelen
         linelen = zcode.memory.getword(linestart)
         y += zcode.screen.currentWindow.getFont().getHeight()
-        zcode.screen.currentWindow.setCursor(x, y)
         zcode.screen.currentWindow.flushTextBuffer()
+        zcode.screen.currentWindow.setCursor(x, y)
+        
 
 def z_print_num():
     num = zcode.numbers.neg(zcode.instructions.operands[0])
@@ -1022,7 +1024,7 @@ def z_restore():
             filename = ''.join(filename)
         else:
             filename = None
-        if zcode.use_standard < 3: # Standard 1.0 and lower
+        if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
             prompt = 1
         else:
             try:
@@ -1096,7 +1098,7 @@ def z_save():
                 filename = ''.join(filename)
             else:
                 filename = None
-            if zcode.use_standard < 3: # Standard 1.0 and lower
+            if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
                 prompt = 1
             else:
                 try:
@@ -1247,7 +1249,7 @@ def z_set_font():
         else:
             zcode.screen.getWindow(0).setFontByNumber(font)
             result = zcode.screen.getWindow(1).setFontByNumber(font)
-            if result == 0 and zcode.use_standard < 2: # Standard 0.2 or lower
+            if result == 0 and zcode.use_standard <= STANDARD_02: # Standard 0.2 or lower
                 result = zcode.screen.getWindow(0).getFontNumber()
             zcode.instructions.store(result)
     else:
@@ -1259,7 +1261,7 @@ def z_set_font():
             zcode.instructions.store(window.getFontNumber())
         else:
             result = window.setFontByNumber(font)
-            if result == 0 and zcode.use_standard < 2: # Standard 0.2 or lower
+            if result == 0 and zcode.use_standard <= STANDARD_02: # Standard 0.2 or lower
                 result = zcode.screen.window.getFontNumber()
             zcode.instructions.store(result)
 

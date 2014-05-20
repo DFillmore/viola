@@ -18,11 +18,8 @@
 
 import string
 import zio as io
-
-
-
-
 import zcode
+from zcode.constants import *
 
 def setup(startstreams=[False, True, False, False, False]):
     global streams
@@ -98,33 +95,52 @@ class memorystream(outputstream):
         streams[1].quiet = False
         streams[2].quiet = False
         streams[4].quiet = False
-        zcode.memory.setword(self.location, len(self.data))
-        
+        if self.width == None:
+            zcode.memory.setword(self.location, len(self.data))
+            OFFSET = 2
+        else:
+            OFFSET = 0
+        lines = []        
         if self.width != None: # formatted text for z6
-            lines = []
             text = ''.join(self.data)
             while len(text) > 0:
                 x = zcode.screen.currentWindow.fitText(text, self.width)
                 if text[:x].find('\r') != -1:
                     x = text[:x].find('\r')
                 line = (len(text[:x]), text[:x])
-                text = text[len(line):]
+                lines.append(line)
+                text = text[line[0]:]
         if zcode.header.zversion() == 6:
             zcode.header.settextwidth(zcode.screen.currentWindow.getFont().getStringLength(''.join(self.data)))
 
         c = 0
         data = []
-        for a in self.data: # make absolutely certain each value in data fits in a byte
-            b = ord(a)
-            while b > 255:
-                data.append(b&255)
-                b = b >> 8
-            data.append(b)
+        if self.width == None:
+            for a in self.data: # make absolutely certain each value in data fits in a byte
+                b = ord(a)
+                d = []
+                while b > 255:
+                    d.append(b&255)
+                    b = b >> 8
+                data.append(b)
+                d.reverse()
+                for b in d:
+                    data.append(b)
 
+
+        else:
+            for l in lines:
+                linelength = l[0]
+                line = l[1]
+                data.append((linelength >> 8) & 0xff)
+                data.append(linelength & 0xff)
+                for c in line:
+                    data.append(ord(c))
+  
         for a in (list(range(len(data)))):
-            zcode.memory.setbyte(self.location+2+a, data[a])
+            zcode.memory.setbyte(self.location+OFFSET+a, data[a])
         if self.width != None: # if a width operand was passed to output stream 3, we need to add a 0 word on the end of the text
-            zcode.memory.setword(self.location+len(data)+2, 0)
+            zcode.memory.setword(self.location+len(data), 0)
         self.data = []
 
     def output(self, data):
@@ -250,7 +266,7 @@ def numopenstreams(stream):
 def openstream(stream, location=None, width=None): # area is only used for stream 3, width only for z6 stream 3
     global streams
     if stream == 3:
-        if zcode.use_standard < 2:
+        if zcode.use_standard <= STANDARD_02:
             if len(streams[3]) == 0:
                 m = memorystream()
                 streams[3].append(m)
@@ -280,7 +296,7 @@ def closestream(stream):
     if stream != 3:
         streams[stream].close()
     else:
-        if zcode.use_standard < 2:
+        if zcode.use_standard <= STANDARD_02:
             try:
                 streams[3][0].close()
             except:
