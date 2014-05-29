@@ -21,7 +21,7 @@ import string
 import zio.pygame as io
 import settings
 import zcode
-
+from zcode.constants import *
 
 def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
@@ -31,6 +31,10 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global fonts
     global blorbs
     global pixelunits
+    global spectrum
+
+    if zcode.use_standard < STANDARD_11:
+        spectrum.pop(15)
 
     if zcode.header.zversion() == 6:
         pixelunits = True # in z6, units should be pixels, not characters
