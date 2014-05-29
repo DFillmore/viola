@@ -109,7 +109,7 @@ def handle_parameters(argv): # handles command line parameters
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:T:', 'spec=')
+    args = getopt.getopt(argv[1:], 'dh:w:T:', 'zspec=')
     options = args[0]
     args = args[1]
     transcriptfile = False
@@ -123,7 +123,7 @@ def handle_parameters(argv): # handles command line parameters
             width = int(a[1])
         elif a[0] == '-T':
             transcriptfile = a[1]
-        elif a[0] == '--spec':
+        elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:
                 print("The spec selected must be one of:")
