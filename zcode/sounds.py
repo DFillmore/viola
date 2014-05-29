@@ -19,8 +19,8 @@
 import pygame
 import blorb
 import zio.pygame as io
-
 import zcode
+from zcode.constants import *
 
 
 AVAILABLE = False
@@ -163,7 +163,11 @@ class Sound:
         for a in blorbs:
             sound_data = a.getSnd(sound_number)
             self.type = a.getSndType(sound_number)
-        if sound_data:
+        # Standards below 1.1 do not support seperate channels for different sound types, so we 
+        # just don't support music in that case
+        if use_standard < STANDARD_11 and self.type != 0: 
+            self.sound = None
+        elif sound_data:
             self.sound = io.sound(sound_data, self.type)
         else:
             self.sound = None
