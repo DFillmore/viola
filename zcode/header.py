@@ -157,7 +157,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
             return 0 # z9 has no flags 1
 
         flag = 1
-        for a in range(bit-1):
+        for a in range(bit):
             flag = flag * 2
 
         if zcode.memory.getbyte(1) & flag == flag:
@@ -166,7 +166,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
             return 0
     elif bitmap == 2:
         flag = 1
-        for a in range(bit-1):
+        for a in range(bit):
             flag = flag * 2
         if zcode.memory.getword(0x10) & flag == flag:
             return 1
@@ -177,7 +177,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
             return 0
         else:
             flag = 1
-            for a in range(bit-1):
+            for a in range(bit):
                 flag = flag * 2
             if zcode.memory.getword(headerextloc() + 4) & flag == flag:
                 return 1
@@ -192,7 +192,7 @@ def setflag(bitmap, bit, value):
         if zversion() > 8: # z9 has no flags 1
             return False
         flag = 1
-        for a in range(bit-1):
+        for a in range(bit):
             flag = flag * 2
         if value:
             zcode.memory.setbyte(1, zcode.memory.getbyte(1) | flag)
@@ -200,7 +200,7 @@ def setflag(bitmap, bit, value):
             zcode.memory.setbyte(1, zcode.memory.getbyte(1) & ~flag)
     elif bitmap == 2:
         flag = 1      
-        for a in range(bit-1):
+        for a in range(bit):
             flag = flag * 2
         if value:
             zcode.memory.setword(0x10, zcode.memory.getword(0x10) | flag)
@@ -209,7 +209,7 @@ def setflag(bitmap, bit, value):
     elif bitmap == 3:
         if headerextsize() >= 4:
             flag = 1
-            for a in range(bit-1):
+            for a in range(bit):
                 flag = flag * 2
             if value:
                 zcode.memory.setword(headerextloc() + 8, zcode.memory.getword(headerextloc() + 8) | flag)
