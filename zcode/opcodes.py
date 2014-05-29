@@ -1182,18 +1182,23 @@ def z_set_colour():
             real_background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
             background = zcode.screen.convertRealToBasicColour(real_background)
 
-    # if the colours are out of the range expected, use the default colours
-    # this can happen if Beyond Zork is run on a terp with an unexpected
-    # interpreter number
-    # might be better to just not change colour?
-    if foreground not in zcode.screen.spectrum or foreground == 1:        
+    if foreground == 1:        
         foreground = zcode.header.getdeffgcolour()
+    elif foreground not in zcode.screen.spectrum and foreground != 0:
+        zcode.error.strictz('Invalid foreground value ' + str(foreground) + ' selected.')
+        foreground = 0
 
-    if background == 15 and zcode.header.zversion() != 6:
+
+
+    if background == 15 and zcode.header.zversion() != 6 and zcode.use_standard >= STANDARD_11:
         zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
         background = 0
-    elif background not in zcode.screen.spectrum or background == 1:
+    elif background == 1:
         background = zcode.header.getdefbgcolour()
+    elif background not in zcode.screen.spectrum and background != 0:
+        zcode.error.strictz('Invalid background value ' + str(foreground) + ' selected.')
+        background = 0
+
 
     if zcode.header.zversion() != 6:
         if foreground == 0:
@@ -1253,7 +1258,7 @@ def z_set_font():
                 result = zcode.screen.getWindow(0).getFontNumber()
             zcode.instructions.store(result)
     else:
-        if len(zcode.instructions.operands) > 1:
+        if len(zcode.instructions.operands) > 1 and zcode.use_standard >= STANDARD_11:
             window = zcode.screen.getWindow(zcode.instructions.operands[1])
         else:
             window = zcode.screen.currentWindow
