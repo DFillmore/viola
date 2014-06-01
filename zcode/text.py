@@ -254,7 +254,7 @@ def zcharstozscii(address):
                 
             for a in c:
                 codes.append(a)
-                if codes[-4:] == [5, 6, 4, 0]: # start unicode data
+                if codes[-4:] == [5, 6, 4, 0] and zcode.use_standard >= STANDARD_12: # start unicode data
                     unistring = True
                     
             loc += 2
@@ -286,7 +286,7 @@ def zcharstozscii(address):
         elif twocode == 2: # last 5 bits of a 10-byte zscii code
             ZSCII[-1] = chr(ZSCII[-1] + a)
             twocode = 0
-            if ZSCII[-1] == chr(128):
+            if ZSCII[-1] == chr(128) and zcode.use_standard >= STANDARD_12:
                 unicodestring = True
         elif unicodestring:
             ZSCII.append(chr(a))

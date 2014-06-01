@@ -24,6 +24,8 @@ from zcode.constants import *
 def setup(startstreams=[False, True, False, False, False]):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
+    if zcode.use_standard < STANDARD_12:
+        streams[5] = None
     for a in range(len(startstreams)):
         if startstreams[2]:
             streams[2].filename = startstreams[2]

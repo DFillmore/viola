@@ -725,20 +725,22 @@ def z_print_table():
 
     x,y = zcode.screen.currentWindow.getCursor()
     c = 0
-
-    for a in range(height):
-        for b in range(width):
-            t = zcode.text.getZSCIIchar(zcode.memory.getbyte(zsciitext + c))
-            zcode.output.printtext(t)
-            c += 1
-        c += skip
-        if a != height - 1:
-            if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
-                zcode.output.printtext('\r')
-            else:
-                y += zcode.screen.currentWindow.getFont().getHeight()
-                zcode.screen.currentWindow.setCursor(x, y)
-                zcode.screen.currentWindow.flushTextBuffer()
+    if zcode.use_version < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
+        zcode.error.strictz('Tried to use print_table operation in lower window')
+    else:
+        for a in range(height):
+            for b in range(width):
+                t = zcode.text.getZSCIIchar(zcode.memory.getbyte(zsciitext + c))
+                zcode.output.printtext(t)
+                c += 1
+            c += skip
+            if a != height - 1:
+                if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
+                    zcode.output.printtext('\r')
+                else:
+                    y += zcode.screen.currentWindow.getFont().getHeight()
+                    zcode.screen.currentWindow.setCursor(x, y)
+                    zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
             
     
