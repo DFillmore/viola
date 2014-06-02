@@ -32,9 +32,13 @@ def setup(b):
     global AVAILABLE, blorbs
     try:
         pygame.mixer.init()
-        for a in range(io.maxeffectschannels()):
+        if zcode.use_standard >= STANDARD_12:
+            for a in range(io.maxeffectschannels()):
+                soundchannels[0].append(effectsChannel(a))
+            for a in range(io.maxmusicchannels()):
+                soundchannels[1].append(musicChannel(a))
+        else:
             soundchannels[0].append(effectsChannel(a))
-        for a in range(io.maxmusicchannels()):
             soundchannels[1].append(musicChannel(a))
         AVAILABLE = True
     except:
