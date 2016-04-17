@@ -284,13 +284,13 @@ def openstream(stream, location=None, width=None): # area is only used for strea
                 streams[3].append(m)
             else:
                 zcode.error.fatal('Tried to open too many memory streams.')
-    elif stream == 5:
+    elif stream == 5 and zcode.use_standard >= STANDARD_12:
         streams[5].open(location)
     else:
-        if stream >= len(streams) or stream < 1:
-            pass # ignore any attempts to open a stream we don't understand
-        else:
+        try:
             streams[stream].open()
+        except:
+            zcode.error.strictz("Tried to open stream ' + str(stream) + ', which doesn't exist")
 
 
 def closestream(stream):
@@ -314,7 +314,8 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
         streams[3][-1].write(text)
     if special:
         streams[4].write(text)
-    streams[5].write(text)
+    if zcode.use_standard >= STANDARD_12:
+        streams[5].write(text)
 
 
 

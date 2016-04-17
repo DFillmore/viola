@@ -725,7 +725,7 @@ def z_print_table():
 
     x,y = zcode.screen.currentWindow.getCursor()
     c = 0
-    if zcode.use_version < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
+    if zcode.use_standard < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
         zcode.error.strictz('Tried to use print_table operation in lower window')
     else:
         for a in range(height):
