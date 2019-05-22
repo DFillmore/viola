@@ -89,7 +89,7 @@ def convertInputToZSCII(char):
     if char >= 256 and char <= 265:
         char -= 111
         return char
-    if char in zcode.text.unitable:
+    if char in zcode.text.reverseunitable:
         char = zcode.text.reverseunitable[char]
         return char
     return None
