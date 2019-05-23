@@ -880,11 +880,12 @@ def z_read():
     zcode.input.command_history.append(zcode.input.instring)
     zcode.input.command_history.reverse()
 
-    inp = [chr(a) for a in zcode.input.instring]
+
+    inp = [zcode.text.getZSCIIchar(a) for a in zcode.input.instring]
     inp = ''.join(inp)
     inp = inp.lower()
-
-
+    inp = zcode.text.unicodetozscii(inp)
+    
 
     zcode.output.streams[4].write(inp)
     zcode.output.streams[4].write('\n')

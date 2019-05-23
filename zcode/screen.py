@@ -548,7 +548,7 @@ def convertRealToTrueColour(colour):
 class window(io.window):
     def __str__(self):
         return 'window ' + str(self.window_id)
-    # window properties (window coordinates are measured from 1,1, not 0,0, oh no. That would be sensible.)
+    # window properties (window coordinates are measured from 1,1)
     newline_routine = 0
     interrupt_countdown = 0
     basic_foreground_colour = 0

@@ -182,11 +182,11 @@ def getInput(display=True, ignore=False, chistory=True):
                     if zsciivalue == 13:
                         zcode.screen.currentWindow.hideCursor()
 
-                    zcode.output.streams[1].write(chr(zsciivalue))
+                    zcode.output.streams[1].write(zcode.text.getZSCIIchar(zsciivalue))
     
                     zcode.screen.currentWindow.flushTextBuffer()
                     if zcode.header.zversion != 6:
-                        zcode.output.streams[2].write(chr(zsciivalue))
+                        zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
 
             else:
                 return None
