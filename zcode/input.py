@@ -121,7 +121,7 @@ def getInput(display=True, ignore=False, chistory=True):
                     h = zcode.screen.currentWindow.getStringHeight(inp)
                     x = zcode.screen.currentWindow.getCursor()[0] - w
                     y = zcode.screen.currentWindow.getCursor()[1]
-                    zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
+                    zcode.screen.currentWindow.eraseArea(x,y,w,h)
                     zcode.screen.currentWindow.setCursor(x,y)
 
                     instring = command_history[chplace]
@@ -143,7 +143,7 @@ def getInput(display=True, ignore=False, chistory=True):
                     h = zcode.screen.currentWindow.getStringHeight(inp)
                     x = zcode.screen.currentWindow.getCursor()[0] - w
                     y = zcode.screen.currentWindow.getCursor()[1]
-                    zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
+                    zcode.screen.currentWindow.eraseArea(x,y,w,h)
                     zcode.screen.currentWindow.setCursor(x,y)
 
                     instring = newstring
@@ -173,8 +173,8 @@ def getInput(display=True, ignore=False, chistory=True):
 
 
         if isinstance(input, io.mousemove):
-            mouse.xpos = zcode.screen.pix2units(input.xpos + 1, horizontal=True, coord=True)
-            mouse.ypos = zcode.screen.pix2units(input.ypos + 1, horizontal=False, coord=True)
+            mouse.xpos = zcode.screen.pix2units(input.xpos, horizontal=True, coord=True)
+            mouse.ypos = zcode.screen.pix2units(input.ypos, horizontal=False, coord=True)
 
         if isinstance(input, io.keypress):
             if zsciivalue in zcode.text.inputvalues:

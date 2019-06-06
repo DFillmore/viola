@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2014 David Fillmore
+# Copyright (C) 2001 - 2019 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -11,19 +11,19 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Viola; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os
 os.environ['PYGAME_FREETYPE'] = '1'
 
 
 import pygame
+import pygame.ftfont
 import io
 import sys
 import inspect
+import types
+import numpy
+import fonts.font as fonts
 
 from pygame.locals import *
 pygame.init()
@@ -82,16 +82,17 @@ class image():
         self.palette = palette
 
     def draw(self, window, x, y, part=None): # part is tuple in form (left, top, width, height)
+        # x and y are relative to the top left of the screen, not the window
         picture = self.picture
         if self.palette:
             picture.set_palette(self.palette)
         picture = picture.convert_alpha(window.screen.screen)
         if part:
             r = pygame.Rect(part[0], part[1], part[2], part[3])
-            window.screen.screen.blit(picture, (x,y), r)
+            window.screen.screen.blit(picture, (x-1,y-1), r)
         else:
-            window.screen.screen.blit(picture, (x,y))
-        area = pygame.Rect((window.x_coord, window.y_coord), window.getSize())
+            window.screen.screen.blit(picture, (x-1,y-1))
+        area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
         window.screen.updates.append(area)
 
     def scale(self, width, height):
@@ -119,22 +120,46 @@ class font:
     #def __str__(self):
     #    return 'Font: ' + str(self.name)
 
-    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None):
+    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, fixedfile=None, boldfixedfile=None, italicfixedfile=None, bolditalicfixedfile=None):
         self.size = self.defaultSize()
         self.fontfile = fontfile
         self.boldfile = boldfile
         self.italicfile = italicfile
         self.bolditalicfile = bolditalicfile
+        self.fixedfile =fixedfile
+        self.boldfixedfile = boldfixedfile
+        self.italicfixedfile = italicfixedfile
+        self.bolditalicfixedfile = bolditalicfixedfile
         self.usefile = self.fontfile
+        codePointsRoman = fonts.getCodes(fontfile)
+        codePointsBold = fonts.getCodes(boldfile)
+        codePointsItalic = fonts.getCodes(italicfile)
+        codePointsBoldItalic = fonts.getCodes(bolditalicfile)
+        codePointsFixed = fonts.getCodes(fixedfile)
+        codePointsBoldFixed = fonts.getCodes(boldfixedfile)
+        codePointsItalicFixed = fonts.getCodes(italicfixedfile)
+        codePointsBoldItalicFixed = fonts.getCodes(bolditalicfixedfile)
+        self.codePoints = list(set(codePointsRoman).intersection(*[codePointsBold, codePointsItalic,codePointsBoldItalic,codePointsFixed,codePointsBoldFixed,codePointsItalicFixed,codePointsBoldItalicFixed]))
+
 
     
     bold = False
     italic = False
     usefile = None
 
+    reversevideo = False
+    fixedstyle = False
 
     def getUseFile(self):
-        if self.italic and self.bold:
+        if self.italic and self.bold and self.fixedstyle:
+            return self.bolditalicfixedfile
+        elif self.italic and self.fixedstyle:
+            return self.italicfixedfile
+        elif self.bold and self.fixedstyle:
+            return self.boldfixedfile
+        elif self.fixedstyle:
+            return self.fixedfile
+        elif self.italic and self.bold:
             return self.bolditalicfile
         elif self.italic:
             return self.italicfile
@@ -142,8 +167,7 @@ class font:
             return self.boldfile
         else:
             return self.fontfile
-
-       
+           
     def setBold(self, value):
         if value:
             self.bold = True
@@ -156,6 +180,19 @@ class font:
             self.italic = True
         else:
             self.italic = False
+        self.usefile = self.getUseFile()
+
+    def setReverse(self, value):
+        if value:
+            self.reversevideo = True
+        else:
+            self.reversevideo = False
+
+    def setFixed(self, value):
+        if value:
+            self.fixedstyle = True
+        else:
+            self.fixedstyle = False
         self.usefile = self.getUseFile()
 
     def getWidth(self):
@@ -175,8 +212,13 @@ class font:
     def getDescent(self):
         return abs(self.fontData().get_descent())
 
+    def checkChar(self, charnum):
+        if charnum in self.codePoints:
+            return True
+        return False
+
     def defaultSize(self):
-        return 14
+        return 16
 
     def increaseSize(self, amount=1):
         self.size += amount
@@ -192,21 +234,60 @@ class font:
         self.size = self.defaultSize()
 
     def render(self, text, antialias, colour, background):
+        unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
+
+        #print(unavailable)
+    
+        for elem in unavailable:
+            # Check if string is in the main string
+            if chr(elem) in text:
+                # Replace the string
+                text = text.replace(elem, "?")
+
+
         f = self.fontData()
-        return f.render(text, antialias, colour, background)
+        if self.reversevideo:
+            return f.render(text, antialias, background, colour)
+        else:
+            if background[3] == 0:
+                return f.render(text, colour)
+            return f.render(text, antialias, colour, background)
 
     def fontData(self):
-        fon = pygame.font.Font(self.usefile, self.size)
+        fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
+font1 = font(getBaseDir() + "//fonts//FreeSerif.ttf",
+             boldfile=getBaseDir() + "//fonts//FreeSerifBold.ttf",
+             italicfile=getBaseDir() + "//fonts//FreeSerifItalic.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+            )
+
+font2 = None
+
+font3 = None
+
+font4 = font(getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+            )
 
 class window:
-    y_coord = 0
-    x_coord = 0
+    y_coord = 1
+    x_coord = 1
     y_size = 0
     x_size = 0
-    y_cursor = 0
-    x_cursor = 0
+    y_cursor = 1
+    x_cursor = 1
     left_margin = 0
     right_margin = 0
     text_style = 0
@@ -275,18 +356,23 @@ class window:
     def getPixelColour(self, x, y):
         return self.screen.getpixel(x,y)
 
+    def getPixelColour(self, x, y):
+        x = x - 1 + self.getPosition()[0] - 1
+        y = y - 1 + self.getPosition()[1] - 1
+        return self.screen.getPixel(x, y)
+
     def erase(self):
-        area = pygame.Rect((self.x_coord, self.y_coord), (self.x_size, self.y_size))
+        area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
         self.screen.screen.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.line_count = 0
-        self.x_cursor = 0
-        self.y_cursor = 0
+        self.x_cursor = 1
+        self.y_cursor = 1
 
 
     def eraseArea(self, x, y, w, h):
-        x = self.x_coord + x
-        y = self.y_coord + y
+        x = self.x_coord - 1 + x - 1
+        y = self.y_coord - 1 + y - 1
         area = pygame.Rect(x, y, w, h)
         self.screen.screen.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
@@ -310,30 +396,26 @@ class window:
             sourcey += amount
             width, height = self.getSize()
             height -= amount
-            sourcerect = pygame.Rect(sourcex, sourcey, width, height)
-            destrect = pygame.Rect(xpos, ypos,width, height)
+            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height)
+            destrect = pygame.Rect(xpos-1, ypos-1,width, height)
             self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord, self.y_coord), sourcerect)
+            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
             self.screen.screen.set_clip()
-            destrect = pygame.Rect(sourcex, ypos+height, width, amount)
+            destrect = pygame.Rect(sourcex - 1, ypos - 1 + height, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
         else: # scroll area down
             xpos, ypos = self.x_coord, self.y_coord
             sourcex, sourcey = self.x_coord, self.y_coord
             width, height = self.getSize()
-            sourcerect = pygame.Rect(sourcex, sourcey, width, height-amount)
-            destrect = pygame.Rect(xpos, ypos+amount, width, height-amount)
+            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height-amount)
+            destrect = pygame.Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
             self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord, self.y_coord), sourcerect)
+            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
             self.screen.screen.set_clip()
-            destrect = pygame.Rect(xpos, ypos, width, amount)
+            destrect = pygame.Rect(xpos - 1, ypos - 1, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        area = pygame.Rect(xpos, ypos, width, height)
+        area = pygame.Rect(xpos - 1, ypos - 1, width, height)
         self.screen.updates.append(area)
-
-    def flushTextBuffer(self):
-        pass
-
 
     def printText(self, text):
         self.buffertext(text) 
@@ -372,12 +454,14 @@ class window:
 
     def drawText(self, text):
         fg, bg = self.getColours()
-        xpos, ypos = self.x_coord, self.y_coord
-        xcursor, ycursor = self.x_cursor, self.y_cursor
+        xpos, ypos = self.x_coord-1, self.y_coord-1
+        xcursor, ycursor = self.x_cursor-1, self.y_cursor-1
         width, height = self.getSize()
         textsurface = self.getFont().render(text, 1, fg, bg)
+        x = xpos + xcursor
+        y = ypos + ycursor
         if text != '':
-            self.screen.screen.blit(textsurface, (xpos + xcursor, ypos + ycursor))
+            self.screen.screen.blit(textsurface, (x,y))
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
@@ -404,7 +488,7 @@ class window:
                 else:
                     linebuffers.append(self.textbuffer[:])
             for a in range(len(linebuffers)):
-                winwidth = (self.x_size - self.x_cursor - self.right_margin)
+                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
                 x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
                 linebuffer = linebuffers[a][0:x]
                 
@@ -418,7 +502,7 @@ class window:
             
         else:
             while (len(self.textbuffer) > 0):                
-                winwidth = (self.x_size - self.x_cursor - self.right_margin)
+                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
                 x = self.fitText(self.textbuffer[:], winwidth, buffering=buffering)
                 definitescroll = 0
                 linebuffer = self.textbuffer[:]
@@ -476,7 +560,7 @@ class screen:
         return self.height
 
     def getPixel(self, x,y):
-        return self.screen.get_at((x, y))
+        return self.screen.get_at((x-1, y-1))
 
     def erase(self, colour, area=None):
         if area:

@@ -30,16 +30,12 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global ioScreen
     global fonts
     global blorbs
-    global pixelunits
+    global unitHeight
+    global unitWidth
     global spectrum
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
-
-    if zcode.header.zversion() == 6:
-        pixelunits = True # in z6, units should be pixels, not characters
-    if zcode.header.zversion() >= 5 and zcode.header.getflag(3, 1) == 1:
-        pixelunits = True # if the game wishes to change font sizes, units should be pixels, not characters
 
     foreground = convertBasicToRealColour(foreground)
     background = convertBasicToRealColour(background)
@@ -67,6 +63,14 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
             zwindow.append(window(ioScreen, fontlist[1])) # windows 2 to 7
     for a in range(len(zwindow)):
         getWindow(a).window_id = str(a)
+
+
+    if zcode.header.zversion() == 6: # in z6 games, units are pixels
+        unitHeight = 1
+        unitWidth = 1
+    else: # in other versions, units are characters
+        unitHeight = getWindow(0).getFont().getHeight() 
+        unitWidth = getWindow(0).getFont().getWidth() 
      
 
     # set the current window
@@ -76,9 +80,9 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     # set up fonts
 
     if zcode.header.zversion() != 6 and zcode.header.zversion() >= 3:
-        getWindow(1).fontlist[1] = font4
+        getWindow(1).fontlist[1] = fontlist[4]
     if zcode.header.zversion() < 4:
-        statusline.fontlist[1] = font4
+        statusline.fontlist[1] = fontlist[4]
 
     for a in zwindow:
         a.setFontByNumber(1)
@@ -147,9 +151,6 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if zcode.header.zversion() != 6:
         getWindow(0).left_margin = 5
         getWindow(0).right_margin = 5
-   
-
-pixelunits = False # should units be pixels? Generally only set True in z6 games, but also when z5 want to change font sizes
 
 
 def supportedgraphics(arg): # should really tie this into the io module
@@ -167,192 +168,38 @@ def supportedgraphics(arg): # should really tie this into the io module
         return 0
     return 0
 
-def supportedstyles(arg):
+def supportedstyles(arg): # probably we should change this depending on the current font chosen? Font 3 has no bold or italic variations.
     if arg >= 0x10: # we don't recognize any styles above 8
         return 0
     return 1 # all other styles and combinations are supported
 
 # font 3 needs to be the same size as fixed width font
 
-class font(io.font):
-    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, fixedfile=None, boldfixedfile=None, italicfixedfile=None, bolditalicfixedfile=None):
-        self.size = self.defaultSize()
-        self.fontfile = fontfile
-        self.boldfile = boldfile
-        self.italicfile = italicfile
-        self.bolditalicfile = bolditalicfile
-        self.fixedfile =fixedfile
-        self.boldfixedfile = boldfixedfile
-        self.italicfixedfile = italicfixedfile
-        self.bolditalicfixedfile = bolditalicfixedfile
-        self.usefile = self.fontfile
-
-    reversevideo = False
-    fixedstyle = False
-
-    def getUseFile(self):
-        if self.italic and self.bold and self.fixedstyle:
-            return self.bolditalicfixedfile
-        elif self.italic and self.fixedstyle:
-            return self.italicfixedfile
-        elif self.bold and self.fixedstyle:
-            return self.boldfixedfile
-        elif self.fixedstyle:
-            return self.fixedfile
-        elif self.italic and self.bold:
-            return self.bolditalicfile
-        elif self.italic:
-            return self.italicfile
-        elif self.bold:
-            return self.boldfile
-        else:
-            return self.fontfile
-
-
-    def setReverse(self, value):
-        if value:
-            self.reversevideo = True
-        else:
-            self.reversevideo = False
-
-    def setFixed(self, value):
-        if value:
-            self.fixedstyle = True
-        else:
-            self.fixedstyle = False
-        self.usefile = self.getUseFile()
-
-    def render(self, text, antialias, colour, background):
-
-        f = self.fontData()
-        if self.reversevideo:
-            return f.render(text, antialias, background, colour)
-        else:
-            if background[3] == 0:
-                return f.render(text, antialias, colour)
-            return f.render(text, antialias, colour, background)
-
-
-class runicfont(io.font):
-    def __init__(self, fontfile, size=14, boldfile=None, italicfile=None, bolditalicfile=None):
-        self.default_size = size
-        self.size = size
-        self.font_data = io.image('images\\GfxFont.png', filename=True)
-        self.width = font[4].getWidth()
-        self.height = fonts[4].getHeight()
-    
-    bold = False
-    italic = False
-       
-    def setBold(self, value):
-        if value:
-            self.bold = True
-        else:
-            self.bold = False
-
-    def setItalic(self, value):
-        if value:
-            self.bold = False
-        else:
-            self.italic = False
-
-    def getWidth(self):    
-        return self.width
-    
-    def getHeight(self):
-        return self.height
-
-    def getStringLength(self, text):
-        return self.width() * len(text)
-
-    def getAscent(self):
-        return self.getHeight()
-
-    def getDescent(self):
-        return 0
-
-    def defaultSize(self):
-        return 14
-
-    def resize(self, dif):
-        if dif == 0:
-            self.size = self.defaultSize()
-        else:
-            self.size += dif
-
-    def render(self, text, antialias, colour, background):
-        
-        return f.render(text, antialias, colour, background)
-
-    def font(self):
-        char = ord(char) - 32
-        x = (char % 32) * fonts[4].getWidth()
-        
-        return None
-        
-    def drawchar(self, char):
-        # once we have the right picture, we need to scale it to exactly the size of the fixed width font
-        char = ord(char) - 32
-        x = (char % 32) * self.width
-        row = char // 32
-        y = row * self.width
-        w = (self.font_data.getWidth() // 8) * self.width
-        h = (self.font_data.getHeight() // 8) * self.height
-        c = c.scale(w,h)
-        return c
-
-
 fixedpitchbit = False
 
 def pix2units(pix, horizontal, coord=False): # converts a number of pixels into a number of units
-    if pixelunits:
-        value = pix
-    elif not horizontal:
+    if not horizontal:
         value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
     else:
         value = ((pix - 1) // currentWindow.getFont().getWidth()) + 1
     return value
 
 def units2pix(units, horizontal, coord=False): # converts a number of units into a number of pixels
-    if pixelunits:
-        value = units
-    elif not horizontal:
+    if coord:
+        units -= 1
+    if not horizontal:
         value = units * currentWindow.getFont().getHeight()
-        if coord:
-            value -= currentWindow.getFont().getHeight()
-            value += 1
     else:
         value = units * currentWindow.getFont().getWidth()
-        if coord:
-            value -= currentWindow.getFont().getWidth()
-            value += 1
+    if coord:
+        value += 1    
     return value
 
-font1 = font(io.getBaseDir() + "//fonts//FreeSerif.ttf",
-             boldfile=io.getBaseDir() + "//fonts//FreeSerifBold.ttf",
-             italicfile=io.getBaseDir() + "//fonts//FreeSerifItalic.ttf",
-             bolditalicfile=io.getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
-             fixedfile=io.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-            )
-
-font4 = font(io.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-             fixedfile=io.getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=io.getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=io.getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=io.getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-            )
-
 fontlist = [ None, 
-             font1,
+             io.font1,
              None, # picture font. Unspecified, should always return 0
-             None, # Beyond Zork font. Going to require some hacking.
-             font4
+             io.font3, # Beyond Zork font. Going to require some hacking.
+             io.font4
         ]
 
 
@@ -680,27 +527,27 @@ class window(io.window):
         return s
 
     def setPosition(self, x, y):
-        self.x_coord = x - 1
-        self.y_coord = y - 1
+        self.x_coord = x
+        self.y_coord = y
 
     def getPosition(self):
-        return (self.x_coord + 1, self.y_coord + 1)
+        return (self.x_coord, self.y_coord)
 
     def setCursor(self, x, y):
-        self.x_cursor = x - 1
-        self.y_cursor = y - 1
+        self.x_cursor = x
+        self.y_cursor = y
 
     def getCursor(self):
-        return (self.x_cursor + 1, self.y_cursor + 1)
+        return (self.x_cursor, self.y_cursor)
 
-    def getPixelColour(self, x, y):
-        x += self.getPosition()[0] - 1
-        y += self.getPosition()[1] - 1
-        return self.screen.getPixel(x - 1, y - 1)
+#    def getPixelColour(self, x, y):
+#        x += self.getPosition()[0] - 1
+#        y += self.getPosition()[1] - 1
+#        return self.screen.getPixel(x, y)
 
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
-            self.setCursor(self.left_margin + 1, self.getCursor()[1])
+            self.setCursor(self.left_margin+1, self.getCursor()[1])
 
     
     def setprops(self, property, value):
@@ -860,18 +707,20 @@ class window(io.window):
             self.line_count+=1
         
         # put the cursor at the current left margin
-        self.setCursor(self.left_margin + 1, self.getCursor()[1])
+        self.setCursor(self.left_margin, self.getCursor()[1])
         if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
-            morestring = '[MORE]'
-            self.drawText(morestring)
+            pfont = self.setFontByNumber(4)
+            morestring = '[MORE]' 
+            self.setFontByNumber(pfont)
+            self.drawText(morestring) 
             while zcode.input.getInput(ignore=True) != 32:
                 pass
-            x = self.getCursor()[0] + self.getPosition()[0] - 1
-            y = self.getCursor()[1] + self.getPosition()[1] - 1
+            x = self.getCursor()[0]# + self.getPosition()[0] - 1
+            y = self.getCursor()[1]# + self.getPosition()[1] - 1
             w = zcode.screen.currentWindow.getStringLength(morestring)
             h = zcode.screen.currentWindow.getStringHeight(morestring)
-            zcode.screen.currentWindow.eraseArea(x-1,y-1,w,h)
+            zcode.screen.currentWindow.eraseArea(x,y,w,h)
             currentWindow.flushTextBuffer()
 
         self.postNewline()
@@ -897,7 +746,7 @@ class window(io.window):
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
-        area = ((self.getPosition()[0] + self.getCursor()[0]) - 1, (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
+        area = ((self.getPosition()[0] + self.getCursor()[0]), (self.getPosition()[1] + self.getCursor()[1]), charwidth, charheight)
         ioScreen.erase(self.getColours()[1], area)
         self.screen.update()
     
@@ -944,7 +793,7 @@ class window(io.window):
     def drawpic(self, picture_number, x, y):
         pic = self.getpic(picture_number)
         if pic:
-            pic.draw(self, (self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1))
+            pic.draw(self, (self.getPosition()[0] + x - 1), (self.getPosition()[1] + y - 1))
 
     def erasepic(self, picture_data, x, y, scale=1):
         pic = io.image(picture_data)
@@ -952,16 +801,17 @@ class window(io.window):
         newheight = pic.getHeight() * scale
 
         if self.getColours()[1] != -4:
-            area = ((self.getPosition()[0] + x - 1 - 1), (self.getPosition()[1] + y - 1 - 1), newwidth, newheight)
+            area = ((self.getPosition()[0] + x - 1), (self.getPosition()[1] + y - 1), newwidth, newheight)
             ioScreen.erase(self.getColours()[1], area)
 
     def eraseline(self, len):
         if self.getColours()[1] != -4:
-            ioScreen.erase(self.getColours()[1], (self.getCursor()[0], self.getCursor()[1], len, self.getFont().getHeight()))
+            ioScreen.erase(self.getColours()[1], (self.getPosition()[0] + self.getCursor()[0] - 1, self.getPosition()[1] + self.getCursor()[1] - 1, len, self.getFont().getHeight()))
     fontlist = []
 
 
 def eraseWindow(winnum):
+
     if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
         pass
     elif zcode.numbers.neg(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
@@ -970,7 +820,7 @@ def eraseWindow(winnum):
         for a in range(len(zwindow)):
             getWindow(a).setCursor(1, 1)
             getWindow(a).line_count = 0
-    elif zcode.numbers.neg(winnum) == -2: # this doesn't unsplit the screen, but apparently may move the cursor. I don't get it. (actually, I think the spec's wrong)
+    elif zcode.numbers.neg(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
         ioScreen.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1][3] != 0:
         getWindow(winnum).erase()
