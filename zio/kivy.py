@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2014 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -11,13 +11,15 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Viola; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import os
-os.environ['PYGAME_FREETYPE'] = '1'
 
-
-import pygame
-import pygame.ftfont
+import kivy
+kivy.require('1.10.1') 
 import io
 import sys
 import inspect
@@ -25,12 +27,12 @@ import types
 import numpy
 import fonts.font as fonts
 
-from pygame.locals import *
-pygame.init()
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
 
-
-TIMEREVENT = pygame.USEREVENT
-SOUNDEVENT = pygame.USEREVENT + 1
+TIMEREVENT = None #pygame.USEREVENT
+SOUNDEVENT = None #pygame.USEREVENT + 1
 
 mousebuttonmapping = {1:0,2:2,3:1}
 
@@ -57,7 +59,21 @@ def findfile(filename):
     return False
 
 def setIcon(icon):
-    pygame.display.set_icon(icon)
+    pass
+
+
+class Rect:
+    def __init__(self, xpos=1, ypos=1, width=1, height=1):
+        self.xpos = xpos
+        self.ypos = ypos
+        self.width = width
+        self.height = height
+            
+    def getWidth(self):
+        return self.width
+
+    def getHeight(self):
+        return self.height
 
 class image():
     data = None
@@ -88,11 +104,11 @@ class image():
             picture.set_palette(self.palette)
         picture = picture.convert_alpha(window.screen.screen)
         if part:
-            r = pygame.Rect(part[0], part[1], part[2], part[3])
+            r = Rect(part[0], part[1], part[2], part[3])
             window.screen.screen.blit(picture, (x-1,y-1), r)
         else:
             window.screen.screen.blit(picture, (x-1,y-1))
-        area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
+        area = Rect(window.x_coord - 1, window.y_coord - 1, window.getSize()[0], window.getSize()[1])
         window.screen.updates.append(area)
 
     def scale(self, width, height):
@@ -201,6 +217,10 @@ class font:
     
     def getHeight(self):
         self.height = self.fontData().size('0')[1]
+        #self.height = self.fontData().get_linesize()
+        print('height', self.height)
+        print('ascent', self.fontData().get_ascent())
+        print('descent', self.fontData().get_descent())
         return self.height
 
     def getStringLength(self, text):
@@ -267,9 +287,15 @@ font1 = font(getBaseDir() + "//fonts//FreeSerif.ttf",
              bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
             )
 
-font2 = None
-
-font3 = None
+font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+            )
 
 font4 = font(getBaseDir() + "//fonts//FreeMono.ttf", 
              boldfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
@@ -312,11 +338,11 @@ class window:
         self.setFont(font)
 
     def showCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
 
     def hideCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.screen, self.background_colour, area)
 
     def setFont(self, f):
@@ -362,7 +388,7 @@ class window:
         return self.screen.getPixel(x, y)
 
     def erase(self):
-        area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
+        area = Rect(self.x_coord-1, self.y_coord-1, self.x_size, self.y_size)
         self.screen.screen.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.line_count = 0
@@ -373,7 +399,7 @@ class window:
     def eraseArea(self, x, y, w, h):
         x = self.x_coord - 1 + x - 1
         y = self.y_coord - 1 + y - 1
-        area = pygame.Rect(x, y, w, h)
+        area = Rect(x, y, w, h)
         self.screen.screen.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.screen.update()
@@ -396,25 +422,25 @@ class window:
             sourcey += amount
             width, height = self.getSize()
             height -= amount
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height)
-            destrect = pygame.Rect(xpos-1, ypos-1,width, height)
+            sourcerect = Rect(sourcex-1, sourcey-1, width, height)
+            destrect = Rect(xpos-1, ypos-1,width, height)
             self.screen.screen.set_clip(destrect)
             self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
             self.screen.screen.set_clip()
-            destrect = pygame.Rect(sourcex - 1, ypos - 1 + height, width, amount)
+            destrect = Rect(sourcex - 1, ypos - 1 + height, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
         else: # scroll area down
             xpos, ypos = self.x_coord, self.y_coord
             sourcex, sourcey = self.x_coord, self.y_coord
             width, height = self.getSize()
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height-amount)
-            destrect = pygame.Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
+            sourcerect = Rect(sourcex-1, sourcey-1, width, height-amount)
+            destrect = Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
             self.screen.screen.set_clip(destrect)
             self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
             self.screen.screen.set_clip()
-            destrect = pygame.Rect(xpos - 1, ypos - 1, width, amount)
+            destrect = Rect(xpos - 1, ypos - 1, width, amount)
             pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        area = pygame.Rect(xpos - 1, ypos - 1, width, height)
+        area = Rect(xpos - 1, ypos - 1, width, height)
         self.screen.updates.append(area)
 
     def printText(self, text):
@@ -462,7 +488,7 @@ class window:
         y = ypos + ycursor
         if text != '':
             self.screen.screen.blit(textsurface, (x,y))
-        area = pygame.Rect(xpos, ypos, width, height)
+        area = Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
     def flushTextBuffer(self):
@@ -540,18 +566,24 @@ class window:
     def getStringHeight(self, text):
         return self.getFont().getHeight()
 
-class screen:
+
+
+
+class screen(Widget):
     updates = []
-    def __init__(self, width, height, title=''):
-        self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
-        pygame.display.set_caption(title)
-        self.screen.fill(0xFFFFFF)
-        self.width = width
-        self.height = height
-        self.update()
+    def __init__(self, **kwargs):
+        super(MyWidget, self).__init__(**kwargs)
+        with self.canvas:
+            # add your instruction for main canvas here
+            #self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+            #pygame.display.set_caption(title)
+            self.canvas.add(Color(1, 1, 1))
+            self.width = width
+            self.height = height
+            self.update()
 
     def update(self):
-        pygame.display.update()
+        self.canvas.ask_update()
 
     def getWidth(self):
         return self.width
@@ -564,9 +596,9 @@ class screen:
 
     def erase(self, colour, area=None):
         if area:
-            area = pygame.Rect((area))
+            area = Rect(area[0], area[1], area[2], area[3])
         else:
-            area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
+            area = Rect(0, 0, self.getWidth(), self.getHeight())
         self.screen.fill(colour, area)
         self.updates.append(area)
 
@@ -598,14 +630,16 @@ class screen:
         self.screen.set_clip(None)
 
         self.erase(self.background)
-        self.screen.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
+        self.screen.set_clip(Rect(0,0,oldwidth,oldheight))
         self.screen.blit(backup, (0,0))
         self.screen.set_clip(None)
         self.resized = True
         self.update()
 
 
-
+class VApp(App):
+    def build(self):
+        return screen()
 
 class keypress:
     def __init__(self, value, character, modifier):
@@ -679,7 +713,7 @@ def setup():
     global timerrunning
     timerrunning = False
     inputtext = []
-    pygame.key.set_repeat(100, 100)
+    #pygame.key.set_repeat(100, 100)
 
 def getinput(screen):
     i = input(screen).getinput()
