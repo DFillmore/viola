@@ -117,16 +117,23 @@ def z_check_arg_count():
 
 def z_check_unicode():
     charnumber = zcode.instructions.operands[0]
-    if charnumber < 0x20 or (charnumber >= 0x7f and charnumber <= 0x9f):
-        zcode.instructions.store(0) # can't print or read these characters
-    #elif charnumber < 128:
-    #    zcode.instructions.store(3) # can read and print ASCII
-    elif charnumber < 256:
-        zcode.instructions.store(3) # can read and print Latin-1
-    elif charnumber > 255:
-        zcode.instructions.store(1)
+    if zcode.screen.fontlist[zcode.screen.currentWindow.font_number].checkChar(charnumber):
+        zcode.instructions.store(3)
     else:
         zcode.instructions.store(0)
+
+
+    
+    #if charnumber < 0x20 or (charnumber >= 0x7f and charnumber <= 0x9f):
+    #    zcode.instructions.store(0) # can't print or read these characters
+    ##elif charnumber < 128:
+    ##    zcode.instructions.store(3) # can read and print ASCII
+    #elif charnumber < 256:
+    #    zcode.instructions.store(3) # can read and print Latin-1
+    #elif charnumber > 255:
+    #    zcode.instructions.store(1)
+    #else:
+    #    zcode.instructions.store(0)
 
 def z_clear_attr():
     object = zcode.instructions.operands[0]
@@ -210,7 +217,7 @@ def z_erase_line():
         elif zcode.header.zversion() != 6:
             pass
         else:
-            zcode.screen.currentWindow.eraseline(value - 1)
+            zcode.screen.currentWindow.eraseline(value)
         
 
 def z_erase_picture():
@@ -305,7 +312,10 @@ def z_get_child():
 def z_get_cursor():
     zcode.screen.currentWindow.flushTextBuffer()
     array = zcode.instructions.operands[0]
-    window = zcode.screen.currentWindow
+    if zcode.header.zversion() != 6:
+        window = zcode.screen.getWindow(1)
+    else:
+        window = zcode.screen.currentWindow
     ypos = zcode.screen.pix2units(window.getCursor()[1], 0)
     xpos = zcode.screen.pix2units(window.getCursor()[0], 1)
     zcode.memory.setword(array, ypos)
@@ -819,7 +829,7 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
-    zcode.screen.currentWindow.showCursor()
+    #zcode.screen.currentWindow.showCursor()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -867,8 +877,8 @@ def z_read():
                 zcode.screen.currentWindow.backspace(chr(c))
         elif inchar and display:
             zcode.input.instring.append(inchar)
-            zcode.screen.currentWindow.showCursor()
-    zcode.screen.currentWindow.hideCursor()
+            #zcode.screen.currentWindow.showCursor()
+    #zcode.screen.currentWindow.hideCursor()
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -922,7 +932,7 @@ def z_read_char():
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
     inchar = None
-    zcode.screen.currentWindow.showCursor()
+    #zcode.screen.currentWindow.showCursor()
     while inchar == None:
         if zcode.game.timervalue == True:
             inchar = 0
@@ -930,7 +940,7 @@ def z_read_char():
         else:
             inchar = zcode.input.getInput(False, chistory=False)
     io.stoptimer()
-    zcode.screen.currentWindow.hideCursor()
+    #zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
 
@@ -1233,10 +1243,13 @@ def z_set_cursor():
         x = zcode.instructions.operands[1]
     else:
         x = None
-    if len(zcode.instructions.operands) > 2:
-        window = zcode.screen.getWindow(zcode.instructions.operands[2])
+    if zcode.header.zversion() == 6:
+        if len(zcode.instructions.operands) > 2:
+            window = zcode.screen.getWindow(zcode.instructions.operands[2])
+        else:
+            window = zcode.screen.currentWindow
     else:
-        window = zcode.screen.currentWindow
+        window = zcode.screen.getWindow(1)
     window.flushTextBuffer()
     if zcode.header.zversion() == 6 and y < 0:
         if y == -1:
@@ -1249,7 +1262,6 @@ def z_set_cursor():
 
 def z_set_font():
     font = zcode.instructions.operands[0]
-
 
     if zcode.header.zversion() != 6:
         if font == 0:
@@ -1268,6 +1280,7 @@ def z_set_font():
         if font == 0:
             zcode.instructions.store(window.getFontNumber())
         else:
+            
             result = window.setFontByNumber(font)
             if result == 0 and zcode.use_standard <= STANDARD_02: # Standard 0.2 or lower
                 result = zcode.screen.window.getFontNumber()
@@ -1571,17 +1584,3 @@ def z_write_file():
 def z_badop(): # not really an opcode, this is called when the opcode is unknown
     zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC))
 
-# not part of any standard or standard proposal I know of, I think I just made these two up.
-
-def z_get_pixel_array(): 
-    y = zcode.instructions.operands[0]
-    x = zcode.instructions.operands[1]
-    width = zcode.instructions.operands[2]
-    height = zcode.instructions.operands[3]
-    zcode.screen.io.screen.getpixelarray(x, y, width, height)
-
-def z_draw_pixel_array(): 
-    drawfrom = zcode.instructions.operands[0]
-    drawto = zcode.instructions.operands[1]
-    if drawfrom == 0:
-        zcode.instructions.operands[2] 
