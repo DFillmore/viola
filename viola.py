@@ -126,7 +126,7 @@ def handle_parameters(argv): # handles command line parameters
         elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:
-                print("The spec selected must be one of:")
+                print("The specification selected must be one of:")
                 for a in specs:
                     print(a)
                 sys.exit()
