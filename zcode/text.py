@@ -213,8 +213,6 @@ def getZSCIIchar(code):
     elif code > 31 and code < 127:
         return chr(code)
     elif code >= 155 and code <= 251: # extra chars
-        # should be able to add a check here to see if a given character can be drawn by
-        # drawing it to a test area with an exception to use '?'
         try:
             char = unitable[code]
             char = chr(char)
