@@ -23,8 +23,8 @@ import os
 
 
 title = ""
-height = 480
-width = 640
+width = 1024
+height = 768
 code = ""
 
 locations = ["$HOME", "$USERPROFILE"]
@@ -104,7 +104,7 @@ def getterpnum(gamesettings):
 
 def getsettings(gamesettings):
     if gamesettings == None:
-        return [None, None, None, None, None]
+        return [None, width, height, None, None]
     set = []
     set.append(gettitle(gamesettings))
     set.append(getwidth(gamesettings))
