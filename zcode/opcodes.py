@@ -14,7 +14,7 @@
 
 import sys
 import blorb
-import zio.pygame as io
+import zio.kivy as io
 import zcode
 from zcode.constants import *
 

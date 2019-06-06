@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 
 import sys
-import zio.pygame as io
+import zio.kivy as io
 import zcode
 
 stream = 0

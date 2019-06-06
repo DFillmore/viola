@@ -17,7 +17,7 @@ import copy
 import os
 
 import quetzal
-import zio.pygame as io
+import zio.kivy as io
 import zcode
 
 
