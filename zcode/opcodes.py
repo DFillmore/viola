@@ -248,7 +248,7 @@ def z_extended(debug=False): # This isn't really an opcode, but it's easier to t
         print(zcode.optables.opext[opcode].__name__)
     zcode.optables.opext[opcode]()
 
-def z_font_size():
+def z_font_size(): # a (proposed) z-spec 1.2 opcode.
     newsize = zcode.numbers.neg(zcode.instructions.operands[0])
     if zcode.header.zversion() != 6:
         if newsize == 0:
@@ -275,7 +275,7 @@ def z_font_size():
         zcode.instructions.branch(0)
 
 
-def z_gestalt(): # a z-spec 1.2 opcode.
+def z_gestalt(): # a (proposed) z-spec 1.2 opcode.
     id = zcode.instructions.operands[0]
     arg1 = 0
     arg2 = 0
@@ -940,7 +940,7 @@ def z_read_char():
     zcode.instructions.store(inchar)
 
 
-def z_read_file():
+def z_read_file():# a (proposed) z-spec 1.2 opcode.
     nameloc = zcode.instructions.operands[0]
     table = zcode.instructions.operands[1]
     length = zcode.instructions.operands[2]
@@ -1384,7 +1384,7 @@ def z_sound_effect():
             routine = 0
         zcode.sounds.playsound(number, effect, volume, repeats, routine)
 
-def z_sound_channel(): # a z-spec 1.2 opcode.
+def z_sound_channel(): # a (proposed) z-spec 1.2 opcode.
     type = zcode.instructions.operands[0] 
     channel = zcode.instructions.operands[1]
     effect = zcode.instructions.operands[2] 
@@ -1407,7 +1407,7 @@ def z_sound_channel(): # a z-spec 1.2 opcode.
         rvalue = 0
     zcode.instructions.store(rvalue)
 
-def z_sound_data(): # a z-spec 1.2 opcode.
+def z_sound_data(): # a (proposed) z-spec 1.2 opcode.
     number = zcode.instructions.operands[0] 
     arr = zcode.instructions.operands[1]
     branch = 0
@@ -1544,7 +1544,7 @@ def z_window_style():
         operation = 0
     window.setattributes(flags, operation)
 
-def z_write_file():
+def z_write_file(): # a (proposed) z-spec 1.2 opcode.
     nameloc = zcode.instructions.operands[0]
     table = zcode.instructions.operands[1]
     length = zcode.instructions.operands[2]
