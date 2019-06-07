@@ -529,7 +529,3 @@ def gestalt(id, arg1=0, arg2=0, arg3=0):
     if id == 12: # unicode strings (using the unicode escape character)
         return 1 # we support unicode string. In theory. In practice, it's kinda broken.
     return 0
-
-     
-#def setFontMetric(value):
-    
