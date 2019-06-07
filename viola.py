@@ -22,6 +22,7 @@ import settings
 import zcode
 import blorb
 import babel
+from zcode.constants import specs
 
 blorbs = []
 height = None
@@ -90,8 +91,6 @@ def getgame(filename):
         raise UnsupportedGameType("Viola does not support Glulx games at this time.")
 
     return game
-
-specs = ['0', '0.2', '1.0', '1.1', '1.2']
 
 def handle_parameters(argv): # handles command line parameters
     global blorbfiles
