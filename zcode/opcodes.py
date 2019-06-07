@@ -248,49 +248,6 @@ def z_extended(debug=False): # This isn't really an opcode, but it's easier to t
         print(zcode.optables.opext[opcode].__name__)
     zcode.optables.opext[opcode]()
 
-def z_font_size():
-    newsize = zcode.numbers.neg(zcode.instructions.operands[0])
-    if zcode.header.zversion() != 6:
-        if newsize == 0:
-            zcode.screen.getWindow(0).getFont().resetSize()
-            zcode.screen.getWindow(1).getFont().resetSize()
-        if newsize > 0:
-            zcode.screen.getWindow(0).getFont().increaseSize(newsize)
-            zcode.screen.getWindow(1).getFont().increaseSize(newsize)
-        if newsize < 0:
-            zcode.screen.getWindow(0).getFont().decreaseSize(abs(newsize))
-            zcode.screen.getWindow(1).getFont().decreaseSize(abs(newsize))
-        
-    else:
-        if newsize == 0:
-            zcode.screen.currentWindow.getFont().resetSize()
-        if newsize > 0:
-            zcode.screen.currentWindow.getFont().increaseSize(newsize)
-        if newsize < 0:
-            zcode.screen.currentWindow.getFont().decreaseSize(abs(newsize))
-    result = True
-    if result:
-        zcode.instructions.branch(1)
-    else:
-        zcode.instructions.branch(0)
-
-
-def z_gestalt(): # a z-spec 1.2 opcode.
-    id = zcode.instructions.operands[0]
-    arg1 = 0
-    arg2 = 0
-    arg3 = 0
-    if len(zcode.instructions.operands) > 1:
-        arg1 = zcode.instructions.operands[1]
-    if len(zcode.instructions.operands) > 2:
-        arg2 = zcode.instructions.operands[2]
-    if len(zcode.instructions.operands) > 3:
-        arg3 = zcode.instructions.operands[3]
-    x = zcode.header.gestalt(id, arg1, arg2, arg3)
-    zcode.instructions.store(zcode.numbers.neg(zcode.header.gestalt(id, arg1, arg2, arg3)))
-
-
-
 def z_get_child():
     object = zcode.instructions.operands[0]
     if object == 0:
@@ -731,7 +688,7 @@ def z_print_table():
 
     x,y = zcode.screen.currentWindow.getCursor()
     c = 0
-    if zcode.use_standard < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
+    if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
         zcode.error.strictz('Tried to use print_table operation in lower window')
     else:
         for a in range(height):
@@ -914,10 +871,6 @@ def z_read():
     if zcode.header.zversion() >= 5:
         zcode.instructions.store(termchar)
     
-
-
-            
-
 def z_read_char():
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.line_count = 0
@@ -938,37 +891,6 @@ def z_read_char():
     io.stoptimer()
     #zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
-
-
-def z_read_file():
-    nameloc = zcode.instructions.operands[0]
-    table = zcode.instructions.operands[1]
-    length = zcode.instructions.operands[2]
-    seek = zcode.instructions.operands[3]
-    namelen = zcode.memory.getbyte(nameloc)
-    if namelen == 0: # prompt for a filename
-        filename = None
-        prompt = True
-    else:
-        name = list(zcode.memory.getarray(nameloc+1, namelen))
-        filename = []
-        try:
-            for a in name:
-                filename.append(chr(a))
-        except:
-            filename = []
-    if len(filename) > 0:
-        filename = ''.join(filename)
-        prompt = False
-    else:
-        filename = None
-    try:
-        data = zcode.input.readFile(length, filename, prompt, seek)
-        zcode.memory.setarray(table, data)
-
-        zcode.instructions.store(len(data))
-    except:
-        zcode.instructions.store(0)
 
 def z_read_mouse():
     array = zcode.instructions.operands[0]
@@ -1384,58 +1306,6 @@ def z_sound_effect():
             routine = 0
         zcode.sounds.playsound(number, effect, volume, repeats, routine)
 
-def z_sound_channel(): # a z-spec 1.2 opcode.
-    type = zcode.instructions.operands[0] 
-    channel = zcode.instructions.operands[1]
-    effect = zcode.instructions.operands[2] 
-    if len(zcode.instructions.operands) > 3:
-        val = zcode.instructions.operands[3]
-    if effect == 1:
-        if channel > len(zcode.sounds.soundchannels[type]):
-            rvalue = 0
-        else:
-            zcode.sounds.currentchannel[type] = channel
-            rvalue = 1
-    elif effect == 2:
-        if val == 255:
-            val = 8
-        volume = (1/8) * val
-        rvalue = 1 
-
-        zcode.sounds.soundchannels[type][channel-1].setvolume(volume)
-    else:
-        rvalue = 0
-    zcode.instructions.store(rvalue)
-
-def z_sound_data(): # a z-spec 1.2 opcode.
-    number = zcode.instructions.operands[0] 
-    arr = zcode.instructions.operands[1]
-    branch = 0
-    if number == 0:
-        for a in zcode.sounds.blorbs:
-            keys = list(a.resindex[b'Pict'].keys())
-            relnum = a.release
-        zcode.memory.setword(arr, len(keys))
-        zcode.memory.setword(arr+2, relnum)
-        if len(keys) > 0:
-            branch = 1
-    else:
-        s = zcode.sounds.Sound(number)
-        if s.sound != None: # if the sound actually has data, it's valid
-            branch = 1
-            zcode.memory.setword(arr, s.type)
-            c = zcode.sounds.currentchannel[s.type]
-            if zcode.sounds.soundchannels[s.type][c-1].sound.number == s.number: 
-                t = zcode.sounds.soundchannels[s.type][c-1].getpos()
-                t /= 100
-                if t > 32767:
-                    t =  32767
-            else:
-                t = zcode.numbers.unneg(-1)
-            
-            zcode.memory.setword(arr+2, t)
-    zcode.instructions.branch(branch) 
-
 def z_split_window():
     if zcode.header.zversion() != 6:
         lines = zcode.instructions.operands[0]
@@ -1544,39 +1414,6 @@ def z_window_style():
         operation = 0
     window.setattributes(flags, operation)
 
-def z_write_file():
-    nameloc = zcode.instructions.operands[0]
-    table = zcode.instructions.operands[1]
-    length = zcode.instructions.operands[2]
-    mode = zcode.instructions.operands[3]
-    namelen = zcode.memory.getbyte(nameloc)
-    data = zcode.memory.getarray(table, length)
-    if namelen == 0: # prompt for a filename
-        filename = None
-        prompt = True
-    else:
-        name = list(zcode.memory.getarray(nameloc+1, namelen))
-        filename = []
-        try:
-            for a in name:
-                filename.append(chr(a))
-        except:
-            filename = []
-    if len(filename) > 0:
-        filename = ''.join(filename)
-        prompt = False
-    else:
-        filename = None
-    if mode == 2:
-        append = True
-    else:
-        append = False
-    try:
-        zcode.output.writefile(data, filename, prompt, append)
-        zcode.instructions.store(1)
-    except:
-        zcode.instructions.store(0)
-    
 def z_badop(): # not really an opcode, this is called when the opcode is unknown
     zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC))
 

@@ -237,33 +237,23 @@ def zcharstozscii(address):
     codes = []
     loc = address
     finished = False
-    unistring = False
-    while not finished or unistring:
-        if not unistring:
-            w = zcode.memory.getword(loc)
-            c = splitwords(w)
-            if w & 0x8000 == 0x8000:
-                finished = True
+    while not finished:
+        w = zcode.memory.getword(loc)
+        c = splitwords(w)
+        if w & 0x8000 == 0x8000:
+            finished = True
                 
-            for a in c:
-                codes.append(a)
-                if codes[-4:] == [5, 6, 4, 0] and zcode.use_standard >= STANDARD_12: # start unicode data
-                    unistring = True
+        for a in c:
+            codes.append(a)
                     
-            loc += 2
-        else:
-            b = zcode.memory.getbyte(loc)
-            loc += 1;
-            if b == 0:
-                unistring = False
-            codes.append(b)
+        loc += 2
+
  
     # codes should now be a list of the z-characters, with Unicode string bytes
     # Need to convert this to ZSCII (and Unicode strings bytes)
     ZSCII = []
     twocode = 0
     abbrev = 0
-    unicodestring = False
 
     temporary = False
     currentalpha = A0
@@ -279,12 +269,6 @@ def zcharstozscii(address):
         elif twocode == 2: # last 5 bits of a 10-byte zscii code
             ZSCII[-1] = chr(ZSCII[-1] + a)
             twocode = 0
-            if ZSCII[-1] == chr(128) and zcode.use_standard >= STANDARD_12:
-                unicodestring = True
-        elif unicodestring:
-            ZSCII.append(chr(a))
-            if a == chr(0):
-                unicodestring = False
         elif a < 4 and a > 0 and zcode.header.zversion() >= 3:
             abbrev = a
         elif a == 1 and zcode.header.zversion() == 2:
@@ -334,24 +318,9 @@ def zcharstozscii(address):
 
 def zsciitounicode(zscii):
     text = []
-    unistring = False
     unitext = []
     for a in zscii:
-        if unistring == False:
-            if ord(a) == 128: # unicode escape
-                unistring = True
-                #text.append(chr(128))
-            else:
-                text.append(getZSCIIchar(ord(a)).encode('utf-8'))
-        else:
-            if a == chr(0):
-                unistring = False
-                for b in unitext:
-                    text.append(b.encode('latin1'))
-                unitext = []
-            else:
-                if ord(a) != 5 and ord(a) != 4:
-                    unitext.append(a)
+        text.append(getZSCIIchar(ord(a)).encode('utf-8'))
     return b''.join(text)
             
     
