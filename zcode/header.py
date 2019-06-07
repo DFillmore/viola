@@ -144,9 +144,6 @@ def zversion():
 
 def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags 1, bit is the bit number to check, such as bit 1 for z3 status line type checking
     if bitmap == 1:
-        if zversion() > 8:
-            return 0 # z9 has no flags 1
-
         flag = 1
         for a in range(bit):
             flag = flag * 2
@@ -180,8 +177,6 @@ def setflag(bitmap, bit, value):
     # bitmap is the set of flags to look in, bit is the bit number to change, value is either 1 for on or 0 for off
     global flags1, flags2
     if bitmap == 1: 
-        if zversion() > 8: # z9 has no flags 1
-            return False
         flag = 1
         for a in range(bit):
             flag = flag * 2
