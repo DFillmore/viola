@@ -37,8 +37,6 @@ def setup(gamedata):
         sys.exit()
     if version < 1 or version > 8:
         return False
-    if version == 9:
-        WORDSIZE = 4
 
     filelen = (data[0x1a] << 8) + data[0x1b]
     if filelen == 0:
@@ -107,10 +105,8 @@ def getword(offset):
     if offset >= len(data):
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
 
-    if WORDSIZE == 2:
-        return (data[offset] << 8) + data[offset+1]
-    else:
-        return (data[offset] << 24) + (data[offset+1] << 16) + (data[offset+2] << 8) + data[offset+3]
+    return (data[offset] << 8) + data[offset+1]
+
 
 def setword(offset, word):
     global data
@@ -163,9 +159,7 @@ def unpackaddress(address, type=0):
             return (address * 4) + zcode.header.routineoffset()
         elif type == 2: # print_paddr
             return (address * 4) + zcode.header.stringoffset()
-    elif zcode.header.zversion() < 9: # zversion 8
+    elif zcode.header.zversion() == 8: # zversion 8
         return address * 8
-    else: #zversion 9 
-        return address
 
     
