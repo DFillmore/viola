@@ -12,7 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import pygame
 import blorb
 import zio.pygame as io
 import zcode
@@ -27,7 +26,7 @@ def setup(b):
     global device, channel, currentchannel, x, sounds, effectschannel, musicchannel
     global AVAILABLE, blorbs
     try:
-        pygame.mixer.init()
+        io.initsound()
         soundchannels[0].append(effectsChannel(a))
         soundchannels[1].append(musicChannel(a))
         AVAILABLE = True
@@ -73,73 +72,11 @@ class Channel(io.soundChannel):
             zcode.routines.execloop()
             
 
-class musicChannel(Channel):
+class musicChannel(io.musicChannel):
     type = 1
 
-    def getbusy(self):
-        return pygame.mixer.music.get_busy()
-
-    def play(self, sound, volume, repeats, routine):
-        self.sound = sound
-        if self.sound.type != 1:
-            self.sound = None
-            return False
-        self.routine = routine
-        self.sound.play(volume, repeats)
-        self.setup(soundhandler)
-    
-    def setvolume(self, volume):
-        pygame.mixer.music.set_volume(volume)
-
-    def stop(self, sound):
-        if self.sound == None:
-            return False
-        if self.sound.number == sound.number:
-            self.routine = None
-            self.sound.stop()
-            self.sound = None
-            self.cleanup()
-
-
-
-class effectsChannel(Channel):
+class effectsChannel(io.effectsChannel):
     type = 0
-
-    def __init__(self, id):
-        self.id = id
-        self.channelobj = pygame.mixer.Channel(id)
-
-    channelobj = None
-
-    def getbusy(self):
-        try:
-            busy = self.channelobj.get_busy()
-        except:
-            busy = False
-        return busy
-
-    def play(self, sound, volume, repeats, routine):
-        self.sound = sound
-        if self.sound.type != 0:
-            self.sound = None
-            return False      
-        self.routine = routine
-        self.setvolume(volume)
-        self.channelobj.play(self.sound.sound, repeats)
-        self.setup(soundhandler)
-
-    def setvolume(self, volume):
-        self.channelobj.set_volume(volume)
-
-    def stop(self, sound):
-        if self.sound == None:
-            return False
-        if self.sound.number == sound.number:
-            self.routine = None
-            self.channelobj.stop()
-            self.sound = None
-
-            self.cleanup()
 
     def Notify(self):
         self.getbusy()

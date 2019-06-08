@@ -842,7 +842,8 @@ class soundChannel():
             self.clock = pygame.time.Clock()
             self.clock.tick()
 
-
+    
+    
     def cleanup(self):
         if self.type == 0:
             self.channelobj.set_endevent()
@@ -859,6 +860,76 @@ class soundChannel():
     def Notify(self):
         pass
 
+class musicChannel(soundChannel):
+    type = 1
+
+    def getbusy(self):
+        return pygame.mixer.music.get_busy()
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 1:
+            self.sound = None
+            return False
+        self.routine = routine
+        self.sound.play(volume, repeats)
+        self.setup(soundhandler)
+    
+    def setvolume(self, volume):
+        pygame.mixer.music.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.sound.stop()
+            self.sound = None
+            self.cleanup()
+
+
+
+class effectsChannel(soundChannel):
+    type = 0
+
+    def __init__(self, id):
+        self.id = id
+        self.channelobj = pygame.mixer.Channel(id)
+
+    channelobj = None
+
+    def getbusy(self):
+        try:
+            busy = self.channelobj.get_busy()
+        except:
+            busy = False
+        return busy
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 0:
+            self.sound = None
+            return False      
+        self.routine = routine
+        self.setvolume(volume)
+        self.channelobj.play(self.sound.sound, repeats)
+        self.setup(soundhandler)
+
+    def setvolume(self, volume):
+        self.channelobj.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.channelobj.stop()
+            self.sound = None
+
+            self.cleanup()
 
 def stopallsounds():
     pygame.mixer.stop()
+
+def initsound():
+    pygame.mixer.init()
