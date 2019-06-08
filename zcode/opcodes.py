@@ -589,8 +589,8 @@ def z_picture_data():
             else:
                 pic = io.image(pic)
 
-            height = int(pic.getHeight()) * scale
-            width = int(pic.getWidth()) * scale
+            height = int(int(pic.getHeight()) * scale)
+            width = int(int(pic.getWidth()) * scale)
             zcode.memory.setword(array, height)
             zcode.memory.setword(array+2, width)
             zcode.instructions.branch(1)
