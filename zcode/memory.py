@@ -38,7 +38,7 @@ def setup(gamedata):
     if version < 1 or version > 8:
         return False
 
-    filelen = (data[0x1a] << 8) + data[0x1b]
+    filelen = int.from_bytes(data[0x1a:0x1c], byteorder='big')
     if filelen == 0:
         filelen = len(data)
     else:
@@ -104,12 +104,12 @@ def getword(offset):
 
     if offset >= len(data):
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
-
-    return (data[offset] << 8) + data[offset+1]
-
-
+    
+    return int.from_bytes(data[offset:offset+2], byteorder='big')
+    
 def setword(offset, word):
     global data
+    
     offset = zcode.numbers.unneg(offset)
 
     if offset == 0x10:
@@ -127,9 +127,10 @@ def setword(offset, word):
 
     if offset >= zcode.header.statmembase():
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
+
     word = zcode.numbers.unneg(word)
-    for a in range(WORDSIZE):
-        data[offset+a] = (int(word) >> ((WORDSIZE-(a+1))*8)) & 0xFF
+    data[offset:offset+WORDSIZE] = array.array(data.typecode, int.to_bytes(word, WORDSIZE, byteorder='big'))
+
 
 def getarray(offset, length):
     offset = zcode.numbers.unneg(offset)
@@ -138,10 +139,9 @@ def getarray(offset, length):
 def setarray(offset, newdata):
     global data
     offset = zcode.numbers.unneg(offset)
-    for a in range(len(newdata)):
-        if offset+a >= zcode.header.statmembase():
-            zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
-        data[offset+a] = newdata[a]
+    if len(newdata) + offset >= zcode.header.statmembase():
+        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
+    data[offset:offset+len(newdata)] = newdata
 
 
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.
