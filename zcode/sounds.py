@@ -16,19 +16,20 @@ import blorb
 import zio.pygame as io
 import zcode
 from zcode.constants import *
+from zio.pygame import soundchannels
 
 
 AVAILABLE = False
 
-soundchannels = [[],[]]
+
 
 def setup(b):
     global device, channel, currentchannel, x, sounds, effectschannel, musicchannel
     global AVAILABLE, blorbs
     try:
         io.initsound()
-        soundchannels[0].append(effectsChannel(a))
-        soundchannels[1].append(musicChannel(a))
+        soundchannels[0].append(effectsChannel(0))
+        soundchannels[1].append(musicChannel(0))
         AVAILABLE = True
     except:
         pass
@@ -51,10 +52,6 @@ def beep(type): # Either a low or a high beep. 1 is low, 2 is high
 #SOUND
 
 
-def soundhandler():
-    for a in soundchannels:
-        for b in a:
-            b.Notify()
 
 class Channel(io.soundChannel):
     sound = None
@@ -96,7 +93,7 @@ class Sound:
             self.type = a.getSndType(sound_number)
         # Standards below 1.1 do not support seperate channels for different sound types, so we 
         # just don't support music in that case
-        if use_standard < STANDARD_11 and self.type != 0: 
+        if zcode.use_standard < STANDARD_11 and self.type != 0: 
             self.sound = None
         elif sound_data:
             self.sound = io.sound(sound_data, self.type)
@@ -129,7 +126,7 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
         return False
     elif effect == 2:
         try:
-            s = Sound(sound)
+            s = Sound(sound)        
             soundchannels[s.type][currentchannel[s.type]-1].play(s, volume, repeats, routine)
             return True
         except:

@@ -106,15 +106,6 @@ class image():
     def getHeight(self):
         return self.picture.get_height()
 
-class soundChannel:
-    pass
-
-class effectsChannel(soundChannel):
-    pass
-
-class musicChannel(soundChannel):
-    pass
-
 
 class font:
     #def __str__(self):
@@ -235,8 +226,6 @@ class font:
 
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
-
-        #print(unavailable)
     
         for elem in unavailable:
             # Check if string is in the main string
@@ -860,6 +849,14 @@ class soundChannel():
     def Notify(self):
         pass
 
+soundchannels = [[],[]]
+
+def soundhandler():
+    for a in soundchannels:
+        for b in a:
+            b.Notify()
+
+     
 class musicChannel(soundChannel):
     type = 1
 
