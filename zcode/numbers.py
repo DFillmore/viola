@@ -17,13 +17,11 @@ import sys
 
 import zcode
 
-# this file appears to be complete. Not intensively tested, but it seems to work.
-
-
-# Due to the fact that the z-machine is generally considered to round numbers
-# towards 0, and python always rounds numbers towards minus infinity, we need
-# to mess around a bit. This code is stolen from old viola, because it works
-# and I couldn't be bothered to figure it all out again
+# Due to the fact that the Z-machine is generally considered to round numbers
+# towards 0, and Python always rounds numbers towards minus infinity, we need
+# to mess around a bit. This code is stolen from old Viola, because it works
+# and I couldn't be bothered to figure it all out again. As such it is probably
+# the only code surviving from the original, very messy version of Viola.
 
 def div(a, b): # divide a by b
     if b == 0:
@@ -51,11 +49,6 @@ def mod(a, b): # divide a by b and return the remainder
             y = int(y)
         z = int((0 -((y * b) - a)))
         return z
-
-def add(a, b):
-    x = a + b
-
-
 
 def reduce(num): # reduces out of range numbers
     num = unneg(num)
