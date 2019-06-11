@@ -194,13 +194,16 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
 
 fontlist = [ None, 
              io.font1,
-             None, # picture font. Unspecified, should always return 0
+             io.font2, # picture font. Unspecified, should always return 0
              io.font3, # Beyond Zork font. Going to require some hacking.
              io.font4
         ]
 
 
 
+def specialfont3():
+    for w in zwindow:
+        w.fontlist[3] = io.font4
 
 
     
@@ -419,6 +422,7 @@ class window(io.window):
 
     def testfont(self, font):
         """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
+
         if font > len(self.fontlist):
             return False
         if self.fontlist[font] == None:
