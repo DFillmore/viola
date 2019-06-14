@@ -118,19 +118,6 @@ def z_check_unicode():
     else:
         zcode.instructions.store(0)
 
-
-    
-    #if charnumber < 0x20 or (charnumber >= 0x7f and charnumber <= 0x9f):
-    #    zcode.instructions.store(0) # can't print or read these characters
-    ##elif charnumber < 128:
-    ##    zcode.instructions.store(3) # can read and print ASCII
-    #elif charnumber < 256:
-    #    zcode.instructions.store(3) # can read and print Latin-1
-    #elif charnumber > 255:
-    #    zcode.instructions.store(1)
-    #else:
-    #    zcode.instructions.store(0)
-
 def z_clear_attr():
     object = zcode.instructions.operands[0]
     if object == 0:

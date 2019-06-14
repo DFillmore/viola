@@ -226,7 +226,6 @@ class font:
 
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
-    
         for elem in unavailable:
             # Check if string is in the main string
             if chr(elem) in text:
