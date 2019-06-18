@@ -704,7 +704,7 @@ class window(io.window):
             if self.testattributes(2):
                 self.scroll(self.getFont().getHeight()) # scroll the window region up
                 self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.getFont().getHeight())
-        if self.line_count != -999:
+        if self.line_count != -999 and zcode.header.getscreenheightlines() != 255:
             self.line_count+=1
         
         # put the cursor at the current left margin
