@@ -963,7 +963,7 @@ def z_restore():
     else:       
         result = zcode.game.restore()
         if result == 0:
-            if zcode.header.zversion() < 5:
+            if zcode.header.zversion() < 4:
                 zcode.instructions.branch(0)
             else:
                 zcode.instructions.store(0)
@@ -971,7 +971,7 @@ def z_restore():
             # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
             #zcode.screen.erasewindow(zcode.numbers.unneg(-1))
             zcode.header.setup()
-            if zcode.header.zversion() < 5:
+            if zcode.header.zversion() < 4:
                 zcode.instructions.branch(1)
             else:
                 zcode.instructions.store(2)
@@ -995,10 +995,10 @@ def z_rtrue():
     zcode.game.ret(1)
 
 def z_save(): 
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion() < 4:
         result = zcode.game.save()
         zcode.instructions.branch(result)
-    else:
+    elif zcode.header.zversion() > 4:
         if len(zcode.instructions.operands) > 0:
             table = zcode.instructions.operands[0]
             bytes = zcode.instructions.operands[1]
@@ -1030,6 +1030,7 @@ def z_save():
                 result = 0
         else:
             result = zcode.game.save()
+    if zcode.header.zversion > 3:
         zcode.instructions.store(result) 
 
 def z_save_undo():
