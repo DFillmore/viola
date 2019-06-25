@@ -245,28 +245,28 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
-font1 = font(getBaseDir() + "//fonts//FreeSerif.ttf",
-             boldfile=getBaseDir() + "//fonts//FreeSerifBold.ttf",
-             italicfile=getBaseDir() + "//fonts//FreeSerifItalic.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+             boldfile=getBaseDir() + "//fonts////FreeFont//FreeSerifBold.ttf",
+             italicfile=getBaseDir() + "//fonts////FreeFont//FreeSerifItalic.ttf",
+             bolditalicfile=getBaseDir() + "//fonts////FreeFont//FreeSerifBoldItalic.ttf",
+             fixedfile=getBaseDir() + "//fonts////FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBoldOblique.ttf",
             )
 
 font2 = None
 
 font3 = None
 
-font4 = font(getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font4 = font(getBaseDir() + "//fonts////FreeFont//FreeMono.ttf", 
+             boldfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBold.ttf", 
+             italicfile=getBaseDir() + "//fonts////FreeFont//FreeMonoOblique.ttf",
+             bolditalicfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBoldOblique.ttf",
+             fixedfile=getBaseDir() + "//fonts////FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts////FreeFont//FreeMonoBoldOblique.ttf",
             )
 
 class window:

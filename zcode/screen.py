@@ -238,7 +238,7 @@ def resize():
 
 
 def getWindow(winnum):
-    winnum = zcode.numbers.neg(winnum)
+    winnum = zcode.numbers.signed(winnum)
     if winnum == -3:
         return currentWindow
     return zwindow[winnum]
@@ -813,15 +813,15 @@ class window(io.window):
 
 def eraseWindow(winnum):
 
-    if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
+    if zcode.numbers.signed(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
         pass
-    elif zcode.numbers.neg(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
+    elif zcode.numbers.signed(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
         ioScreen.erase(currentWindow.getColours()[1])
         split(0)
         for a in range(len(zwindow)):
             getWindow(a).setCursor(1, 1)
             getWindow(a).line_count = 0
-    elif zcode.numbers.neg(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
+    elif zcode.numbers.signed(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
         ioScreen.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1][3] != 0:
         getWindow(winnum).erase()
