@@ -175,6 +175,8 @@ def supportedstyles(arg): # probably we should change this depending on the curr
 fixedpitchbit = False
 
 def pix2units(pix, horizontal, coord=False): # converts a number of pixels into a number of units
+    if graphics_mode == 1:
+        return pix
     if not horizontal:
         value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
     else:
@@ -182,6 +184,8 @@ def pix2units(pix, horizontal, coord=False): # converts a number of pixels into 
     return value
 
 def units2pix(units, horizontal, coord=False): # converts a number of units into a number of pixels
+    if graphics_mode == 1:
+        return units
     if coord:
         units -= 1
     if not horizontal:
@@ -533,10 +537,6 @@ class window(io.window):
 
     def getPosition(self):
         return (self.x_coord, self.y_coord)
-
-    def setCursor(self, x, y):
-        self.x_cursor = x
-        self.y_cursor = y
 
     def getCursor(self):
         return (self.x_cursor, self.y_cursor)
