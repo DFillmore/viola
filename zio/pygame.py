@@ -552,6 +552,9 @@ class screen:
 
     def erase(self, colour, area=None):
         if area:
+            area = list(area)
+            area[0] -= 1
+            area[1] -= 1
             area = pygame.Rect((area))
         else:
             area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))

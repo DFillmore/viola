@@ -747,7 +747,7 @@ class window(io.window):
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
-        area = ((self.getPosition()[0] + self.getCursor()[0]), (self.getPosition()[1] + self.getCursor()[1]), charwidth, charheight)
+        area = ((self.getPosition()[0] + self.getCursor()[0] - 1), (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
         ioScreen.erase(self.getColours()[1], area)
         self.screen.update()
     
