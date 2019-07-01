@@ -12,5 +12,5 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-__all__ = ["kivy"]
+__all__ = ["io"]
 from zio import *
