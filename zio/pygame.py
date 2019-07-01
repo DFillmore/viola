@@ -520,9 +520,7 @@ class window:
                 if self.cdown:
                     return 1
         
-        if self.screen.resized:
-            self.screen.resized = False
-            resize()
+
         #self.showCursor()
         #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
