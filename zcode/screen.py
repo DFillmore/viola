@@ -239,8 +239,23 @@ def resize():
             zcode.header.setscreenheight(ioScreen.getHeight())
         else:
             zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
+
+    if zcode.header.zversion() < 4: # version 1, 2 and 3
+        statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
+        
+        if zcode.header.zversion() == 3: # version 3
+            getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
+            getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - (statusline.getSize()[1] + getWindow(1).getSize()[1]))
+        else: # versions 1 and 2
+            getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - statusline.getSize()[1])
+    else: # version 4, 5, 7 and 8
+        getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
+        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight()-getWindow(1).getSize()[1])
+
+            
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
+    
 
 
 def getWindow(winnum):
