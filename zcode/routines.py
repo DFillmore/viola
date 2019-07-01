@@ -18,7 +18,7 @@ restart = 0
 timerreturn = False
 
 import zcode
-import zio.pygame as io
+import zio.io as io
 
 def setup():
     global quit, input, restart

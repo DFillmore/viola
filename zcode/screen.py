@@ -15,7 +15,7 @@
 
 import sys
 import string
-import zio.pygame as io
+import zio.io as io
 import settings
 import zcode
 from zcode.constants import *
