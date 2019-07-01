@@ -20,6 +20,8 @@ import settings
 import zcode
 from zcode.constants import *
 
+graphics_mode = 0
+
 def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
