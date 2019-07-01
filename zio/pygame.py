@@ -379,34 +379,39 @@ class window:
 
     def scroll(self, amount, dir=0):
         if dir == 0: # scroll area up
-            xpos, ypos = self.x_coord, self.y_coord
-            sourcex, sourcey = self.x_coord, self.y_coord
-            sourcey += amount
+            # copy an image of the window - *amount* pixels from the top to
+            # the origin point of the window
+            sourcex, sourcey = self.x_coord, self.y_coord + amount
+            destx, desty = self.x_coord, self.y_coord
             width, height = self.getSize()
             height -= amount
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height)
-            destrect = pygame.Rect(xpos-1, ypos-1,width, height)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = pygame.Rect(sourcex - 1, ypos - 1 + height, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
+            sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
+            destRect = pygame.Rect(destx-1, desty-1, width, height)
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            # draw a rectangle of the background colour with height of *amount* at the bottom of
+            # the window, to cover the text left behind
+            destRect = pygame.Rect(destx - 1, sourcey - 1 + height - amount, width, amount)
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
         else: # scroll area down
-            xpos, ypos = self.x_coord, self.y_coord
+            # copy an image of the window - *amount* pixels from the bottom to
+            # the origin point of the window + *amount* pixels down 
             sourcex, sourcey = self.x_coord, self.y_coord
+            destx, desty = self.x_coord, self.y_coord + amount
             width, height = self.getSize()
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height-amount)
-            destrect = pygame.Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = pygame.Rect(xpos - 1, ypos - 1, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        area = pygame.Rect(xpos - 1, ypos - 1, width, height)
+            height -= amount
+            sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
+            destRect = pygame.Rect(destx-1, desty-1, width, height)
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            #self.screen.screen.set_clip()
+            # draw a rectangle of the background colour with height of *amount* at the top of
+            # the window, to cover the text left behind
+            destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+        area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
     def printText(self, text):
-        self.buffertext(text) 
+        self.buffertext(text)
         buffering = self.testattributes(8)
         if text.find('\r') != -1 or buffering == False:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
