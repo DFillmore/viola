@@ -17,13 +17,11 @@ import sys
 
 import zcode
 
-# this file appears to be complete. Not intensively tested, but it seems to work.
-
-
-# Due to the fact that the z-machine is generally considered to round numbers
-# towards 0, and python always rounds numbers towards minus infinity, we need
-# to mess around a bit. This code is stolen from old viola, because it works
-# and I couldn't be bothered to figure it all out again
+# Due to the fact that the Z-machine is generally considered to round numbers
+# towards 0, and Python always rounds numbers towards minus infinity, we need
+# to mess around a bit. This code is stolen from old Viola, because it works
+# and I couldn't be bothered to figure it all out again. As such it is probably
+# the only code surviving from the original, very messy version of Viola.
 
 def div(a, b): # divide a by b
     if b == 0:
@@ -52,16 +50,11 @@ def mod(a, b): # divide a by b and return the remainder
         z = int((0 -((y * b) - a)))
         return z
 
-def add(a, b):
-    x = a + b
-
-
-
 def reduce(num): # reduces out of range numbers
-    num = unneg(num)
+    num = unsigned(num)
     if num > 0xFFFF:
         num = num % 0x10000
-    num = neg(num)
+    num = signed(num)
     return num
 
 mode = 0 # 0 is random mode. 1 is predictable mode.
@@ -71,14 +64,14 @@ sequence = 1
 # since the z-machine uses 16-bit numbers and python uses 32-bit numbers,
 # we have to convert back and forth a bit. If we want to do signed maths with
 # numbers from memory, we have to convert them using neg. If we want to store
-# the result of a calculation in memory, we have to convert it using unneg.
+# the result of a calculation in memory, we have to convert it using unsigned.
 
-def neg(negnum): 
+def signed(negnum): 
     if (negnum & 32768 == 32768) and (negnum != 0): 
         negnum -= 0x10000
     return negnum
 
-def unneg(negnum):
+def unsigned(negnum):
     if (negnum < 0):
         negnum += 0x10000
     return negnum

@@ -20,6 +20,8 @@ import settings
 import zcode
 from zcode.constants import *
 
+graphics_mode = 0
+
 def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
@@ -175,6 +177,8 @@ def supportedstyles(arg): # probably we should change this depending on the curr
 fixedpitchbit = False
 
 def pix2units(pix, horizontal, coord=False): # converts a number of pixels into a number of units
+    if graphics_mode == 1:
+        return pix
     if not horizontal:
         value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
     else:
@@ -182,6 +186,8 @@ def pix2units(pix, horizontal, coord=False): # converts a number of pixels into 
     return value
 
 def units2pix(units, horizontal, coord=False): # converts a number of units into a number of pixels
+    if graphics_mode == 1:
+        return units
     if coord:
         units -= 1
     if not horizontal:
@@ -194,13 +200,16 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
 
 fontlist = [ None, 
              io.font1,
-             None, # picture font. Unspecified, should always return 0
+             io.font2, # picture font. Unspecified, should always return 0
              io.font3, # Beyond Zork font. Going to require some hacking.
              io.font4
         ]
 
 
 
+def specialfont3():
+    for w in zwindow:
+        w.fontlist[3] = io.font4
 
 
     
@@ -230,12 +239,27 @@ def resize():
             zcode.header.setscreenheight(ioScreen.getHeight())
         else:
             zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
+
+    if zcode.header.zversion() < 4: # version 1, 2 and 3
+        statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
+        
+        if zcode.header.zversion() == 3: # version 3
+            getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
+            getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - (statusline.getSize()[1] + getWindow(1).getSize()[1]))
+        else: # versions 1 and 2
+            getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - statusline.getSize()[1])
+    else: # version 4, 5, 7 and 8
+        getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
+        getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight()-getWindow(1).getSize()[1])
+
+            
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
+    
 
 
 def getWindow(winnum):
-    winnum = zcode.numbers.neg(winnum)
+    winnum = zcode.numbers.signed(winnum)
     if winnum == -3:
         return currentWindow
     return zwindow[winnum]
@@ -419,6 +443,7 @@ class window(io.window):
 
     def testfont(self, font):
         """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
+
         if font > len(self.fontlist):
             return False
         if self.fontlist[font] == None:
@@ -529,10 +554,6 @@ class window(io.window):
 
     def getPosition(self):
         return (self.x_coord, self.y_coord)
-
-    def setCursor(self, x, y):
-        self.x_cursor = x
-        self.y_cursor = y
 
     def getCursor(self):
         return (self.x_cursor, self.y_cursor)
@@ -700,7 +721,7 @@ class window(io.window):
             if self.testattributes(2):
                 self.scroll(self.getFont().getHeight()) # scroll the window region up
                 self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.getFont().getHeight())
-        if self.line_count != -999:
+        if self.line_count != -999 and zcode.header.getscreenheightlines() != 255:
             self.line_count+=1
         
         # put the cursor at the current left margin
@@ -743,7 +764,7 @@ class window(io.window):
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
-        area = ((self.getPosition()[0] + self.getCursor()[0]), (self.getPosition()[1] + self.getCursor()[1]), charwidth, charheight)
+        area = ((self.getPosition()[0] + self.getCursor()[0] - 1), (self.getPosition()[1] + self.getCursor()[1] - 1), charwidth, charheight)
         ioScreen.erase(self.getColours()[1], area)
         self.screen.update()
     
@@ -809,15 +830,15 @@ class window(io.window):
 
 def eraseWindow(winnum):
 
-    if zcode.numbers.neg(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
+    if zcode.numbers.signed(winnum) < 0 and currentWindow.getColours()[1][3] == 0:
         pass
-    elif zcode.numbers.neg(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
+    elif zcode.numbers.signed(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
         ioScreen.erase(currentWindow.getColours()[1])
         split(0)
         for a in range(len(zwindow)):
             getWindow(a).setCursor(1, 1)
             getWindow(a).line_count = 0
-    elif zcode.numbers.neg(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
+    elif zcode.numbers.signed(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
         ioScreen.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1][3] != 0:
         getWindow(winnum).erase()

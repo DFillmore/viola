@@ -17,7 +17,7 @@ import string
 import zcode
 from zcode.constants import *
 
-standards = [(0,0), (0,2), (1,0), (1,1), (1,2)]
+standards = [(0,0), (0,2), (1,0), (1,1)]
 
 
 def setup(): # set all the relevant bits and bytes and words in the header
@@ -27,16 +27,16 @@ def setup(): # set all the relevant bits and bytes and words in the header
         setflag(1, 5, 1) # screen splitting is available
         setflag(1, 6, 0) # The default font is not fixed-pitch
     elif zversion() < 9:
-        setflag(1, 2, gestalt(4, 2)) # Boldface
-        setflag(1, 3, gestalt(4, 4)) # Italic
-        setflag(1, 4, gestalt(4, 8)) # Fixed-pitch style
+        setflag(1, 2, zcode.screen.supportedstyles(2)) # Boldface
+        setflag(1, 3, zcode.screen.supportedstyles(4)) # Italic
+        setflag(1, 4, zcode.screen.supportedstyles(8)) # Fixed-pitch style
         if zcode.use_standard >= STANDARD_02: # from 0.2 onward
-            setflag(1, 7, gestalt(5)) # Timed input
+            setflag(1, 7, 1) # Timed input
         if zversion() > 4:
-            setflag(1, 0, gestalt(2, 0)) # Colours
+            setflag(1, 0, zcode.screen.supportedgraphics(0)) # Colours
         if zversion() == 6:
-            setflag(1, 1, gestalt(2, 3)) # Picture displaying
-        if gestalt(3, 0) + gestalt(3, 1) > 0: # if any effect or music channels are available, sound effects are available
+            setflag(1, 1, zcode.screen.supportedgraphics(3)) # Picture displaying
+        if zcode.sounds.availablechannels(0) + zcode.sounds.availablechannels(1) > 0: # if any effect or music channels are available, sound effects are available
             setflag(1, 5, 1) # sound effects
         else:
             setflag(1, 5, 0)
@@ -45,31 +45,28 @@ def setup(): # set all the relevant bits and bytes and words in the header
     # Flags 2 - If unset by the game, the terp should leave them like that.
     if zversion() > 4:
         if getflag(2, 3): # pictures
-            setflag(2, 3, gestalt(2, 3)) 
+            setflag(2, 3, zcode.screen.supportedgraphics(3))
+            if getflag(2, 3) and zversion() == 6: # if the flag is still set and we're running a Version 6 game
+                zcode.screen.graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
         if getflag(2, 4): # undo
-            if gestalt(7):
-                setflag(2, 4, 1)
-            else:
-                setflag(2, 4, 0)
+            setflag(2, 4, 1)            
         if getflag(2, 5): # mouse
-            setflag(2, 5, gestalt(6, 2))
+            setflag(2, 5, 1)
         if getflag(2, 6): # colours
-            setflag(2, 6, gestalt(2, 0))
+            setflag(2, 6, zcode.screen.supportedgraphics(0))
         if getflag(2, 7): # sound effects
-            if gestalt(3, 0) + gestalt(3, 1) > 0:
+            if zcode.screen.supportedgraphics(0) + zcode.screen.supportedgraphics(1) > 0:
                 setflag(2, 7, 1)
             else:
                 setflag(2, 7, 0)
         if getflag(2, 8): # menus
-            setflag(2, 8, gestalt(8))
+            setflag(2, 8, 0)
     
     # Flags 3 - If unset by the game, the terp should leave them like that. All unknown bits should be set to 0.
     if zversion() > 4:
         if getflag(3, 0): # transparency
-            setflag(3, 0, gestalt(2, 2))
-        if getflag(3, 1): # font resizing
-            setflag(3, 1, gestalt(11))
-        for a in range(2, 16): # set all the other bits to 0, because we don't know what they do
+            setflag(3, 0, zcode.screen.supportedgraphics(2))
+        for a in range(1, 16): # set all the other bits to 0, because we don't know what they do
             setflag(3, a, 0)
 
     if zversion() > 3:
@@ -95,12 +92,12 @@ def setup(): # set all the relevant bits and bytes and words in the header
 def updateFontSize():
     if zversion() > 4:
         # Font width 
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
         else:
             setfontwidth(1)
         # Font height
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setfontheight(zcode.screen.currentWindow.getFont().getHeight())
         else:
             setfontheight(1)
@@ -116,12 +113,12 @@ def updateSizes():
         
     if zversion() > 4:
         # Screen width (units)
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setscreenwidth(zcode.screen.ioScreen.getWidth())
         else:
             setscreenwidth(columns)
         # Screen height (units)
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setscreenheight(zcode.screen.ioScreen.getHeight())
         else:
             setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
@@ -149,9 +146,6 @@ def zversion():
 
 def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags 1, bit is the bit number to check, such as bit 1 for z3 status line type checking
     if bitmap == 1:
-        if zversion() > 8:
-            return 0 # z9 has no flags 1
-
         flag = 1
         for a in range(bit):
             flag = flag * 2
@@ -185,8 +179,6 @@ def setflag(bitmap, bit, value):
     # bitmap is the set of flags to look in, bit is the bit number to change, value is either 1 for on or 0 for off
     global flags1, flags2
     if bitmap == 1: 
-        if zversion() > 8: # z9 has no flags 1
-            return False
         flag = 1
         for a in range(bit):
             flag = flag * 2
@@ -482,54 +474,3 @@ def gettruedefaultforeground():
 
 def gettruedefaultbackground():
     return getHeaderExtWord(6)
-
-# Standard 1.2 stuff
-
-viola_version = 8 # version 0.8
-
-def gestalt(id, arg1=0, arg2=0, arg3=0):
-    if id == 0: # interpreter version
-        return viola_version
-    if id == 2: # graphics capablities 
-        return zcode.screen.supportedgraphics(arg1)
-    if id == 3: # sound capablities
-        return zcode.sounds.availablechannels(arg1)
-    if id == 4: # text styles
-        return zcode.screen.supportedstyles(arg1)
-    if id == 5: # timed input
-        return 1 # should really query the io code to see if we support this
-    if id == 6: # supported input devices
-        if arg1 == 1: # keyboard support
-            return 1
-        if arg2 == 2: # mouse support
-            return 1
-        return 0 # no other supported devices
-    if id == 7: # undo support
-        return -1 # supports multiple undo, but we have no way to tell how many more undo slots are available
-    if id == 8: # menu support (as in the interpreter application's menu bar)
-        return 0
-    if id == 9: # output streams
-        if arg2 == 0: # is the stream supported?
-            try:
-                if zcode.output.streams[arg1]:
-                    return 1
-                return 0
-            except:
-                return 0
-        if arg2 == 1: # number of streams of the type given that are currently open
-            return zcode.output.numopenstreams(arg1)
-        if arg1 == 5 and arg2 == 2: # special case for output stream 5. should look at an area in memory, read an identifier, and return 1 if supported
-            return zcode.output.checkident(arg3) # currently claiming not to support any identifiers
-    if id == 10: # input streams
-        if arg1 < 2: 
-            return 1
-        return 0
-    if id == 11: # font size
-        return 0 # we don't yet support the font size opcode
-    if id == 12: # unicode strings (using the unicode escape character)
-        return 1 # we support unicode string. In theory. In practice, it's kinda broken.
-    return 0
-
-     
-#def setFontMetric(value):
-    
