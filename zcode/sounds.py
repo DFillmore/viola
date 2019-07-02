@@ -13,10 +13,10 @@
 # GNU General Public License for more details.
 
 import blorb
-import zio.kivy as io
+import zio.io as io
 import zcode
 from zcode.constants import *
-from zio.pygame import soundchannels
+from zio.io import soundchannels
 
 
 AVAILABLE = False

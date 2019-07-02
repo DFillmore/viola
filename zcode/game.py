@@ -17,7 +17,7 @@ import copy
 import os
 
 import quetzal
-import zio.kivy as io
+import zio.io as io
 import zcode
 
 

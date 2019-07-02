@@ -14,7 +14,7 @@
 
 import sys
 import blorb
-import zio.kivy as io
+import zio.io as io
 import zcode
 from zcode.constants import *
 

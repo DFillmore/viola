@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 
 import string
-import zio.kivy as io
+import zio.io as io
 import zcode
 from zcode.constants import *
 
