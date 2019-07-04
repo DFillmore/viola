@@ -342,9 +342,6 @@ class window:
         return (self.x_cursor, self.y_cursor)
 
     def getPixelColour(self, x, y):
-        return self.screen.getpixel(x,y)
-
-    def getPixelColour(self, x, y):
         x = x - 1 + self.getPosition()[0] - 1
         y = y - 1 + self.getPosition()[1] - 1
         return self.screen.getPixel(x, y)

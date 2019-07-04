@@ -582,11 +582,6 @@ class window(io.window):
     def getCursor(self):
         return (self.x_cursor, self.y_cursor)
 
-#    def getPixelColour(self, x, y):
-#        x += self.getPosition()[0] - 1
-#        y += self.getPosition()[1] - 1
-#        return self.screen.getPixel(x, y)
-
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
             self.setCursor(self.left_margin+1, self.getCursor()[1])
