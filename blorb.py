@@ -110,7 +110,25 @@ class Blorb:
             self.release = (self.data[x] << 8) + self.data[x+1]
 
     def checkgame(self, game):
-        return True
+        x = self.findChunk('IFhd')
+        if x == 0:
+            return True
+        x += 8
+        idRelease = int.from_bytes(self.data[x:x+2], byteorder='big')
+        x += 2
+        idSerial = self.data[x:x+6]
+        x+=6
+        idChecksum = int.from_bytes(self.data[x:x+2], byteorder='big')
+
+        x = 2
+        gameRelease = int.from_bytes(game[x:x+2], byteorder='big')
+        x = 0x12
+        gameSerial = game[x:x+6]
+        x = 0x1C
+        gameChecksum = int.from_bytes(game[x:x+2], byteorder='big')
+        if gameRelease == idRelease and gameSerial == idSerial and gameChecksum == idChecksum:
+            return True
+        return False
 
     def chunkSize(self, place):
         size = fbnum(self.data[place+4:place+8])
@@ -219,6 +237,8 @@ class Blorb:
         minden = fbnum(entry[16:20])
         maxnum = fbnum(entry[20:24])
         maxden = fbnum(entry[24:28])
+
+        
  
         stdratio = ratnum / ratden
         if minnum != 0:
