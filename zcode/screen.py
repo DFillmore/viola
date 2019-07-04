@@ -749,7 +749,7 @@ class window(io.window):
             self.line_count+=1
         
         # put the cursor at the current left margin
-        self.setCursor(self.left_margin, self.getCursor()[1])
+        self.setCursor(self.left_margin+1, self.getCursor()[1])
         if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
             pfont = self.setFontByNumber(4)
