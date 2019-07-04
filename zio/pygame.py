@@ -344,7 +344,10 @@ class window:
     def getPixelColour(self, x, y):
         x = x - 1 + self.getPosition()[0] - 1
         y = y - 1 + self.getPosition()[1] - 1
-        return self.screen.getPixel(x, y)
+        try:
+            return self.screen.getPixel(x, y)
+        except:
+            return -1
 
     def erase(self):
         area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
