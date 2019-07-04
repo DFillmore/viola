@@ -568,7 +568,7 @@ def z_picture_data():
         pic = False
         for a in zcode.screen.blorbs:
             pic = a.getPict(picnum)
-            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getWidth())
+            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
 
         if pic != False:
             if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
