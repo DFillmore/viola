@@ -110,7 +110,7 @@ class Blorb:
             self.release = (self.data[x] << 8) + self.data[x+1]
 
     def checkgame(self, game):
-        x = self.findChunk('IFhd')
+        x = self.findChunk(b'IFhd')
         if x == 0:
             return True
         x += 8
