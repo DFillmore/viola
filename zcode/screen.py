@@ -198,6 +198,30 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
         value += 1    
     return value
 
+
+def chars2units(chars, horizontal, coord=False): # converts a height/width size in number of characters into a number of units
+
+    if graphics_mode == 1:
+        return pix
+    if not horizontal:
+        value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
+    else:
+        value = ((pix - 1) // currentWindow.getFont().getWidth()) + 1
+    return value
+
+def units2chars(units, horizontal, coord=False): # converts a number of units into a height/width size in number of characters 
+    if graphics_mode == 1:
+        return units
+    if coord:
+        units -= 1
+    if not horizontal:
+        value = units * currentWindow.getFont().getHeight()
+    else:
+        value = units * currentWindow.getFont().getWidth()
+    if coord:
+        value += 1    
+    return value
+
 fontlist = [ None, 
              io.font1,
              io.font2, # picture font. Unspecified, should always return 0
@@ -255,8 +279,8 @@ def resize():
             
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
-    
 
+    
 
 def getWindow(winnum):
     winnum = zcode.numbers.signed(winnum)
