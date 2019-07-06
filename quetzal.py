@@ -217,7 +217,6 @@ class ifhdchunk(iff.chunk):
         if self.data[2:8] != storydata.serial.encode('utf-8'): # if the serial number is wrong, fail
             return -1
         storydata.PC = (self.data[10] << 16) + (self.data[11] << 8) + self.data[12] 
-        print('quetzal PC', storydata.PC)
         return storydata.PC
 
 class intdchunk(iff.chunk):
