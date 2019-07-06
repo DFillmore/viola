@@ -22,6 +22,19 @@ from zcode.constants import *
 
 graphics_mode = 0
 
+basic_colours = { 'black':2,
+                  'red':3,
+                  'green':4,
+                  'yellow':5,
+                  'blue':6,
+                  'magenta':7,
+                  'cyan':8,
+                  'white':9
+                }
+
+DEFFOREGROUND = 2
+DEFBACKGROUND = 9
+
 def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
@@ -32,9 +45,13 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global unitHeight
     global unitWidth
     global spectrum
+    global DEFFOREGROUND
+    global DEFBACKGROUND
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
+
+    DEFFOREGROUND, DEFBACKGROUND = foreground, background
 
     foreground = convertBasicToRealColour(foreground)
     background = convertBasicToRealColour(background)
