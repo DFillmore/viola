@@ -62,7 +62,7 @@ class UnsupportedGameType(Exception):
 
 def getgame(filename):
     global blorbs
-    f = io.findfile(filename)
+    f = io.findfile(filename, gamefile=True)
     if f == False:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
