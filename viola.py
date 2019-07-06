@@ -62,7 +62,7 @@ class UnsupportedGameType(Exception):
 
 def getgame(filename):
     global blorbs
-    f = io.findfile(filename)
+    f = io.findfile(filename, gamefile=True)
     if f == False:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
@@ -143,12 +143,12 @@ def setupmodules(gamefile):
     zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
-
+    
     
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
-    zcode.screen.setup(blorbs, width, height, title=title)
+    zcode.screen.setup(blorbs, width, height, title=title, foreground=foreground, background=background)
     zcode.input.setup()
     zcode.output.setup([False, True, transcriptfile])
 
@@ -165,7 +165,7 @@ def setupmodules(gamefile):
     return True
 
 def rungame(gamedata):
-    global height, width, title, terpnum
+    global height, width, title, terpnum, foreground, background
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
     gameset = settings.getsettings(settings.findgame())
@@ -178,7 +178,17 @@ def rungame(gamedata):
         height = gameset[2]
     if width == None:
         width = gameset[1]
+
+    try:
+        foreground = zcode.screen.basic_colours[gameset[5]]
+    except:
+        foreground = 2
     
+    try:
+        background = zcode.screen.basic_colours[gameset[6]]
+    except:
+        background = 9
+
     if gameset[3] != None:
         blorbs.append(io.findfile(gameset[3]))
 

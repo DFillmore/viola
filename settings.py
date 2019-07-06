@@ -98,6 +98,24 @@ def getterpnum(gamesettings):
     else:
         return match.string[match.start()+8:match.end()].strip()
 
+def getforeground(gamesettings):
+    expr = r'foreground:.*?$'
+    r = re.compile(expr, re.M)
+    match = r.search(gamesettings)
+    if match == None:
+        return None
+    else:
+        return match.string[match.start()+11:match.end()].strip()
+
+def getbackground(gamesettings):
+    expr = r'background:.*?$'
+    r = re.compile(expr, re.M)
+    match = r.search(gamesettings)
+    if match == None:
+        return None
+    else:
+        return match.string[match.start()+11:match.end()].strip()
+
 def getsettings(gamesettings):
     if gamesettings == None:
         return [None, width, height, None, None]
@@ -107,6 +125,8 @@ def getsettings(gamesettings):
     set.append(getheight(gamesettings))
     set.append(getblorb(gamesettings))
     set.append(getterpnum(gamesettings))
+    set.append(getforeground(gamesettings))
+    set.append(getbackground(gamesettings))
     return set
         
 def setup(gamedata):

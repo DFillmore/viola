@@ -79,9 +79,9 @@ def setup(): # set all the relevant bits and bytes and words in the header
 
     if zversion() > 4:
         # Default foreground colour
-        setdeffgcolour(2)
+        setdeffgcolour(zcode.screen.DEFFOREGROUND)
         # Default background colour
-        setdefbgcolour(9)
+        setdefbgcolour(zcode.screen.DEFBACKGROUND)
         settruedefaultforeground(zcode.screen.spectrum[2])
         settruedefaultbackground(zcode.screen.spectrum[9])
     # Z-machine Standard number

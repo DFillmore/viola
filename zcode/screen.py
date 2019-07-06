@@ -22,6 +22,19 @@ from zcode.constants import *
 
 graphics_mode = 0
 
+basic_colours = { 'black':2,
+                  'red':3,
+                  'green':4,
+                  'yellow':5,
+                  'blue':6,
+                  'magenta':7,
+                  'cyan':8,
+                  'white':9
+                }
+
+DEFFOREGROUND = 2
+DEFBACKGROUND = 9
+
 def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
@@ -32,9 +45,13 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global unitHeight
     global unitWidth
     global spectrum
+    global DEFFOREGROUND
+    global DEFBACKGROUND
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
+
+    DEFFOREGROUND, DEFBACKGROUND = foreground, background
 
     foreground = convertBasicToRealColour(foreground)
     background = convertBasicToRealColour(background)
@@ -132,10 +149,10 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
         getWindow(0).setattributes(15,0)
         statusline.setattributes(0,0)
         if zcode.header.zversion() == 3:
-            getWindow(1).setattributes(4,0)
+            getWindow(1).setattributes(0,0)
     else:
         getWindow(0).setattributes(15,0)
-        getWindow(1).setattributes(4,0)
+        getWindow(1).setattributes(0,0)
 
     # set other default window properties
 
@@ -289,6 +306,9 @@ def getWindow(winnum):
     return zwindow[winnum]
 
 def updatestatusline(): # updates the status line for z-machine versions 1 to 3
+    global currentWindow
+    prevWindow = currentWindow
+    currentWindow = statusline
     statusline.erase()
     if zcode.header.getflag(1,1) == 1 and zcode.header.zversion() == 3:
         type = 1
@@ -318,7 +338,7 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
     statusline.flushTextBuffer()
     # Score: 999  Turns: 9999 #
     #             Time: 20:52 #
-    currentWindow = getWindow(0)
+    currentWindow = prevWindow
 
 def printtext(text):
     currentWindow.printText(text)
@@ -680,16 +700,16 @@ class window(io.window):
 
     
     def setattributes(self, flags, operation):
-        if operation == 0:
+        if operation == 0: # wrapping
             self.attributes = flags
-        elif operation == 1:
+        elif operation == 1: # scrolling
             self.attributes = self.attributes | flags
-        elif operation == 2:
+        elif operation == 2: # transcripting (copy text printed to the this window to output stream 2)
             self.attributes = self.attributes & ~flags
-        elif operation == 3:
+        elif operation == 3: # buffered printing
             self.attributes - self.attributes & flags
 
-    def testattributes(self, attribute):
+    def testattribute(self, attribute):
         result = self.attributes & attribute
         if result == attribute:
             return True
@@ -737,7 +757,7 @@ class window(io.window):
         # move to the new line
         self.setCursor(self.getCursor()[0], self.getCursor()[1] + self.getFont().getHeight())
         if self.getCursor()[1] >= self.getSize()[1] - self.getFont().getHeight():
-            if self.testattributes(2):
+            if self.testattribute(2):
                 self.scroll(self.getFont().getHeight()) # scroll the window region up
                 self.setCursor(self.getCursor()[0], self.getCursor()[1] - self.getFont().getHeight())
         if self.line_count != -999 and zcode.header.getscreenheightlines() != 255:
@@ -745,7 +765,7 @@ class window(io.window):
         
         # put the cursor at the current left margin
         self.setCursor(self.left_margin+1, self.getCursor()[1])
-        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
+        if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattribute(2):
             self.line_count = 0
             pfont = self.setFontByNumber(4)
             morestring = '[MORE]' 
