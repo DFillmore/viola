@@ -32,6 +32,8 @@ pygame.init()
 TIMEREVENT = pygame.USEREVENT
 SOUNDEVENT = pygame.USEREVENT + 1
 
+GAMEDIRECTORY = ''
+
 mousebuttonmapping = {1:0,2:2,3:1}
 
 def getBaseDir():
@@ -47,13 +49,17 @@ def getBaseDir():
        thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
        return os.path.abspath(os.path.join(thisdir, os.pardir))
 
-def findfile(filename):
+def findfile(filename, gamefile=False):
+    global GAMEDIRECTORY
     paths = [os.curdir]
     paths.extend(os.path.expandvars("$INFOCOM_PATH").split(":"))
     for a in paths:
         x = os.path.isfile(os.path.join(a, filename))
         if x == 1:
-            return os.path.join(a, filename)
+            f = os.path.join(a, filename)
+            if gamefile:
+                GAMEDIRECTORY = os.path.dirname(f)
+            return f
     return False
 
 def setIcon(icon):
@@ -412,7 +418,7 @@ class window:
 
     def printText(self, text):
         self.buffertext(text)
-        buffering = self.testattributes(8)
+        buffering = self.testattribute(8)
         if text.find('\r') != -1 or buffering == False:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
 
@@ -468,9 +474,9 @@ class window:
         if self.x_cursor > self.x_size - self.right_margin:
             self.x_cursor = self.left_margin + 1
 
-        buffering = self.testattributes(8)
+        buffering = self.testattribute(8)
 
-        if not self.testattributes(1): # if wrapping is off
+        if not self.testattribute(1): # if wrapping is off
             linebuffers = []
             x = 0
             while x != -1:
@@ -684,8 +690,11 @@ def getinput(screen):
         return None
 
 def openfile(window, mode, filename=None, prompt=None):
+    global GAMEDIRECTORY
     # if filename == None, prompt for a filename
     # returns a file object to be read/written
+
+
 
     if filename == None: # should prompt for filename
         prompt = True
@@ -714,6 +723,9 @@ def openfile(window, mode, filename=None, prompt=None):
                     window.flushTextBuffer()
         t.pop()
         filename = ''.join(t)
+
+    filename = os.path.basename(filename) # strip the directory information from the filename (maybe should allow it if it's a subfolder of the game directory?)
+    filename = os.path.join(GAMEDIRECTORY, filename) # use the game directory as the location for file
 
     if mode == 'a':
         if findfile(filename) == False:
