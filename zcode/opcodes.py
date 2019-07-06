@@ -838,7 +838,10 @@ def z_read():
     
 
     zcode.output.streams[4].write(inp)
-    zcode.output.streams[4].write('\n')
+    zcode.output.streams[4].write('\r')
+
+    zcode.output.streams[2].write(inp)
+    zcode.output.streams[2].write('\r')
 
     zcode.input.instring = []
 
@@ -1030,7 +1033,7 @@ def z_save():
                 result = 0
         else:
             result = zcode.game.save()
-    if zcode.header.zversion > 3:
+    if zcode.header.zversion() > 3:
         zcode.instructions.store(result) 
 
 def z_save_undo():

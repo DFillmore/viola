@@ -181,8 +181,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     zcode.output.streams[1].write(zcode.text.getZSCIIchar(zsciivalue))
     
                     zcode.screen.currentWindow.flushTextBuffer()
-                    if zcode.header.zversion != 6:
-                        zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
+                    #if zcode.header.zversion != 6:
+                    #    zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
 
             else:
                 return None
