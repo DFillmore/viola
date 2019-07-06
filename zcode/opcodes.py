@@ -568,7 +568,7 @@ def z_picture_data():
         pic = False
         for a in zcode.screen.blorbs:
             pic = a.getPict(picnum)
-            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getWidth())
+            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
 
         if pic != False:
             if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
@@ -1096,10 +1096,21 @@ def z_set_colour():
             window = zcode.screen.currentWindow
         if foreground == -1:
             real_foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            foreground = zcode.screen.convertRealToBasicColour(real_foreground)
+            if real_foreground != -1:
+                foreground = zcode.screen.convertRealToBasicColour(real_foreground)
+            else:
+                zcode.error.strictz('Tried to get pixel colour at invalid coordinate')
+                foreground = 1
+                real_foreground = None
         if background == -1:
             real_background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            background = zcode.screen.convertRealToBasicColour(real_background)
+            if real_background != -1:
+                background = zcode.screen.convertRealToBasicColour(real_background)
+            else:
+                zcode.error.strictz('Tried to get pixel colour at invalid coordinate')
+                background = 1
+                real_background = None
+
 
     if foreground == 1:        
         foreground = zcode.header.getdeffgcolour()

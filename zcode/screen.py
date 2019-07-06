@@ -198,6 +198,30 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
         value += 1    
     return value
 
+
+def chars2units(chars, horizontal, coord=False): # converts a height/width size in number of characters into a number of units
+
+    if graphics_mode == 1:
+        return pix
+    if not horizontal:
+        value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
+    else:
+        value = ((pix - 1) // currentWindow.getFont().getWidth()) + 1
+    return value
+
+def units2chars(units, horizontal, coord=False): # converts a number of units into a height/width size in number of characters 
+    if graphics_mode == 1:
+        return units
+    if coord:
+        units -= 1
+    if not horizontal:
+        value = units * currentWindow.getFont().getHeight()
+    else:
+        value = units * currentWindow.getFont().getWidth()
+    if coord:
+        value += 1    
+    return value
+
 fontlist = [ None, 
              io.font1,
              io.font2, # picture font. Unspecified, should always return 0
@@ -255,8 +279,8 @@ def resize():
             
     if zcode.header.zversion() == 6:
         zcode.header.setflag(2, 2, 1)
-    
 
+    
 
 def getWindow(winnum):
     winnum = zcode.numbers.signed(winnum)
@@ -558,11 +582,6 @@ class window(io.window):
     def getCursor(self):
         return (self.x_cursor, self.y_cursor)
 
-#    def getPixelColour(self, x, y):
-#        x += self.getPosition()[0] - 1
-#        y += self.getPosition()[1] - 1
-#        return self.screen.getPixel(x, y)
-
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
             self.setCursor(self.left_margin+1, self.getCursor()[1])
@@ -725,7 +744,7 @@ class window(io.window):
             self.line_count+=1
         
         # put the cursor at the current left margin
-        self.setCursor(self.left_margin, self.getCursor()[1])
+        self.setCursor(self.left_margin+1, self.getCursor()[1])
         if self.line_count >= (self.getSize()[1] // self.getFont().getHeight()) - 1 and self.testattributes(2):
             self.line_count = 0
             pfont = self.setFontByNumber(4)
