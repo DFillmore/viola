@@ -139,9 +139,9 @@ def getarray(offset, length):
 def setarray(offset, newdata):
     global data
     offset = zcode.numbers.unsigned(offset)
-    if len(newdata) + offset >= zcode.header.statmembase():
-        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
-    data[offset:offset+len(newdata)] = newdata
+    if len(newdata) + offset > zcode.header.statmembase():
+        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset+len(newdata)) + ".")
+    data[offset:offset+len(newdata)] = array.array(data.typecode, newdata)
 
 
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.
