@@ -539,10 +539,10 @@ class window:
 
 class screen:
     updates = []
-    def __init__(self, width, height, title=''):
+    def __init__(self, width, height, title='', background=0xFFFFFF):
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         pygame.display.set_caption(title)
-        self.screen.fill(0xFFFFFF)
+        self.screen.fill(background)
         self.width = width
         self.height = height
         self.update()
