@@ -1290,7 +1290,7 @@ def z_show_status():
 def z_sound_effect():
     number = zcode.instructions.operands[0]
     if number < 3:
-        zcode.sounds.beep(number)
+        zcode.sounds.bleep(number)
     else:
         effect = zcode.instructions.operands[1]
         if len(zcode.instructions.operands) > 2:

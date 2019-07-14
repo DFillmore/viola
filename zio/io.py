@@ -803,7 +803,22 @@ def stoptimer():
 
 
 
+def beep():
+    try:
+        f = getBaseDir() + "//sounds//beep.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
+    except:
+        pass
 
+
+def boop():
+    try:
+        f = getBaseDir() + "//sounds//boop.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
+    except:
+        pass
 
 class musicobject():
     def __init__(self, data):

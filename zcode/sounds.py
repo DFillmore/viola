@@ -40,8 +40,11 @@ def availablechannels(arg):
         return len(soundchannels[arg])
     return 0 # no sound capablities, no sound channels available
 
-def beep(type): # Either a low or a high beep. 1 is low, 2 is high
-    pass
+def bleep(type): # Either a high or a low bleep. 1 is high, 2 is low
+    if type == 1:
+        io.beep()
+    if type == 2:
+        io.boop()
 
 # It might be a good idea to check the relevant flag in Flags 2 to see
 # if the game wants to use sounds. If it does, various sound setting-up stuff can be done (such
