@@ -217,19 +217,6 @@ class font:
     def defaultSize(self):
         return 16
 
-    def increaseSize(self, amount=1):
-        self.size += amount
-        return 1
-
-    def decreaseSize(self, amount=1):
-        if self.size == 1:
-            return 0
-        self.size -= amount
-        return 1
-
-    def resetSize(self):
-        self.size = self.defaultSize()
-
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
         for elem in unavailable:

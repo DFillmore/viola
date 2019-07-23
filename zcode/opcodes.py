@@ -235,33 +235,6 @@ def z_extended(debug=False): # This isn't really an opcode, but it's easier to t
         print(zcode.optables.opext[opcode].__name__)
     zcode.optables.opext[opcode]()
 
-def z_font_size(): # a (proposed) z-spec 1.2 opcode.
-    newsize = zcode.numbers.neg(zcode.instructions.operands[0])
-    if zcode.header.zversion() != 6:
-        if newsize == 0:
-            zcode.screen.getWindow(0).getFont().resetSize()
-            zcode.screen.getWindow(1).getFont().resetSize()
-        if newsize > 0:
-            zcode.screen.getWindow(0).getFont().increaseSize(newsize)
-            zcode.screen.getWindow(1).getFont().increaseSize(newsize)
-        if newsize < 0:
-            zcode.screen.getWindow(0).getFont().decreaseSize(abs(newsize))
-            zcode.screen.getWindow(1).getFont().decreaseSize(abs(newsize))
-        
-    else:
-        if newsize == 0:
-            zcode.screen.currentWindow.getFont().resetSize()
-        if newsize > 0:
-            zcode.screen.currentWindow.getFont().increaseSize(newsize)
-        if newsize < 0:
-            zcode.screen.currentWindow.getFont().decreaseSize(abs(newsize))
-    result = True
-    if result:
-        zcode.instructions.branch(1)
-    else:
-        zcode.instructions.branch(0)
-
-
 def z_gestalt(): # a (proposed) z-spec 1.2 opcode.
     id = zcode.instructions.operands[0]
     arg1 = 0
