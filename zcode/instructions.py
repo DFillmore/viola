@@ -177,7 +177,7 @@ def runops(address, debug=False):
         print()
 
 def store(value):
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     var = zcode.memory.getbyte(zcode.game.PC)
     zcode.game.PC += 1
     zcode.game.setvar(var, value)

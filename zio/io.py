@@ -32,6 +32,8 @@ pygame.init()
 TIMEREVENT = pygame.USEREVENT
 SOUNDEVENT = pygame.USEREVENT + 1
 
+GAMEDIRECTORY = ''
+
 mousebuttonmapping = {1:0,2:2,3:1}
 
 def getBaseDir():
@@ -47,13 +49,17 @@ def getBaseDir():
        thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
        return os.path.abspath(os.path.join(thisdir, os.pardir))
 
-def findfile(filename):
+def findfile(filename, gamefile=False):
+    global GAMEDIRECTORY
     paths = [os.curdir]
     paths.extend(os.path.expandvars("$INFOCOM_PATH").split(":"))
     for a in paths:
         x = os.path.isfile(os.path.join(a, filename))
         if x == 1:
-            return os.path.join(a, filename)
+            f = os.path.join(a, filename)
+            if gamefile:
+                GAMEDIRECTORY = os.path.dirname(f)
+            return f
     return False
 
 def setIcon(icon):
@@ -105,15 +111,6 @@ class image():
 
     def getHeight(self):
         return self.picture.get_height()
-
-class soundChannel:
-    pass
-
-class effectsChannel(soundChannel):
-    pass
-
-class musicChannel(soundChannel):
-    pass
 
 
 class font:
@@ -235,9 +232,6 @@ class font:
 
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
-
-        #print(unavailable)
-    
         for elem in unavailable:
             # Check if string is in the main string
             if chr(elem) in text:
@@ -257,28 +251,37 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
-font1 = font(getBaseDir() + "//fonts//FreeSerif.ttf",
-             boldfile=getBaseDir() + "//fonts//FreeSerifBold.ttf",
-             italicfile=getBaseDir() + "//fonts//FreeSerifItalic.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
             )
 
 font2 = None
 
+#font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+#             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#            )
 font3 = None
 
-font4 = font(getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
             )
 
 class window:
@@ -354,12 +357,12 @@ class window:
         return (self.x_cursor, self.y_cursor)
 
     def getPixelColour(self, x, y):
-        return self.screen.getpixel(x,y)
-
-    def getPixelColour(self, x, y):
         x = x - 1 + self.getPosition()[0] - 1
         y = y - 1 + self.getPosition()[1] - 1
-        return self.screen.getPixel(x, y)
+        try:
+            return self.screen.getPixel(x, y)
+        except:
+            return -1
 
     def erase(self):
         area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
@@ -391,35 +394,40 @@ class window:
 
     def scroll(self, amount, dir=0):
         if dir == 0: # scroll area up
-            xpos, ypos = self.x_coord, self.y_coord
-            sourcex, sourcey = self.x_coord, self.y_coord
-            sourcey += amount
+            # copy an image of the window - *amount* pixels from the top to
+            # the origin point of the window
+            sourcex, sourcey = self.x_coord, self.y_coord + amount
+            destx, desty = self.x_coord, self.y_coord
             width, height = self.getSize()
             height -= amount
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height)
-            destrect = pygame.Rect(xpos-1, ypos-1,width, height)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = pygame.Rect(sourcex - 1, ypos - 1 + height, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
+            sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
+            destRect = pygame.Rect(destx-1, desty-1, width, height)
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            # draw a rectangle of the background colour with height of *amount* at the bottom of
+            # the window, to cover the text left behind
+            destRect = pygame.Rect(destx - 1, sourcey - 1 + height - amount, width, amount)
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
         else: # scroll area down
-            xpos, ypos = self.x_coord, self.y_coord
+            # copy an image of the window - *amount* pixels from the bottom to
+            # the origin point of the window + *amount* pixels down 
             sourcex, sourcey = self.x_coord, self.y_coord
+            destx, desty = self.x_coord, self.y_coord + amount
             width, height = self.getSize()
-            sourcerect = pygame.Rect(sourcex-1, sourcey-1, width, height-amount)
-            destrect = pygame.Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = pygame.Rect(xpos - 1, ypos - 1, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        area = pygame.Rect(xpos - 1, ypos - 1, width, height)
+            height -= amount
+            sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
+            destRect = pygame.Rect(destx-1, desty-1, width, height)
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            #self.screen.screen.set_clip()
+            # draw a rectangle of the background colour with height of *amount* at the top of
+            # the window, to cover the text left behind
+            destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+        area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
     def printText(self, text):
-        self.buffertext(text) 
-        buffering = self.testattributes(8)
+        self.buffertext(text)
+        buffering = self.testattribute(8)
         if text.find('\r') != -1 or buffering == False:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
 
@@ -475,9 +483,9 @@ class window:
         if self.x_cursor > self.x_size - self.right_margin:
             self.x_cursor = self.left_margin + 1
 
-        buffering = self.testattributes(8)
+        buffering = self.testattribute(8)
 
-        if not self.testattributes(1): # if wrapping is off
+        if not self.testattribute(1): # if wrapping is off
             linebuffers = []
             x = 0
             while x != -1:
@@ -527,9 +535,7 @@ class window:
                 if self.cdown:
                     return 1
         
-        if self.screen.resized:
-            self.screen.resized = False
-            resize()
+
         #self.showCursor()
         #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
@@ -542,10 +548,10 @@ class window:
 
 class screen:
     updates = []
-    def __init__(self, width, height, title=''):
+    def __init__(self, width, height, title='', background=0xFFFFFF):
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         pygame.display.set_caption(title)
-        self.screen.fill(0xFFFFFF)
+        self.screen.fill(background)
         self.width = width
         self.height = height
         self.update()
@@ -564,6 +570,9 @@ class screen:
 
     def erase(self, colour, area=None):
         if area:
+            area = list(area)
+            area[0] -= 1
+            area[1] -= 1
             area = pygame.Rect((area))
         else:
             area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
@@ -690,8 +699,11 @@ def getinput(screen):
         return None
 
 def openfile(window, mode, filename=None, prompt=None):
+    global GAMEDIRECTORY
     # if filename == None, prompt for a filename
     # returns a file object to be read/written
+
+
 
     if filename == None: # should prompt for filename
         prompt = True
@@ -720,6 +732,9 @@ def openfile(window, mode, filename=None, prompt=None):
                     window.flushTextBuffer()
         t.pop()
         filename = ''.join(t)
+
+    filename = os.path.basename(filename) # strip the directory information from the filename (maybe should allow it if it's a subfolder of the game directory?)
+    filename = os.path.join(GAMEDIRECTORY, filename) # use the game directory as the location for file
 
     if mode == 'a':
         if findfile(filename) == False:
@@ -797,7 +812,22 @@ def stoptimer():
 
 
 
+def beep():
+    try:
+        f = getBaseDir() + "//sounds//beep.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
+    except:
+        pass
 
+
+def boop():
+    try:
+        f = getBaseDir() + "//sounds//boop.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
+    except:
+        pass
 
 class musicobject():
     def __init__(self, data):
@@ -842,7 +872,8 @@ class soundChannel():
             self.clock = pygame.time.Clock()
             self.clock.tick()
 
-
+    
+    
     def cleanup(self):
         if self.type == 0:
             self.channelobj.set_endevent()
@@ -859,6 +890,84 @@ class soundChannel():
     def Notify(self):
         pass
 
+soundchannels = [[],[]]
+
+def soundhandler():
+    for a in soundchannels:
+        for b in a:
+            b.Notify()
+
+     
+class musicChannel(soundChannel):
+    type = 1
+
+    def getbusy(self):
+        return pygame.mixer.music.get_busy()
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 1:
+            self.sound = None
+            return False
+        self.routine = routine
+        self.sound.play(volume, repeats)
+        self.setup(soundhandler)
+    
+    def setvolume(self, volume):
+        pygame.mixer.music.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.sound.stop()
+            self.sound = None
+            self.cleanup()
+
+
+
+class effectsChannel(soundChannel):
+    type = 0
+
+    def __init__(self, id):
+        self.id = id
+        self.channelobj = pygame.mixer.Channel(id)
+
+    channelobj = None
+
+    def getbusy(self):
+        try:
+            busy = self.channelobj.get_busy()
+        except:
+            busy = False
+        return busy
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 0:
+            self.sound = None
+            return False      
+        self.routine = routine
+        self.setvolume(volume)
+        self.channelobj.play(self.sound.sound, repeats)
+        self.setup(soundhandler)
+
+    def setvolume(self, volume):
+        self.channelobj.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.channelobj.stop()
+            self.sound = None
+
+            self.cleanup()
 
 def stopallsounds():
     pygame.mixer.stop()
+
+def initsound():
+    pygame.mixer.init()

@@ -13,15 +13,13 @@
 # GNU General Public License for more details.
 
 import string
-import zio.pygame as io
+import zio.io as io
 import zcode
 from zcode.constants import *
 
 def setup(startstreams=[False, True, False, False, False]):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
-    if zcode.use_standard < STANDARD_12:
-        streams[5] = None
     for a in range(len(startstreams)):
         if startstreams[2]:
             streams[2].filename = startstreams[2]
@@ -63,7 +61,8 @@ class transcriptstream(outputstream):
         zcode.header.setflag(2,0,1)
 
     def output(self, data):
-        if zcode.screen.currentWindow.testattributes(4):
+        data = data.replace('\r', '\n')
+        if zcode.screen.currentWindow.testattribute(4):
             file = io.openfile(zcode.screen.currentWindow, 'a', self.filename)
             writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
@@ -280,8 +279,6 @@ def openstream(stream, location=None, width=None): # area is only used for strea
                 streams[3].append(m)
             else:
                 zcode.error.fatal('Tried to open too many memory streams.')
-    elif stream == 5 and zcode.use_standard >= STANDARD_12:
-        streams[5].open(location)
     else:
         try:
             streams[stream].open()
@@ -305,13 +302,12 @@ def closestream(stream):
         
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)
-    streams[2].write(text)
     if len(streams[3]) > 0:
         streams[3][-1].write(text)
+    text = text.replace('\r', '\n')
+    streams[2].write(text)
     if special:
         streams[4].write(text)
-    if zcode.use_standard >= STANDARD_12:
-        streams[5].write(text)
 
 
 

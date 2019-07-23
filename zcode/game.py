@@ -17,7 +17,7 @@ import copy
 import os
 
 import quetzal
-import zio.pygame as io
+import zio.io as io
 import zcode
 
 
@@ -159,7 +159,7 @@ def getstack(indirect=False):
 
 def putstack(value, indirect=False):
     global currentframe
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     if indirect == True:
         currentframe.evalstack[-1] = value
     else:
@@ -175,11 +175,11 @@ def getglobal(varnum):
 
 def setlocal(varnum, value):
     global currentframe
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     currentframe.lvars[varnum] = value
 
 def setglobal(varnum, value):
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     table = zcode.header.globalsloc()
     zcode.memory.setword(table + (varnum * 2), value)
 

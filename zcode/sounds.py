@@ -12,30 +12,24 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import pygame
 import blorb
-import zio.pygame as io
+import zio.io as io
 import zcode
 from zcode.constants import *
+from zio.io import soundchannels
 
 
 AVAILABLE = False
 
-soundchannels = [[],[]]
+
 
 def setup(b):
     global device, channel, currentchannel, x, sounds, effectschannel, musicchannel
     global AVAILABLE, blorbs
     try:
-        pygame.mixer.init()
-        if zcode.use_standard >= STANDARD_12:
-            for a in range(io.maxeffectschannels()):
-                soundchannels[0].append(effectsChannel(a))
-            for a in range(io.maxmusicchannels()):
-                soundchannels[1].append(musicChannel(a))
-        else:
-            soundchannels[0].append(effectsChannel(a))
-            soundchannels[1].append(musicChannel(a))
+        io.initsound()
+        soundchannels[0].append(effectsChannel(0))
+        soundchannels[1].append(musicChannel(0))
         AVAILABLE = True
     except:
         pass
@@ -46,8 +40,11 @@ def availablechannels(arg):
         return len(soundchannels[arg])
     return 0 # no sound capablities, no sound channels available
 
-def beep(type): # Either a low or a high beep. 1 is low, 2 is high
-    pass
+def bleep(type): # Either a high or a low bleep. 1 is high, 2 is low
+    if type == 1:
+        io.beep()
+    if type == 2:
+        io.boop()
 
 # It might be a good idea to check the relevant flag in Flags 2 to see
 # if the game wants to use sounds. If it does, various sound setting-up stuff can be done (such
@@ -58,10 +55,6 @@ def beep(type): # Either a low or a high beep. 1 is low, 2 is high
 #SOUND
 
 
-def soundhandler():
-    for a in soundchannels:
-        for b in a:
-            b.Notify()
 
 class Channel(io.soundChannel):
     sound = None
@@ -79,73 +72,11 @@ class Channel(io.soundChannel):
             zcode.routines.execloop()
             
 
-class musicChannel(Channel):
+class musicChannel(io.musicChannel):
     type = 1
 
-    def getbusy(self):
-        return pygame.mixer.music.get_busy()
-
-    def play(self, sound, volume, repeats, routine):
-        self.sound = sound
-        if self.sound.type != 1:
-            self.sound = None
-            return False
-        self.routine = routine
-        self.sound.play(volume, repeats)
-        self.setup(soundhandler)
-    
-    def setvolume(self, volume):
-        pygame.mixer.music.set_volume(volume)
-
-    def stop(self, sound):
-        if self.sound == None:
-            return False
-        if self.sound.number == sound.number:
-            self.routine = None
-            self.sound.stop()
-            self.sound = None
-            self.cleanup()
-
-
-
-class effectsChannel(Channel):
+class effectsChannel(io.effectsChannel):
     type = 0
-
-    def __init__(self, id):
-        self.id = id
-        self.channelobj = pygame.mixer.Channel(id)
-
-    channelobj = None
-
-    def getbusy(self):
-        try:
-            busy = self.channelobj.get_busy()
-        except:
-            busy = False
-        return busy
-
-    def play(self, sound, volume, repeats, routine):
-        self.sound = sound
-        if self.sound.type != 0:
-            self.sound = None
-            return False      
-        self.routine = routine
-        self.setvolume(volume)
-        self.channelobj.play(self.sound.sound, repeats)
-        self.setup(soundhandler)
-
-    def setvolume(self, volume):
-        self.channelobj.set_volume(volume)
-
-    def stop(self, sound):
-        if self.sound == None:
-            return False
-        if self.sound.number == sound.number:
-            self.routine = None
-            self.channelobj.stop()
-            self.sound = None
-
-            self.cleanup()
 
     def Notify(self):
         self.getbusy()
@@ -165,7 +96,7 @@ class Sound:
             self.type = a.getSndType(sound_number)
         # Standards below 1.1 do not support seperate channels for different sound types, so we 
         # just don't support music in that case
-        if use_standard < STANDARD_11 and self.type != 0: 
+        if zcode.use_standard < STANDARD_11 and self.type != 0: 
             self.sound = None
         elif sound_data:
             self.sound = io.sound(sound_data, self.type)
@@ -198,7 +129,7 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
         return False
     elif effect == 2:
         try:
-            s = Sound(sound)
+            s = Sound(sound)        
             soundchannels[s.type][currentchannel[s.type]-1].play(s, volume, repeats, routine)
             return True
         except:

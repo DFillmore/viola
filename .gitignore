@@ -218,7 +218,11 @@ pip-log.txt
 glk/
 glulx/
 games/
-experiments/
-infocom/
-tests/
-buggy/
+misc/
+future/
+zcode/lgop.txt
+icons/
+fonts/bzork.ttf
+fonts/unifont-12.1.01.ttf
+fonts/unifont_csur-12.1.01.ttf
+*.txt

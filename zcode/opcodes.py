@@ -14,7 +14,7 @@
 
 import sys
 import blorb
-import zio.pygame as io
+import zio.io as io
 import zcode
 from zcode.constants import *
 
@@ -25,8 +25,8 @@ def unfinished():
 # all the opcodes in alphabetical order
 
 def z_add():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     result = a + b
     zcode.instructions.store(zcode.numbers.reduce(result))
 
@@ -37,14 +37,14 @@ def z_and():
     zcode.instructions.store(result)
 
 def z_art_shift():
-    number = zcode.numbers.neg(zcode.instructions.operands[0])
-    places = zcode.numbers.neg(zcode.instructions.operands[1])
+    number = zcode.numbers.signed(zcode.instructions.operands[0])
+    places = zcode.numbers.signed(zcode.instructions.operands[1])
     if places >= 0:
-        result = zcode.numbers.unneg(number << places)
+        result = zcode.numbers.unsigned(number << places)
         result = result & 65535
     else:
         places = abs(places)
-        result = zcode.numbers.unneg(number >> places)
+        result = zcode.numbers.unsigned(number >> places)
         result = result & 65535
     zcode.instructions.store(result)
 
@@ -118,19 +118,6 @@ def z_check_unicode():
     else:
         zcode.instructions.store(0)
 
-
-    
-    #if charnumber < 0x20 or (charnumber >= 0x7f and charnumber <= 0x9f):
-    #    zcode.instructions.store(0) # can't print or read these characters
-    ##elif charnumber < 128:
-    ##    zcode.instructions.store(3) # can read and print ASCII
-    #elif charnumber < 256:
-    #    zcode.instructions.store(3) # can read and print Latin-1
-    #elif charnumber > 255:
-    #    zcode.instructions.store(1)
-    #else:
-    #    zcode.instructions.store(0)
-
 def z_clear_attr():
     object = zcode.instructions.operands[0]
     if object == 0:
@@ -142,7 +129,7 @@ def z_clear_attr():
 def z_copy_table():
     first = zcode.instructions.operands[0]
     second = zcode.instructions.operands[1]
-    size = zcode.numbers.neg(zcode.instructions.operands[2])
+    size = zcode.numbers.signed(zcode.instructions.operands[2])
     if second == 0:
         for a in range(size):
             zcode.memory.setbyte(first + a, 0)
@@ -162,13 +149,13 @@ def z_copy_table():
             zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a))            
 
 def z_dec():
-    x = zcode.numbers.neg(zcode.game.getvar(zcode.instructions.operands[0], True))
+    x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0], True))
     x = zcode.numbers.reduce(x-1)
     zcode.game.setvar(zcode.instructions.operands[0], x, True)
 
 def z_dec_chk():
-    x = zcode.numbers.neg(zcode.game.getvar(zcode.instructions.operands[0], True))
-    value = zcode.numbers.neg(zcode.instructions.operands[1])
+    x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0], True))
+    value = zcode.numbers.signed(zcode.instructions.operands[1])
     x = zcode.numbers.reduce(x - 1)
     zcode.game.setvar(zcode.instructions.operands[0], x, True)
     if x < value:
@@ -177,8 +164,8 @@ def z_dec_chk():
         zcode.instructions.branch(0)
 
 def z_div():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     result = zcode.numbers.div(a, b)
     zcode.instructions.store(zcode.numbers.reduce(result))
 
@@ -405,13 +392,13 @@ def z_get_wind_prop():
     zcode.instructions.store(result)
 
 def z_inc():
-    x = zcode.numbers.neg(zcode.game.getvar(zcode.instructions.operands[0], True))
+    x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0], True))
     x = zcode.numbers.reduce(x+1)
     zcode.game.setvar(zcode.instructions.operands[0], x, True)
         
 def z_inc_chk():
-    x = zcode.numbers.neg(zcode.game.getvar(zcode.instructions.operands[0], True))
-    value = zcode.numbers.neg(zcode.instructions.operands[1])
+    x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0], True))
+    value = zcode.numbers.signed(zcode.instructions.operands[1])
     x = zcode.numbers.reduce(x+1)
     zcode.game.setvar(zcode.instructions.operands[0], x, True)
     if x > value:
@@ -454,8 +441,8 @@ def z_je():
     zcode.instructions.branch(condition)
     
 def z_jg():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     if a > b:
         zcode.instructions.branch(1)
     else:
@@ -472,8 +459,8 @@ def z_jin():
         zcode.instructions.branch(0)
 
 def z_jl():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     if a < b:
         zcode.instructions.branch(1)
     else:
@@ -481,7 +468,7 @@ def z_jl():
     
 def z_jump():
     offset = zcode.instructions.operands[0] - 2
-    offset = zcode.numbers.neg(offset)
+    offset = zcode.numbers.signed(offset)
     zcode.game.PC += offset
 
 def z_jz():
@@ -497,17 +484,17 @@ def z_load():
 
 def z_loadb():
     array = zcode.instructions.operands[0]
-    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    byteindex = zcode.numbers.signed(zcode.instructions.operands[1])
     zcode.instructions.store(zcode.memory.getbyte(array + byteindex))
 
 def z_loadw():
     array = zcode.instructions.operands[0]
-    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    wordindex = zcode.numbers.signed(zcode.instructions.operands[1])
     zcode.instructions.store(zcode.memory.getword(array + (2 * wordindex)))
 
 def z_log_shift():
     number = zcode.instructions.operands[0]
-    places = zcode.numbers.neg(zcode.instructions.operands[1])
+    places = zcode.numbers.signed(zcode.instructions.operands[1])
     if places >= 0:
         result = number << places
         result = result & 65535
@@ -542,8 +529,8 @@ def z_make_menu():
         zcode.instructions.branch(result)
 
 def z_mod():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     result = zcode.numbers.mod(a, b)
     zcode.instructions.store(zcode.numbers.reduce(result))
 
@@ -558,8 +545,8 @@ def z_move_window():
     window.setPosition(x,y)
 
 def z_mul():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     result = a * b
     zcode.instructions.store(zcode.numbers.reduce(result))
 
@@ -581,11 +568,11 @@ def z_or():
     zcode.instructions.store(result)
 
 def z_output_stream(): # unfinished (need to fix the width stuff)
-    stream = zcode.numbers.neg(zcode.instructions.operands[0])
+    stream = zcode.numbers.signed(zcode.instructions.operands[0])
     if stream == 3:
         table = zcode.instructions.operands[1]
         if zcode.header.zversion() == 6 and len(zcode.instructions.operands) > 2:
-            width = zcode.numbers.neg(zcode.instructions.operands[2])
+            width = zcode.numbers.signed(zcode.instructions.operands[2])
             if width >= 0:
                 width = zcode.screen.getWindow(width).getSize()[0]
             elif width < 0:
@@ -624,7 +611,7 @@ def z_picture_data():
         pic = False
         for a in zcode.screen.blorbs:
             pic = a.getPict(picnum)
-            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getWidth())
+            scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
 
         if pic != False:
             if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
@@ -632,8 +619,8 @@ def z_picture_data():
             else:
                 pic = io.image(pic)
 
-            height = int(pic.getHeight()) * scale
-            width = int(pic.getWidth()) * scale
+            height = int(int(pic.getHeight()) * scale)
+            width = int(int(pic.getWidth()) * scale)
             zcode.memory.setword(array, height)
             zcode.memory.setword(array+2, width)
             zcode.instructions.branch(1)
@@ -694,7 +681,7 @@ def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks r
         
 
 def z_print_num():
-    num = zcode.numbers.neg(zcode.instructions.operands[0])
+    num = zcode.numbers.signed(zcode.instructions.operands[0])
     zcode.output.printtext(str(num))
 
 def z_print_obj():
@@ -731,8 +718,9 @@ def z_print_table():
 
     x,y = zcode.screen.currentWindow.getCursor()
     c = 0
-    if zcode.use_standard < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0':
-        zcode.error.strictz('Tried to use print_table operation in lower window')
+    
+    if zcode.use_standard < STANDARD_12 and zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0' and height > 1:
+        zcode.error.strictz('Tried to use print_table operation with height > 1 in lower window')
     else:
         for a in range(height):
             for b in range(width):
@@ -748,8 +736,6 @@ def z_print_table():
                     zcode.screen.currentWindow.setCursor(x, y)
                     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
-            
-    
 
 def z_print_unicode():
     try:
@@ -817,7 +803,7 @@ def z_quit():
     sys.exit()
 
 def z_random():
-    range = zcode.numbers.neg(zcode.instructions.operands[0])
+    range = zcode.numbers.signed(zcode.instructions.operands[0])
     if range > 0:
         zcode.instructions.store(zcode.numbers.getrandom(range))
     else:
@@ -894,7 +880,10 @@ def z_read():
     
 
     zcode.output.streams[4].write(inp)
-    zcode.output.streams[4].write('\n')
+    zcode.output.streams[4].write('\r')
+
+    zcode.output.streams[2].write(inp)
+    zcode.output.streams[2].write('\r')
 
     zcode.input.instring = []
 
@@ -914,10 +903,6 @@ def z_read():
     if zcode.header.zversion() >= 5:
         zcode.instructions.store(termchar)
     
-
-
-            
-
 def z_read_char():
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.line_count = 0
@@ -1004,7 +989,7 @@ def z_remove_obj():
 def z_restart():
     zcode.sounds.stopall()
     zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we've restarted
-    zcode.screen.eraseWindow(zcode.numbers.unneg(-1))
+    zcode.screen.eraseWindow(zcode.numbers.unsigned(-1))
     # should really make sure the transcription bit stays set 
     zcode.memory.data = zcode.memory.originaldata[:] # reset the memory contents
     zcode.game.setup() # reset all the module contents
@@ -1054,15 +1039,15 @@ def z_restore():
     else:       
         result = zcode.game.restore()
         if result == 0:
-            if zcode.header.zversion() < 5:
+            if zcode.header.zversion() < 4:
                 zcode.instructions.branch(0)
             else:
                 zcode.instructions.store(0)
         else:
             # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
-            #zcode.screen.erasewindow(zcode.numbers.unneg(-1))
+            #zcode.screen.erasewindow(zcode.numbers.unsigned(-1))
             zcode.header.setup()
-            if zcode.header.zversion() < 5:
+            if zcode.header.zversion() < 4:
                 zcode.instructions.branch(1)
             else:
                 zcode.instructions.store(2)
@@ -1086,10 +1071,10 @@ def z_rtrue():
     zcode.game.ret(1)
 
 def z_save(): 
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion() < 4:
         result = zcode.game.save()
         zcode.instructions.branch(result)
-    else:
+    elif zcode.header.zversion() > 4:
         if len(zcode.instructions.operands) > 0:
             table = zcode.instructions.operands[0]
             bytes = zcode.instructions.operands[1]
@@ -1121,6 +1106,7 @@ def z_save():
                 result = 0
         else:
             result = zcode.game.save()
+    if zcode.header.zversion() > 3:
         zcode.instructions.store(result) 
 
 def z_save_undo():
@@ -1154,7 +1140,7 @@ def z_scan_table():
 def z_scroll_window():
     window = zcode.screen.getWindow(zcode.instructions.operands[0])
     window.flushTextBuffer()
-    pixels = zcode.numbers.neg(zcode.instructions.operands[1])
+    pixels = zcode.numbers.signed(zcode.instructions.operands[1])
     if pixels < 0:
         dir = 1
     else:
@@ -1173,8 +1159,8 @@ def z_set_attr():
 
 def z_set_colour():
     zcode.screen.currentWindow.flushTextBuffer()
-    foreground = zcode.numbers.neg(zcode.instructions.operands[0])
-    background = zcode.numbers.neg(zcode.instructions.operands[1])
+    foreground = zcode.numbers.signed(zcode.instructions.operands[0])
+    background = zcode.numbers.signed(zcode.instructions.operands[1])
 
     real_foreground = None
     real_background = None
@@ -1186,10 +1172,21 @@ def z_set_colour():
             window = zcode.screen.currentWindow
         if foreground == -1:
             real_foreground = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            foreground = zcode.screen.convertRealToBasicColour(real_foreground)
+            if real_foreground != -1:
+                foreground = zcode.screen.convertRealToBasicColour(real_foreground)
+            else:
+                zcode.error.strictz('Tried to get pixel colour at invalid coordinate')
+                foreground = 1
+                real_foreground = None
         if background == -1:
             real_background = window.getPixelColour(window.getCursor()[0], window.getCursor()[1])
-            background = zcode.screen.convertRealToBasicColour(real_background)
+            if real_background != -1:
+                background = zcode.screen.convertRealToBasicColour(real_background)
+            else:
+                zcode.error.strictz('Tried to get pixel colour at invalid coordinate')
+                background = 1
+                real_background = None
+
 
     if foreground == 1:        
         foreground = zcode.header.getdeffgcolour()
@@ -1234,7 +1231,7 @@ def z_set_colour():
     
 
 def z_set_cursor():
-    y = zcode.numbers.neg(zcode.instructions.operands[0])
+    y = zcode.numbers.signed(zcode.instructions.operands[0])
     if len(zcode.instructions.operands) > 1:
         x = zcode.instructions.operands[1]
     else:
@@ -1303,8 +1300,8 @@ def z_set_text_style():
 
 def z_set_true_colour(): # a z-spec 1.1 opcode.
     zcode.screen.currentWindow.flushTextBuffer()
-    foreground = zcode.numbers.neg(zcode.instructions.operands[0])
-    background = zcode.numbers.neg(zcode.instructions.operands[1])
+    foreground = zcode.numbers.signed(zcode.instructions.operands[0])
+    background = zcode.numbers.signed(zcode.instructions.operands[1])
 
     real_foreground = None
     real_background = None
@@ -1366,7 +1363,7 @@ def z_show_status():
 def z_sound_effect():
     number = zcode.instructions.operands[0]
     if number < 3:
-        zcode.sounds.beep(number)
+        zcode.sounds.bleep(number)
     else:
         effect = zcode.instructions.operands[1]
         if len(zcode.instructions.operands) > 2:
@@ -1451,19 +1448,19 @@ def z_store():
 
 def z_storeb():
     array = zcode.instructions.operands[0]
-    byteindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    byteindex = zcode.numbers.signed(zcode.instructions.operands[1])
     value = zcode.instructions.operands[2]
     zcode.memory.setbyte(array + byteindex, value)
 
 def z_storew():
     array = zcode.instructions.operands[0]
-    wordindex = zcode.numbers.neg(zcode.instructions.operands[1])
+    wordindex = zcode.numbers.signed(zcode.instructions.operands[1])
     value = zcode.instructions.operands[2]
     zcode.memory.setword(array + (2 * wordindex), value)
 
 def z_sub():
-    a = zcode.numbers.neg(zcode.instructions.operands[0])
-    b = zcode.numbers.neg(zcode.instructions.operands[1])
+    a = zcode.numbers.signed(zcode.instructions.operands[0])
+    b = zcode.numbers.signed(zcode.instructions.operands[1])
     result = a - b
     zcode.instructions.store(zcode.numbers.reduce(result))
 
