@@ -46,8 +46,6 @@ def setup(): # set all the relevant bits and bytes and words in the header
     if zversion() > 4:
         if getflag(2, 3): # pictures
             setflag(2, 3, zcode.screen.supportedgraphics(3))
-            if getflag(2, 3) and zversion() == 6: # if the flag is still set and we're running a Version 6 game
-                zcode.screen.graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
         if getflag(2, 4): # undo
             setflag(2, 4, 1)            
         if getflag(2, 5): # mouse

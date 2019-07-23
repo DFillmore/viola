@@ -47,6 +47,10 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     global spectrum
     global DEFFOREGROUND
     global DEFBACKGROUND
+    global graphics_mode
+
+    if zcode.header.getflag(2, 3) and zcode.header.zversion() == 6: # if the flag is still set and we're running a Version 6 game
+        graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
