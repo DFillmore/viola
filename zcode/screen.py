@@ -487,7 +487,6 @@ class window(io.window):
         foreground = convertBasicToRealColour(2)
         background = convertBasicToRealColour(9)
         self.setRealColours(foreground, background)
-        self.getFont().resetSize()
 
     def testfont(self, font):
         """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
