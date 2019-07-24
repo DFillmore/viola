@@ -248,6 +248,17 @@ font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
              bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
             )
 
+font1emoji = font(getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+
+             boldfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+             italicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+             fixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+            )
+
 font2 = None
 
 #font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
