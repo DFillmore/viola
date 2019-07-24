@@ -108,7 +108,7 @@ def handle_parameters(argv): # handles command line parameters
     options = args[0]
     args = args[1]
     transcriptfile = False
-    usespec = 3
+    usespec = 4
     for a in options:
         if a[0] == '-d':
             debug = True
