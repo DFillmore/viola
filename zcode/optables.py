@@ -152,7 +152,6 @@ def setup():
               zcode.opcodes.z_picture_table,
               zcode.opcodes.z_buffer_screen,
               zcode.opcodes.z_gestalt,
-              zcode.opcodes.z_font_size,
               zcode.opcodes.z_write_file,
               zcode.opcodes.z_read_file
             ]
@@ -239,6 +238,5 @@ def setup():
         opext[0xe] = zcode.opcodes.z_badop # sound_channel
         opext[0xf] = zcode.opcodes.z_badop # sound_data
         opext[0x1e] = zcode.opcodes.z_badop # gestalt
-        opext[0x1f] = zcode.opcodes.z_badop # font_size
-        opext[0x20] = zcode.opcodes.z_badop # write_file
-        opext[0x21] = zcode.opcodes.z_badop # read_file 
+        opext[0x1f] = zcode.opcodes.z_badop # write_file
+        opext[0x20] = zcode.opcodes.z_badop # read_file 
