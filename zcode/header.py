@@ -17,7 +17,7 @@ import string
 import zcode
 from zcode.constants import *
 
-standards = [(0,0), (0,2), (1,0), (1,1)]
+standards = [(0,0), (0,2), (1,0), (1,1), (1,2)]
 
 
 def setup(): # set all the relevant bits and bytes and words in the header
@@ -27,43 +27,45 @@ def setup(): # set all the relevant bits and bytes and words in the header
         setflag(1, 5, 1) # screen splitting is available
         setflag(1, 6, 0) # The default font is not fixed-pitch
     elif zversion() < 9:
-        setflag(1, 2, zcode.screen.supportedstyles(2)) # Boldface
-        setflag(1, 3, zcode.screen.supportedstyles(4)) # Italic
-        setflag(1, 4, zcode.screen.supportedstyles(8)) # Fixed-pitch style
+        setflag(1, 2, gestalt(4, 2)) # Boldface
+        setflag(1, 3, gestalt(4, 4)) # Italic
+        setflag(1, 4, gestalt(4, 8)) # Fixed-pitch style
         if zcode.use_standard >= STANDARD_02: # from 0.2 onward
-            setflag(1, 7, 1) # Timed input
+            setflag(1, 7, gestalt(5)) # Timed input
         if zversion() > 4:
-            setflag(1, 0, zcode.screen.supportedgraphics(0)) # Colours
+            setflag(1, 0, gestalt(2, 0)) # Colours
         if zversion() == 6:
-            setflag(1, 1, zcode.screen.supportedgraphics(3)) # Picture displaying
-        if zcode.sounds.availablechannels(0) + zcode.sounds.availablechannels(1) > 0: # if any effect or music channels are available, sound effects are available
+            setflag(1, 1, gestalt(2, 3)) # Picture displaying
+        if gestalt(3, 0) + gestalt(3, 1) > 0: # if any effect or music channels are available, sound effects are available
             setflag(1, 5, 1) # sound effects
         else:
             setflag(1, 5, 0)
 
-
     # Flags 2 - If unset by the game, the terp should leave them like that.
     if zversion() > 4:
         if getflag(2, 3): # pictures
-            setflag(2, 3, zcode.screen.supportedgraphics(3))
+            setflag(2, 3, gestalt(2, 3)) 
         if getflag(2, 4): # undo
-            setflag(2, 4, 1)            
+            if gestalt(7):
+                setflag(2, 4, 1)
+            else:
+                setflag(2, 4, 0)
         if getflag(2, 5): # mouse
-            setflag(2, 5, 1)
+            setflag(2, 5, gestalt(6, 2))
         if getflag(2, 6): # colours
-            setflag(2, 6, zcode.screen.supportedgraphics(0))
+            setflag(2, 6, gestalt(2, 0))
         if getflag(2, 7): # sound effects
-            if zcode.screen.supportedgraphics(0) + zcode.screen.supportedgraphics(1) > 0:
+            if gestalt(3, 0) + gestalt(3, 1) > 0:
                 setflag(2, 7, 1)
             else:
                 setflag(2, 7, 0)
         if getflag(2, 8): # menus
-            setflag(2, 8, 0)
-    
+            setflag(2, 8, gestalt(8))
+
     # Flags 3 - If unset by the game, the terp should leave them like that. All unknown bits should be set to 0.
     if zversion() > 4:
         if getflag(3, 0): # transparency
-            setflag(3, 0, zcode.screen.supportedgraphics(2))
+            setflag(3, 0, gestalt(2, 2))
         for a in range(1, 16): # set all the other bits to 0, because we don't know what they do
             setflag(3, a, 0)
 
@@ -475,7 +477,7 @@ def gettruedefaultbackground():
 
 # Standard 1.2 stuff
 
-viola_version = 8 # version 0.8
+viola_version = 0.8 # version 0.8
 
 def gestalt(id, arg1=0, arg2=0, arg3=0):
     if id == 0: # interpreter version
@@ -514,8 +516,8 @@ def gestalt(id, arg1=0, arg2=0, arg3=0):
         if arg1 < 2: 
             return 1
         return 0
-    if id == 11: # font size
-        return 0 # we don't yet support the font size opcode
-    if id == 12: # unicode strings (using the unicode escape character)
+    if id == 11: # unicode strings (using the unicode escape character)
         return 1 # we support unicode string. In theory. In practice, it's kinda broken.
+    if id == 12: 
+        return 1 # External Files
     return 0

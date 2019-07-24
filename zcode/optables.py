@@ -135,8 +135,8 @@ def setup():
               zcode.opcodes.z_print_unicode,
               zcode.opcodes.z_check_unicode,
               zcode.opcodes.z_set_true_colour,
-              zcode.opcodes.z_badop,
-              zcode.opcodes.z_badop,
+              zcode.opcodes.z_sound_channel,
+              zcode.opcodes.z_sound_data,
               zcode.opcodes.z_move_window,
               zcode.opcodes.z_window_size,
               zcode.opcodes.z_window_style,
@@ -151,10 +151,10 @@ def setup():
               zcode.opcodes.z_make_menu,
               zcode.opcodes.z_picture_table,
               zcode.opcodes.z_buffer_screen,
-              zcode.opcodes.z_badop,
-              zcode.opcodes.z_badop,
-              zcode.opcodes.z_badop,
-              zcode.opcodes.z_badop
+              zcode.opcodes.z_gestalt,
+              zcode.opcodes.z_font_size,
+              zcode.opcodes.z_write_file,
+              zcode.opcodes.z_read_file
             ]
     if zcode.header.zversion() < 3:
         op0[0xc] = zcode.opcodes.z_badop
@@ -234,3 +234,11 @@ def setup():
     if zcode.use_standard < STANDARD_11: # Standard 1.0 or lower
         opext[0xd] = zcode.opcodes.z_badop # set_true_colour
         opext[0x1d] = zcode.opcodes.z_badop # buffer_screen
+
+    if zcode.use_standard < STANDARD_12: # Standard 1.1 or lower
+        opext[0xe] = zcode.opcodes.z_badop # sound_channel
+        opext[0xf] = zcode.opcodes.z_badop # sound_data
+        opext[0x1e] = zcode.opcodes.z_badop # gestalt
+        opext[0x1f] = zcode.opcodes.z_badop # font_size
+        opext[0x20] = zcode.opcodes.z_badop # write_file
+        opext[0x21] = zcode.opcodes.z_badop # read_file 

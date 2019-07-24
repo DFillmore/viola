@@ -20,6 +20,8 @@ from zcode.constants import *
 def setup(startstreams=[False, True, False, False, False]):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
+    if zcode.use_standard < STANDARD_12:	
+        streams[5] = None
     for a in range(len(startstreams)):
         if startstreams[2]:
             streams[2].filename = startstreams[2]
@@ -279,6 +281,8 @@ def openstream(stream, location=None, width=None): # area is only used for strea
                 streams[3].append(m)
             else:
                 zcode.error.fatal('Tried to open too many memory streams.')
+    elif stream == 5 and zcode.use_standard >= STANDARD_12:
+        streams[5].open(location)
     else:
         try:
             streams[stream].open()
@@ -308,6 +312,8 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
     streams[2].write(text)
     if special:
         streams[4].write(text)
+    if zcode.use_standard >= STANDARD_12:
+        streams[5].write(text)
 
 
 
