@@ -132,7 +132,18 @@ def setupunitable():
                 loc += 1
                 for a in range(size):
                     unitable[155+a] = zcode.memory.getword(loc+(a*2))
-    elif zcode.use_standard == STANDARD_00:
+    if zcode.use_standard >= STANDARD_12:
+        if zcode.header.getflag(3, 1):
+            loc -= 1
+            loc += size*2
+            c = 155+size
+            size = zcode.memory.getbyte(loc)
+            c -= size
+            
+            for a in range(size):
+                unitable[c+a] = (unittable << 16) + zcode.memory.getword(loc+(a*2))
+
+    if zcode.use_standard == STANDARD_00:
         unitable = { 155: 0xe4,
                      156: 0xf6,
                      157: 0xfc,
@@ -143,6 +154,7 @@ def setupunitable():
                      162: 0xbb,
                      163: 0xab,
                    }
+                
 
 
 def setupreverseunitable():
@@ -258,9 +270,7 @@ def printabbrev(table, code):
     return chars
 
 
-
-
-def zcharstozscii(address):
+def unpackzchars(address):
     global  A0, A1, A2
     codes = []
     loc = address
@@ -277,6 +287,7 @@ def zcharstozscii(address):
                 codes.append(a)
                 if codes[-4:] == [5, 6, 4, 0] and zcode.use_standard >= STANDARD_12: # start unicode data
                     unistring = True
+                    
             loc += 2
         else:
             b = zcode.memory.getbyte(loc)
@@ -284,6 +295,13 @@ def zcharstozscii(address):
             if b == 0:
                 unistring = False
             codes.append(b)
+
+    return codes
+
+
+    
+def zcharstozscii(address):
+    codes = unpackzchars(address)
 
  
     # codes should now be a list of the z-characters, with Unicode string bytes
@@ -311,7 +329,7 @@ def zcharstozscii(address):
                 unicodestring = True
         elif unicodestring:
             ZSCII.append(chr(a))
-            if a == chr(0):
+            if a == 0:
                 unicodestring = False
         elif a < 4 and a > 0 and zcode.header.zversion() >= 3:
             abbrev = a
@@ -423,18 +441,21 @@ def zsciitozchars(text, maxlen=-1):
             if ord(a) in outputvalues:
                 encoded.append(ord(a) >> 5)
                 encoded.append(ord(a) & 0x1f)
-
+    
     if maxlen != -1:
         while len(encoded) > maxlen:
             encoded.pop()
         while len(encoded) < maxlen:
             encoded.append(5)
 
+    # if the encoded list length isn't divisible by 3, add 5s until it is
+    while len(encoded) % 3 != 0:
+        encoded.append(5)
+
     words = []
-    words.append((encoded[0] << 10) + (encoded[1] << 5) + encoded[2])
-    words.append((encoded[3] << 10) + (encoded[4] << 5) + encoded[5])
-    if zcode.header.zversion() > 3:
-        words.append((encoded[6] << 10) + (encoded[7] << 5) + encoded[8])
+    numwords = int(len(encoded) / 3)
+    for a in range(numwords):
+        words.append((encoded[(a*3)+0] << 10) + (encoded[(a*3)+1] << 5) + encoded[(a*3)+2])
     words[-1] = words[-1] | 0x8000
     chars = []
     for a in words:
