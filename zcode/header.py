@@ -477,10 +477,13 @@ def gettruedefaultbackground():
 
 # Standard 1.2 stuff
 
-viola_version = 0.8 # version 0.8
+# version 0.8
+major_version = 0
+minor_version = 8
 
 def gestalt(id, arg1=0, arg2=0, arg3=0):
     if id == 0: # interpreter version
+        viola_version = ((major_version & 255) << 8) + (minor_version & 255)
         return viola_version
     if id == 2: # graphics capablities 
         return zcode.screen.supportedgraphics(arg1)
