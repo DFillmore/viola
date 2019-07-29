@@ -767,7 +767,6 @@ def z_put_wind_prop():
 def z_quit():
     zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we're supposed to have quit
     zcode.sounds.stopall()
-    zcode.screen.currentWindow.getFont().resetSize()
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
@@ -1333,7 +1332,7 @@ def z_set_window():
 def z_show_status():
     zcode.screen.updatestatusline()
 
-def z_sound_effect():
+def z_sound_effect(): # should check for blorb loop chunks in z3/z4
     number = zcode.instructions.operands[0]
     if number < 3:
         zcode.sounds.bleep(number)
