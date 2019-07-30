@@ -16,10 +16,20 @@
 # along with Viola; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-import os
-
 import kivy
+from kivy.app import App
+from kivy.graphics import Color, Rectangle
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import Button
+from kivy.core.window import Window
+from kivy.uix.widget import Widget
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
+from kivy.graphics.texture import Texture
+
 kivy.require('1.10.1') 
+
+import os
 import io
 import sys
 import inspect
@@ -27,14 +37,11 @@ import types
 import numpy
 import fonts.font as fonts
 
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.uix.label import Label
 
-TIMEREVENT = None #pygame.USEREVENT
-SOUNDEVENT = None #pygame.USEREVENT + 1
 
-mousebuttonmapping = {1:0,2:2,3:1}
+
+
+GAMEDIRECTORY = ''
 
 def getBaseDir():
    if getattr(sys,"frozen",False):
@@ -49,31 +56,497 @@ def getBaseDir():
        thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
        return os.path.abspath(os.path.join(thisdir, os.pardir))
 
-def findfile(filename):
+def findfile(filename, gamefile=False):
+    global GAMEDIRECTORY
     paths = [os.curdir]
     paths.extend(os.path.expandvars("$INFOCOM_PATH").split(":"))
     for a in paths:
         x = os.path.isfile(os.path.join(a, filename))
         if x == 1:
-            return os.path.join(a, filename)
+            f = os.path.join(a, filename)
+            if gamefile:
+                GAMEDIRECTORY = os.path.dirname(f)
+            return f
     return False
+
+def openfile(window, mode, filename=None, prompt=None):
+    global GAMEDIRECTORY
+    # if filename == None, prompt for a filename
+    # returns a file object to be read/written
+
+
+
+    if filename == None: # should prompt for filename
+        prompt = True
+
+    if prompt: # prompt for filename, but supply suggestion
+        
+        window.printText('Filename: ')
+        window.flushTextBuffer()
+        i = None
+        c = None
+        if filename:
+            t = list(filename)
+            window.printText(filename)
+            window.flushTextBuffer()
+        else:
+            t = []
+        while c != '\r':
+            i = getinput(window.screen) 
+            if i:
+                c = i.character
+                if ord(c) == 8 and len(t) > 0:
+                    window.backspace(t.pop())
+                else:
+                    t.append(c)
+                    window.printText(c)
+                    window.flushTextBuffer()
+        t.pop()
+        filename = ''.join(t)
+
+    filename = os.path.basename(filename) # strip the directory information from the filename (maybe should allow it if it's a subfolder of the game directory?)
+    filename = os.path.join(GAMEDIRECTORY, filename) # use the game directory as the location for file
+
+    if mode == 'a':
+        if findfile(filename) == False:
+            mode = 'w'
+    mode = mode + 'b'
+ 
+    try:
+        f = open(filename, mode)
+    except:
+        f = None
+
+    return f
+
+# Application window and Z-Machine screen
+
+def setup():
+    global currentfont
+    global inputtext
+    global timerrunning
+    global violaApp
+    timerrunning = False
+    inputtext = []
+    violaApp = VApp()
+
+#    def __init__(self, width, height, title='', background=0xFFFFFF):
+#        self.screen = VApp(width, height, title)
+#        pygame.display.set_caption(title)
+#        self.screen.fill(background)
+#        self.width = width
+#        self.height = height
+#        self.update()
+   
+class zscreen(Widget):
+       
+
+    updates = []
+
+    def update(self):
+        pass
+
+    def getWidth(self):
+        pass
+    
+    def getHeight(self):
+        pass
+
+    def getPixel(self, x,y):
+        pass
+
+    def erase(self, colour, area=None):
+        pass #self.canvas.
+
+
+class VApp(App):
+    updates = []
+    def __init__(self, width, height, title='', background=0xFFFFFF):
+        Window.size = (width, height)
+        Window.set_title(title)
+
+    def build(self):
+        self.screen = zscreen()
+        with self.screen.canvas.before:
+            Color(1, 1, 1)
+            self.rect = Rectangle(size=(self.width, self.height), pos=self.screen.pos)
+        
+        layout = BoxLayout(size_hint=(1, None), height=50)
+
+        root = BoxLayout(orientation='vertical')
+        root.add_widget(self.screen)
+        root.add_widget(layout)
+
+        return root
+
+class VApp(App):
+    updates = []
+    def __init__(self, width, height, title='', background=0xFFFFFF):
+        self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        pygame.display.set_caption(title)
+        self.screen.fill(background)
+        self.width = width
+        self.height = height
+        self.update()
+
+    def update(self):
+        pygame.display.update()
+
+    def getWidth(self):
+        return self.width
+    
+    def getHeight(self):
+        return self.height
+
+    def getPixel(self, x,y):
+        return self.screen.get_at((x-1, y-1))
+
+    def erase(self, colour, area=None):
+        if area:
+            area = list(area)
+            area[0] -= 1
+            area[1] -= 1
+            area = pygame.Rect((area))
+        else:
+            area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
+        self.screen.fill(colour, area)
+        self.updates.append(area)
+
+
+    background = 0xFFFFFF
+    resized = False
+    justloaded = True
+
+    def resize(self, newsize):
+        if self.justloaded:
+            self.justloaded = False
+            return False
+        x = pygame.display.Info()
+        size = self.screen.get_rect()
+        oldwidth = self.getWidth()
+        oldheight = self.getHeight()
+        screenwidth = newsize[0]
+        screenheight = newsize[1]        
+        self.width = screenwidth
+        self.height = screenheight
+        backup = pygame.Surface((oldwidth, oldheight))
+        if screenwidth < oldwidth:
+            oldwidth = screenwidth
+        if screenheight < oldheight:
+            oldheight = screenheight
+
+        backup.blit(self.screen, (0,0))
+        self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
+        self.screen.set_clip(None)
+
+        self.erase(self.background)
+        self.screen.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
+        self.screen.blit(backup, (0,0))
+        self.screen.set_clip(None)
+        self.resized = True
+        self.update()
+
+
+
 
 def setIcon(icon):
     pass
 
 
-class Rect:
-    def __init__(self, xpos=1, ypos=1, width=1, height=1):
-        self.xpos = xpos
-        self.ypos = ypos
-        self.width = width
-        self.height = height
-            
-    def getWidth(self):
-        return self.width
+def makemenu(title, items, number): # title is a string, items is a list of strings, number is the id number
+    return 0
+#    if number < 3 or number > 10:
+#        return 0
+#    if menus[number] != 0:
+#        destroymenu(number)
+#    menus[number] = wx.Menu()
+#    for a in xrange(len(items)):
+#        num = number * 100 + a
+#        menus[number].Append(num, items[a])
+#
+#        menubar.Insert(number-2, menus[number], title)
+#        return 1
 
-    def getHeight(self):
-        return self.height
+def destroymenu(number):
+    return 0
+#    if number < 3 or number > 10:
+#        return 0
+#    else:
+#        if menus[number] == 0:
+#            return 0
+#        menus[number] = 0
+#        menubar.Remove(number - 2)
+#        return 1
+
+
+# Z-Machine Windows
+
+class window:
+    y_coord = 1
+    x_coord = 1
+    y_size = 0
+    x_size = 0
+    y_cursor = 1
+    x_cursor = 1
+    left_margin = 0
+    right_margin = 0
+    text_style = 0
+    foreground_colour = 0
+    background_colour = 0
+    font = None
+    wrapping = 0
+    scrolling = 0
+    buffering = 0
+    align_text = 0
+    line_count = 0
+    true_foreground_colour = 0
+    true_background_colour = 0
+    font_metrics = 0
+
+    background = 0
+    foreground = 0
+    fontstyles = 0
+
+    def __init__(self, screen, font):
+        self.screen = screen
+        self.setFont(font)
+
+    def showCursor(self):
+        area = Rectangle(pos=(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor), size=(1, self.getFont().getHeight()))
+
+        #pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
+
+    def hideCursor(self):
+        area = Rectangle(pos=(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor), size=(1, self.getFont().getHeight()))
+        #pygame.draw.rect(self.screen.screen, self.background_colour, area)
+
+    def setFont(self, f):
+        self.font = f
+
+    def getFont(self):
+        return self.font
+    
+    def setColours(self, foreground, background):
+        self.foreground_colour = foreground
+        self.background_colour = background
+
+    def getColours(self):
+        return (self.foreground_colour, self.background_colour)
+
+    def setPosition(self, x, y):
+        self.x_coord = x
+        self.y_coord = y
+
+    def getPosition(self):
+        return (self.x_coord, self.y_coord)
+
+    def setSize(self, width, height):
+        self.x_size = width
+        self.y_size = height
+
+    def getSize(self):
+        return (self.x_size, self.y_size)
+
+    def setCursor(self, x, y):
+        self.x_cursor = x
+        self.y_cursor = y
+
+    def getCursor(self):
+        return (self.x_cursor, self.y_cursor)
+
+    def getPixelColour(self, x, y):
+        x = x - 1 + self.getPosition()[0] - 1
+        y = y - 1 + self.getPosition()[1] - 1
+        try:
+            return self.screen.getPixel(x, y)
+        except:
+            return -1
+
+    def erase(self):
+        area = Rectangle(pos=(self.x_coord-1, self.y_coord-1), size=(self.x_size, self.y_size))
+        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.updates.append(area)
+        self.line_count = 0
+        self.x_cursor = 1
+        self.y_cursor = 1
+
+
+    def eraseArea(self, x, y, w, h):
+        x = self.x_coord - 1 + x - 1
+        y = self.y_coord - 1 + y - 1
+        area = Rectangle(pos=(x, y), size=(w, h))
+        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.updates.append(area)
+        self.screen.update()
+
+
+    def getFont(self):
+        return font
+
+
+    def preNewline():
+        pass
+
+    def postNewline():
+        pass
+
+    def scroll(self, amount, dir=0):
+        if dir == 0: # scroll area up
+            # copy an image of the window - *amount* pixels from the top to
+            # the origin point of the window
+            sourcex, sourcey = self.x_coord, self.y_coord + amount
+            destx, desty = self.x_coord, self.y_coord
+            width, height = self.getSize()
+            height -= amount
+            sourceRect = Rectangle(pos=(sourcex-1, sourcey-1), size=(width, height))
+            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height))
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            # draw a rectangle of the background colour with height of *amount* at the bottom of
+            # the window, to cover the text left behind
+            destRect = Rectangle(pos=(destx - 1, sourcey - 1 + height - amount), size=(width, amount))
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+        else: # scroll area down
+            # copy an image of the window - *amount* pixels from the bottom to
+            # the origin point of the window + *amount* pixels down 
+            sourcex, sourcey = self.x_coord, self.y_coord
+            destx, desty = self.x_coord, self.y_coord + amount
+            width, height = self.getSize()
+            height -= amount
+            sourceRect = Rectangle(pos=(sourcex-1, sourcey-1), size=(width, height))
+            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height))
+            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            #self.screen.screen.set_clip()
+            # draw a rectangle of the background colour with height of *amount* at the top of
+            # the window, to cover the text left behind
+            destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
+            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+        area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
+        self.screen.updates.append(area)
+
+    def printText(self, text):
+        self.buffertext(text)
+        buffering = self.testattribute(8)
+        if text.find('\r') != -1 or buffering == False:
+            self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
+
+    def fitText(self, text, width, wrapping=True, buffering=True):
+        # if the text doesn't already fit, we make an educated guess at the right size
+        # by dividing the width of the window in pixels by the width of the '0' character
+        # in pixels. Then, if it is too small, we add characters until it fits, or if
+        # it is too big, we remove characters until it fits.
+        if width <= 0 or len(text) == 0:
+            return 0
+        elif self.getStringLength(text) <= width:
+            x = len(text)
+        else:
+            charlen = self.getStringLength('0')
+            x = width // charlen
+            stringlen = self.getStringLength(text[:x])
+                
+            if stringlen < width:
+                while stringlen < width:
+                    stringlen = self.getStringLength(text[:x])
+                    x += 1
+                x -= 1
+            if stringlen > width:
+                while stringlen > width:
+                    stringlen = self.getStringLength(text[:x])
+                    x -= 1
+            if x == -1:            
+                x = 0
+            if wrapping and buffering:
+                x = text[:x].rfind(' ')         
+        return x     
+
+    def drawText(self, text):
+        fg, bg = self.getColours()
+        xpos, ypos = self.x_coord-1, self.y_coord-1
+        xcursor, ycursor = self.x_cursor-1, self.y_cursor-1
+        width, height = self.getSize()
+        textsurface = self.getFont().render(text, 1, fg, bg)
+        x = xpos + xcursor
+        y = ypos + ycursor
+        if text != '':
+            self.screen.screen.blit(textsurface, (x,y))
+        area = pygame.Rect(xpos, ypos, width, height)
+        self.screen.updates.append(area)
+
+    def flushTextBuffer(self):
+        #self.hideCursor()
+        self.setCursorToMargin()
+
+        self.alterTabs()
+     
+
+        if self.x_cursor > self.x_size - self.right_margin:
+            self.x_cursor = self.left_margin + 1
+
+        buffering = self.testattribute(8)
+
+        if not self.testattribute(1): # if wrapping is off
+            linebuffers = []
+            x = 0
+            while x != -1:
+                x = self.textbuffer.find('\r')
+                if x != -1:
+                    linebuffers.append(self.textbuffer[:x])
+                    self.textbuffer = self.textbuffer[x+1:]
+                else:
+                    linebuffers.append(self.textbuffer[:])
+            for a in range(len(linebuffers)):
+                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
+                x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
+                linebuffer = linebuffers[a][0:x]
+                
+
+                self.drawText(linebuffer)
+                if a < len(linebuffers) - 1:
+                    self.newline()
+                else:
+                    self.x_cursor += self.getStringLength(linebuffer)
+            self.textbuffer = ''
+            
+        else:
+            while (len(self.textbuffer) > 0):                
+                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
+                x = self.fitText(self.textbuffer[:], winwidth, buffering=buffering)
+                definitescroll = 0
+                linebuffer = self.textbuffer[:]
+                if linebuffer[:x].find('\r') != -1:
+                    x = linebuffer[:x].find('\r')
+                    definitescroll = 1
+                linebuffer = self.textbuffer[:x]
+                self.textbuffer = self.textbuffer[len(linebuffer):]
+                
+                
+                
+
+                if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
+                    self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
+                
+                self.drawText(linebuffer)
+                self.cdown = False
+                if definitescroll == 1 or len(self.textbuffer) > 0:
+                    self.newline()
+                else:
+                    self.x_cursor += self.getStringLength(linebuffer)
+                if self.cdown:
+                    return 1
+        
+
+        #self.showCursor()
+        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
+
+
+    def getStringLength(self, text):
+        return self.getFont().getStringLength(text)
+
+    def getStringHeight(self, text):
+        return self.getFont().getHeight()
+
+
+# Z-Machine Images
+
 
 class image():
     data = None
@@ -104,11 +577,11 @@ class image():
             picture.set_palette(self.palette)
         picture = picture.convert_alpha(window.screen.screen)
         if part:
-            r = Rect(part[0], part[1], part[2], part[3])
+            r = pygame.Rect(part[0], part[1], part[2], part[3])
             window.screen.screen.blit(picture, (x-1,y-1), r)
         else:
             window.screen.screen.blit(picture, (x-1,y-1))
-        area = Rect(window.x_coord - 1, window.y_coord - 1, window.getSize()[0], window.getSize()[1])
+        area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
         window.screen.updates.append(area)
 
     def scale(self, width, height):
@@ -122,15 +595,7 @@ class image():
     def getHeight(self):
         return self.picture.get_height()
 
-class soundChannel:
-    pass
-
-class effectsChannel(soundChannel):
-    pass
-
-class musicChannel(soundChannel):
-    pass
-
+# Z-Machine Fonts
 
 class font:
     #def __str__(self):
@@ -217,10 +682,6 @@ class font:
     
     def getHeight(self):
         self.height = self.fontData().size('0')[1]
-        #self.height = self.fontData().get_linesize()
-        print('height', self.height)
-        print('ascent', self.fontData().get_ascent())
-        print('descent', self.fontData().get_descent())
         return self.height
 
     def getStringLength(self, text):
@@ -255,9 +716,6 @@ class font:
 
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
-
-        #print(unavailable)
-    
         for elem in unavailable:
             # Check if string is in the main string
             if chr(elem) in text:
@@ -277,553 +735,57 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
-font1 = font(getBaseDir() + "//fonts//FreeSerif.ttf",
-             boldfile=getBaseDir() + "//fonts//FreeSerifBold.ttf",
-             italicfile=getBaseDir() + "//fonts//FreeSerifItalic.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeSerifBoldItalic.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
             )
 
+font2 = None
+
+#font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+#             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+#            )
 font3 = None
 
-font4 = font(getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeMonoBoldOblique.ttf",
+font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
             )
 
-class window:
-    y_coord = 1
-    x_coord = 1
-    y_size = 0
-    x_size = 0
-    y_cursor = 1
-    x_cursor = 1
-    left_margin = 0
-    right_margin = 0
-    text_style = 0
-    foreground_colour = 0
-    background_colour = 0
-    font = None
-    wrapping = 0
-    scrolling = 0
-    buffering = 0
-    align_text = 0
-    line_count = 0
-    true_foreground_colour = 0
-    true_background_colour = 0
-    font_metrics = 0
+# Z-Machine Sounds
 
-    background = 0
-    foreground = 0
-    fontstyles = 0
-
-    def __init__(self, screen, font):
-        self.screen = screen
-        self.setFont(font)
-
-    def showCursor(self):
-        area = Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
-
-    def hideCursor(self):
-        area = Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.background_colour, area)
-
-    def setFont(self, f):
-        self.font = f
-
-    def getFont(self):
-        return self.font
-    
-    def setColours(self, foreground, background):
-        self.foreground_colour = foreground
-        self.background_colour = background
-
-    def getColours(self):
-        return (self.foreground_colour, self.background_colour)
-
-    def setPosition(self, x, y):
-        self.x_coord = x
-        self.y_coord = y
-
-    def getPosition(self):
-        return (self.x_coord, self.y_coord)
-
-    def setSize(self, width, height):
-        self.x_size = width
-        self.y_size = height
-
-    def getSize(self):
-        return (self.x_size, self.y_size)
-
-    def setCursor(self, x, y):
-        self.x_cursor = x
-        self.y_cursor = y
-
-    def getCursor(self):
-        return (self.x_cursor, self.y_cursor)
-
-    def getPixelColour(self, x, y):
-        return self.screen.getpixel(x,y)
-
-    def getPixelColour(self, x, y):
-        x = x - 1 + self.getPosition()[0] - 1
-        y = y - 1 + self.getPosition()[1] - 1
-        return self.screen.getPixel(x, y)
-
-    def erase(self):
-        area = Rect(self.x_coord-1, self.y_coord-1, self.x_size, self.y_size)
-        self.screen.screen.fill(self.getColours()[1], area)
-        self.screen.updates.append(area)
-        self.line_count = 0
-        self.x_cursor = 1
-        self.y_cursor = 1
-
-
-    def eraseArea(self, x, y, w, h):
-        x = self.x_coord - 1 + x - 1
-        y = self.y_coord - 1 + y - 1
-        area = Rect(x, y, w, h)
-        self.screen.screen.fill(self.getColours()[1], area)
-        self.screen.updates.append(area)
-        self.screen.update()
-
-
-    def getFont(self):
-        return font
-
-
-    def preNewline():
-        pass
-
-    def postNewline():
-        pass
-
-    def scroll(self, amount, dir=0):
-        if dir == 0: # scroll area up
-            xpos, ypos = self.x_coord, self.y_coord
-            sourcex, sourcey = self.x_coord, self.y_coord
-            sourcey += amount
-            width, height = self.getSize()
-            height -= amount
-            sourcerect = Rect(sourcex-1, sourcey-1, width, height)
-            destrect = Rect(xpos-1, ypos-1,width, height)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = Rect(sourcex - 1, ypos - 1 + height, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        else: # scroll area down
-            xpos, ypos = self.x_coord, self.y_coord
-            sourcex, sourcey = self.x_coord, self.y_coord
-            width, height = self.getSize()
-            sourcerect = Rect(sourcex-1, sourcey-1, width, height-amount)
-            destrect = Rect(xpos - 1, ypos - 1 + amount, width, height-amount)
-            self.screen.screen.set_clip(destrect)
-            self.screen.screen.blit(self.screen.screen, (self.x_coord - 1, self.y_coord - 1), sourcerect)
-            self.screen.screen.set_clip()
-            destrect = Rect(xpos - 1, ypos - 1, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destrect)
-        area = Rect(xpos - 1, ypos - 1, width, height)
-        self.screen.updates.append(area)
-
-    def printText(self, text):
-        self.buffertext(text) 
-        buffering = self.testattributes(8)
-        if text.find('\r') != -1 or buffering == False:
-            self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
-
-    def fitText(self, text, width, wrapping=True, buffering=True):
-        # if the text doesn't already fit, we make an educated guess at the right size
-        # by dividing the width of the window in pixels by the width of the '0' character
-        # in pixels. Then, if it is too small, we add characters until it fits, or if
-        # it is too big, we remove characters until it fits.
-        if width <= 0 or len(text) == 0:
-            return 0
-        elif self.getStringLength(text) <= width:
-            x = len(text)
-        else:
-            charlen = self.getStringLength('0')
-            x = width // charlen
-            stringlen = self.getStringLength(text[:x])
-                
-            if stringlen < width:
-                while stringlen < width:
-                    stringlen = self.getStringLength(text[:x])
-                    x += 1
-                x -= 1
-            if stringlen > width:
-                while stringlen > width:
-                    stringlen = self.getStringLength(text[:x])
-                    x -= 1
-            if x == -1:            
-                x = 0
-            if wrapping and buffering:
-                x = text[:x].rfind(' ')         
-        return x     
-
-    def drawText(self, text):
-        fg, bg = self.getColours()
-        xpos, ypos = self.x_coord-1, self.y_coord-1
-        xcursor, ycursor = self.x_cursor-1, self.y_cursor-1
-        width, height = self.getSize()
-        textsurface = self.getFont().render(text, 1, fg, bg)
-        x = xpos + xcursor
-        y = ypos + ycursor
-        if text != '':
-            self.screen.screen.blit(textsurface, (x,y))
-        area = Rect(xpos, ypos, width, height)
-        self.screen.updates.append(area)
-
-    def flushTextBuffer(self):
-        #self.hideCursor()
-        self.setCursorToMargin()
-
-        self.alterTabs()
-     
-
-        if self.x_cursor > self.x_size - self.right_margin:
-            self.x_cursor = self.left_margin + 1
-
-        buffering = self.testattributes(8)
-
-        if not self.testattributes(1): # if wrapping is off
-            linebuffers = []
-            x = 0
-            while x != -1:
-                x = self.textbuffer.find('\r')
-                if x != -1:
-                    linebuffers.append(self.textbuffer[:x])
-                    self.textbuffer = self.textbuffer[x+1:]
-                else:
-                    linebuffers.append(self.textbuffer[:])
-            for a in range(len(linebuffers)):
-                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
-                x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
-                linebuffer = linebuffers[a][0:x]
-                
-
-                self.drawText(linebuffer)
-                if a < len(linebuffers) - 1:
-                    self.newline()
-                else:
-                    self.x_cursor += self.getStringLength(linebuffer)
-            self.textbuffer = ''
-            
-        else:
-            while (len(self.textbuffer) > 0):                
-                winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
-                x = self.fitText(self.textbuffer[:], winwidth, buffering=buffering)
-                definitescroll = 0
-                linebuffer = self.textbuffer[:]
-                if linebuffer[:x].find('\r') != -1:
-                    x = linebuffer[:x].find('\r')
-                    definitescroll = 1
-                linebuffer = self.textbuffer[:x]
-                self.textbuffer = self.textbuffer[len(linebuffer):]
-                
-                
-                
-
-                if len(self.textbuffer) > 0 and ((self.textbuffer[0] == ' ') or (self.textbuffer[0] == '\r')):
-                    self.textbuffer = self.textbuffer[1:len(self.textbuffer)]
-                
-                self.drawText(linebuffer)
-                self.cdown = False
-                if definitescroll == 1 or len(self.textbuffer) > 0:
-                    self.newline()
-                else:
-                    self.x_cursor += self.getStringLength(linebuffer)
-                if self.cdown:
-                    return 1
-        
-        if self.screen.resized:
-            self.screen.resized = False
-            resize()
-        #self.showCursor()
-        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
-
-
-    def getStringLength(self, text):
-        return self.getFont().getStringLength(text)
-
-    def getStringHeight(self, text):
-        return self.getFont().getHeight()
-
-
-
-
-class screen(Widget):
-    updates = []
-    def __init__(self, **kwargs):
-        super(MyWidget, self).__init__(**kwargs)
-        with self.canvas:
-            # add your instruction for main canvas here
-            #self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
-            #pygame.display.set_caption(title)
-            self.canvas.add(Color(1, 1, 1))
-            self.width = width
-            self.height = height
-            self.update()
-
-    def update(self):
-        self.canvas.ask_update()
-
-    def getWidth(self):
-        return self.width
-    
-    def getHeight(self):
-        return self.height
-
-    def getPixel(self, x,y):
-        return self.screen.get_at((x-1, y-1))
-
-    def erase(self, colour, area=None):
-        if area:
-            area = Rect(area[0], area[1], area[2], area[3])
-        else:
-            area = Rect(0, 0, self.getWidth(), self.getHeight())
-        self.screen.fill(colour, area)
-        self.updates.append(area)
-
-
-    background = 0xFFFFFF
-    resized = False
-    justloaded = True
-
-    def resize(self, newsize):
-        if self.justloaded:
-            self.justloaded = False
-            return False
-        x = pygame.display.Info()
-        size = self.screen.get_rect()
-        oldwidth = self.getWidth()
-        oldheight = self.getHeight()
-        screenwidth = newsize[0]
-        screenheight = newsize[1]        
-        self.width = screenwidth
-        self.height = screenheight
-        backup = pygame.Surface((oldwidth, oldheight))
-        if screenwidth < oldwidth:
-            oldwidth = screenwidth
-        if screenheight < oldheight:
-            oldheight = screenheight
-
-        backup.blit(self.screen, (0,0))
-        self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
-        self.screen.set_clip(None)
-
-        self.erase(self.background)
-        self.screen.set_clip(Rect(0,0,oldwidth,oldheight))
-        self.screen.blit(backup, (0,0))
-        self.screen.set_clip(None)
-        self.resized = True
-        self.update()
-
-
-class VApp(App):
-    def build(self):
-        return screen()
-
-class keypress:
-    def __init__(self, value, character, modifier):
-        self.value = value
-        self.character = character
-        self.modifer = modifier
-
-    character = None
-    value = None
-
-class mousemove:
-    def __init__(self, event):
-        self.xpos = event.pos[0]
-        self.ypos = event.pos[1]
-    xpos = 0
-    ypos = 0
-
-
-class mousedown:
-    def __init__(self, event):
-        try:
-            self.button = mousebuttonmapping[event.button]
-        except:
-            self.button = None
-    button = None
-
-class mouseup:
-    def __init__(self, event):
-        try:
-            self.button = mousebuttonmapping[event.button]
-        except:
-            self.button = None
-    button = None
-
-
-class input:
-    def __init__(self, screen):
-        self.screen = screen
-
-    def getinput(self):
-        pygame.display.update(self.screen.updates)
-        self.screen.updates = []
-        
-        event = pygame.event.wait()
-
-        if event.type == QUIT:
-            sys.exit()
-        if event.type == KEYDOWN:
-            return keypress(event.key, event.unicode, event.mod)
-        if event.type == VIDEORESIZE:
-            self.screen.resize(event.dict['size'])
-        if event.type == MOUSEBUTTONDOWN:
-            return mousedown(event)
-        if event.type == MOUSEBUTTONUP:
-            return mouseup(event)
-        if event.type == MOUSEMOTION:
-            return mousemove(event)
-        if event.type == TIMEREVENT:
-            try:
-                timerroutine()
-            except:
-                pass
-        if event.type == SOUNDEVENT:
-            SOUNDEVENTHANDLER()
-
-
-        
-def setup():
-    global currentfont
-    global inputtext
-    global timerrunning
-    timerrunning = False
-    inputtext = []
-    #pygame.key.set_repeat(100, 100)
-
-def getinput(screen):
-    i = input(screen).getinput()
-  
-    if isinstance(i, keypress):
-        return i
-    else:
-        return None
-
-def openfile(window, mode, filename=None, prompt=None):
-    # if filename == None, prompt for a filename
-    # returns a file object to be read/written
-
-    if filename == None: # should prompt for filename
-        prompt = True
-
-    if prompt: # prompt for filename, but supply suggestion
-        
-        window.printText('Filename: ')
-        window.flushTextBuffer()
-        i = None
-        c = None
-        if filename:
-            t = list(filename)
-            window.printText(filename)
-            window.flushTextBuffer()
-        else:
-            t = []
-        while c != '\r':
-            i = getinput(window.screen) 
-            if i:
-                c = i.character
-                if ord(c) == 8 and len(t) > 0:
-                    window.backspace(t.pop())
-                else:
-                    t.append(c)
-                    window.printText(c)
-                    window.flushTextBuffer()
-        t.pop()
-        filename = ''.join(t)
-
-    if mode == 'a':
-        if findfile(filename) == False:
-            mode = 'w'
-    mode = mode + 'b'
- 
+def beep():
     try:
-        f = open(filename, mode)
+        f = getBaseDir() + "//sounds//beep.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
     except:
-        f = None
-
-    return f
-
-    
-
-        
-def makemenu(title, items, number): # title is a string, items is a list of strings, number is the id number
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    if menus[number] != 0:
-#        destroymenu(number)
-#    menus[number] = wx.Menu()
-#    for a in xrange(len(items)):
-#        num = number * 100 + a
-#        menus[number].Append(num, items[a])
-#
-#        menubar.Insert(number-2, menus[number], title)
-#        return 1
-
-def destroymenu(number):
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    else:
-#        if menus[number] == 0:
-#            return 0
-#        menus[number] = 0
-#        menubar.Remove(number - 2)
-#        return 1
+        pass
 
 
-                
-
-
- 
-    
-def nextinput():
-    pass
-   
-def previnput():
-    pass
-
-
-     
-
-
-
-timerroutine = None
-        
-def starttimer(time, r=None):
-    global timerrunning 
-    global timerroutine
-    timerroutine = r
-    timerrunning = True
-    time *= 100
-    pygame.time.set_timer(TIMEREVENT, time)
-    
-def stoptimer():
-    global timerrunning
-    timerrunning = False
-    pygame.time.set_timer(TIMEREVENT, 0)
-
-
-
-
-
-
+def boop():
+    try:
+        f = getBaseDir() + "//sounds//boop.aiff"
+        b = pygame.mixer.Sound(f)
+        b.play()
+    except:
+        pass
 
 class musicobject():
     def __init__(self, data):
@@ -868,7 +830,8 @@ class soundChannel():
             self.clock = pygame.time.Clock()
             self.clock.tick()
 
-
+    
+    
     def cleanup(self):
         if self.type == 0:
             self.channelobj.set_endevent()
@@ -885,6 +848,185 @@ class soundChannel():
     def Notify(self):
         pass
 
+soundchannels = [[],[]]
+
+def soundhandler():
+    for a in soundchannels:
+        for b in a:
+            b.Notify()
+
+     
+class musicChannel(soundChannel):
+    type = 1
+
+    def getbusy(self):
+        return pygame.mixer.music.get_busy()
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 1:
+            self.sound = None
+            return False
+        self.routine = routine
+        self.sound.play(volume, repeats)
+        self.setup(soundhandler)
+    
+    def setvolume(self, volume):
+        pygame.mixer.music.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.sound.stop()
+            self.sound = None
+            self.cleanup()
+
+
+
+class effectsChannel(soundChannel):
+    type = 0
+
+    def __init__(self, id):
+        self.id = id
+        self.channelobj = pygame.mixer.Channel(id)
+
+    channelobj = None
+
+    def getbusy(self):
+        try:
+            busy = self.channelobj.get_busy()
+        except:
+            busy = False
+        return busy
+
+    def play(self, sound, volume, repeats, routine):
+        self.sound = sound
+        if self.sound.type != 0:
+            self.sound = None
+            return False      
+        self.routine = routine
+        self.setvolume(volume)
+        self.channelobj.play(self.sound.sound, repeats)
+        self.setup(soundhandler)
+
+    def setvolume(self, volume):
+        self.channelobj.set_volume(volume)
+
+    def stop(self, sound):
+        if self.sound == None:
+            return False
+        if self.sound.number == sound.number:
+            self.routine = None
+            self.channelobj.stop()
+            self.sound = None
+
+            self.cleanup()
 
 def stopallsounds():
     pygame.mixer.stop()
+
+def initsound():
+    pygame.mixer.init()
+
+
+# Z-Machine input
+
+class input:
+    def __init__(self, screen):
+        self.screen = screen
+
+    def getinput(self):
+        pygame.display.update(self.screen.updates)
+        self.screen.updates = []
+        
+        event = pygame.event.wait()
+
+        if event.type == QUIT:
+            sys.exit()
+        if event.type == KEYDOWN:
+            return keypress(event.key, event.unicode, event.mod)
+        if event.type == VIDEORESIZE:
+            self.screen.resize(event.dict['size'])
+        if event.type == MOUSEBUTTONDOWN:
+            return mousedown(event)
+        if event.type == MOUSEBUTTONUP:
+            return mouseup(event)
+        if event.type == MOUSEMOTION:
+            return mousemove(event)
+        if event.type == TIMEREVENT:
+            try:
+                timerroutine()
+            except:
+                pass
+        if event.type == SOUNDEVENT:
+            SOUNDEVENTHANDLER()
+class keypress:
+    def __init__(self, value, character, modifier):
+        self.value = value
+        self.character = character
+        self.modifer = modifier
+
+    character = None
+    value = None
+
+mousebuttonmapping = {1:0,2:2,3:1}
+
+class mousemove:
+    def __init__(self, event):
+        self.xpos = event.pos[0]
+        self.ypos = event.pos[1]
+    xpos = 0
+    ypos = 0
+
+class mousedown:
+    def __init__(self, event):
+        try:
+            self.button = mousebuttonmapping[event.button]
+        except:
+            self.button = None
+    button = None
+
+class mouseup:
+    def __init__(self, event):
+        try:
+            self.button = mousebuttonmapping[event.button]
+        except:
+            self.button = None
+    button = None
+
+def getinput(screen):
+    i = input(screen).getinput()
+  
+    if isinstance(i, keypress):
+        return i
+    else:
+        return None
+
+def nextinput():
+    pass
+   
+def previnput():
+    pass
+
+
+# Z-Machine timer
+
+TIMEREVENT = None
+SOUNDEVENT = None
+
+timerroutine = None
+        
+def starttimer(time, r=None):
+    global timerrunning 
+    global timerroutine
+    timerroutine = r
+    timerrunning = True
+    time *= 100
+    pygame.time.set_timer(TIMEREVENT, time)
+    
+def stoptimer():
+    global timerrunning
+    timerrunning = False
+    pygame.time.set_timer(TIMEREVENT, 0)

@@ -42,7 +42,7 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if not height:
         height = 600
     if restarted == False:
-        ioScreen = io.screen(width, height, title)
+        ioScreen = io.zscreen(width, height, title)
 
     blorbs = b
 
