@@ -35,13 +35,12 @@ basic_colours = { 'black':2,
 DEFFOREGROUND = 2
 DEFBACKGROUND = 9
 
-def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
+def setup(width=800, height=600, foreground=2, background=9, title='', restarted=False):
     global zwindow
     global statusline
     global currentWindow
     global ioScreen
     global fonts
-    global blorbs
     global unitHeight
     global unitWidth
     global spectrum
@@ -66,8 +65,6 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
         height = 600
     if restarted == False:
         ioScreen = io.screen(width, height, title, background)
-
-    blorbs = b
 
     zwindow = []
 
@@ -831,6 +828,7 @@ class window(io.window):
         return self.font_number
          
     def getpic(self, picture_number):
+        return io.getpic(ioScreen, picture_number)
         picture_data = False
         scale = 1
         for a in blorbs:

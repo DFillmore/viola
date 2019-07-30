@@ -112,6 +112,25 @@ class image():
     def getHeight(self):
         return self.picture.get_height()
 
+def getpic(screen, picture_number):
+    picture_data = False
+    scale = 1
+    for a in blorbs:
+        picture_data = a.getPict(picture_number)
+        scale = a.getScale(picture_number, screen.getWidth(), screen.getHeight())
+    if not picture_data:
+        return None
+    pic = image(picture_data)
+    newwidth = pic.getWidth() * scale
+    newheight = pic.getHeight() * scale
+    pic = pic.scale(newwidth, newheight)
+    palette = pic.getPalette()
+    if palette:
+        for a in blorbs:
+            palette = a.getPalette(picture_number, palette)
+        pic.setPalette(palette)
+    return pic
+   
 
 class font:
     #def __str__(self):
@@ -238,6 +257,44 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
+def pictureFont(font):
+
+    def render(self, text, antialias, colour, background): # antialias, colour and background are ignored (only here for compatibility with other fonts
+       f = self.fontData()
+       i = []
+       for a in text:
+          if ord(a) in f:
+             i.append(f[a])
+          else:
+             p = getpic(a)
+             f[a] = p
+             i.append(p)
+             
+       
+   
+    def __init__(self, blorbs):
+        self.size = self.defaultSize()
+        self.usefile = self.fontfile
+        self.codePoints = list(set(codePointsRoman).intersection(*[codePointsBold, codePointsItalic,codePointsBoldItalic,codePointsFixed,codePointsBoldFixed,codePointsItalicFixed,codePointsBoldItalicFixed]))
+    def getUseFile(self):
+        if self.italic and self.bold and self.fixedstyle:
+            return self.bolditalicfixedfile
+        elif self.italic and self.fixedstyle:
+            return self.italicfixedfile
+        elif self.bold and self.fixedstyle:
+            return self.boldfixedfile
+        elif self.fixedstyle:
+            return self.fixedfile
+        elif self.italic and self.bold:
+            return self.bolditalicfile
+        elif self.italic:
+            return self.italicfile
+        elif self.bold:
+            return self.boldfile
+        else:
+            return self.fontfile
+
+
 font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
              boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
              italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
@@ -258,7 +315,7 @@ font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
 #             bolditalicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
 #            )
 
-font2 = None
+font2 = PictureFont(blorbs)
 
 #font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
 #             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
@@ -679,10 +736,12 @@ class input:
 
 
         
-def setup():
+def setup(b):
     global currentfont
     global inputtext
     global timerrunning
+    global blorbs
+    blorbs = b
     timerrunning = False
     inputtext = []
     pygame.key.set_repeat(100, 100)

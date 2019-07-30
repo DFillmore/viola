@@ -137,7 +137,7 @@ def handle_parameters(argv): # handles command line parameters
 
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
-    io.setup()
+    io.setup(blorbs)
     zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
@@ -146,7 +146,7 @@ def setupmodules(gamefile):
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
-    zcode.screen.setup(blorbs, width, height, title=title, foreground=foreground, background=background)
+    zcode.screen.setup(width, height, title=title, foreground=foreground, background=background)
     zcode.input.setup()
     zcode.output.setup([False, True, transcriptfile])
 
