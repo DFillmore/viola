@@ -48,7 +48,7 @@ def setup(restarted=False):
     global DEFBACKGROUND
     global graphics_mode
 
-    if zcode.header.getflag(2, 3) and zcode.header.zversion() == 6: # if the flag is still set and we're running a Version 6 game
+    if zcode.header.getflag(2, 3) or zcode.header.zversion() == 6: # if the graphics flag is set or we're running a Version 6 game
         graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
 
     if zcode.use_standard < STANDARD_11:
@@ -79,10 +79,10 @@ def setup(restarted=False):
         getWindow(a).window_id = str(a)
 
 
-    if zcode.header.zversion() == 6: # in z6 games, units are pixels
+    if graphics_mode == 1: # units are pixels
         unitHeight = 1
         unitWidth = 1
-    else: # in other versions, units are characters
+    else: # units are characters
         unitHeight = getWindow(0).getFont().getHeight() 
         unitWidth = getWindow(0).getFont().getWidth() 
      
