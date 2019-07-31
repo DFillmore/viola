@@ -47,6 +47,8 @@ def setup(width=800, height=600, foreground=2, background=9, title='', restarted
     global DEFFOREGROUND
     global DEFBACKGROUND
     global graphics_mode
+    global fontlist
+    fontlist = io.getFontList()
 
     if zcode.header.getflag(2, 3) and zcode.header.zversion() == 6: # if the flag is still set and we're running a Version 6 game
         graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
@@ -54,17 +56,14 @@ def setup(width=800, height=600, foreground=2, background=9, title='', restarted
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
 
-    DEFFOREGROUND, DEFBACKGROUND = foreground, background
-
-    foreground = convertBasicToRealColour(foreground)
-    background = convertBasicToRealColour(background)
-
-    if not width:
-        width = 800
-    if not height:
-        height = 600
     if restarted == False:
-        ioScreen = io.screen(width, height, title, background)
+        ioScreen = io.zApp.screen
+
+    foreground, background = ioScreen.defaultForeground, ioScreen.defaultBackground
+    DEFFOREGROUND, DEFBACKGROUND = convertRealToBasicColour(foreground), convertRealToBasicColour(background)
+
+    width = ioScreen.width
+    height = ioScreen.height
 
     zwindow = []
 
@@ -240,12 +239,7 @@ def units2chars(units, horizontal, coord=False): # converts a number of units in
         value += 1    
     return value
 
-fontlist = [ None, 
-             io.font1,
-             io.font2, # picture font. Unspecified, should always return 0
-             io.font3, # Beyond Zork font. Going to require some hacking.
-             io.font4
-        ]
+
 
 
 

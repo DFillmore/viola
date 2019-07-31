@@ -12,6 +12,18 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# io
+# - app
+#   - screen
+#   - windows
+#   - sound channels
+#     - effects channels
+#     - music channels
+#   - menus
+# - fonts
+# - images
+# - sounds
+
 import os
 os.environ['PYGAME_FREETYPE'] = '1'
 
@@ -29,6 +41,77 @@ from pygame.locals import *
 pygame.init()
 
 GAMEDIRECTORY = ''
+
+def setup(width, height, b, title, foreground, background):
+    global currentfont
+    global inputtext
+    global timerrunning
+    global zApp
+    global blorbs
+    global fontlist
+    blorbs = b
+    timerrunning = False
+    inputtext = []
+    pygame.key.set_repeat(100, 100)
+    zApp = VApp(width, height, title, foreground, background)
+
+    icon = None
+    for a in blorbs:
+        icon = a.gettitlepic()
+    if icon:
+        zApp.setIcon(icon)
+
+    font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
+                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
+                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
+                 fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+                 boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+                 italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+                 bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+                )
+
+    #font1emoji = font(getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #             boldfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #             italicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #             bolditalicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #             fixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
+    #             boldfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
+    #             italicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #             bolditalicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
+    #            )
+
+    font2 = pictureFont(blorbs)
+
+    #font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+    #             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+    #            )
+
+    font3 = None
+
+    font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+                 fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+                 boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+                 italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+                 bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+                )
+
+    fontlist = [ None, 
+                 font1,
+                 font2, # picture font.
+                 font3, # Beyond Zork font. 
+                 font4
+               ]
+
 
 def getBaseDir():
    if getattr(sys,"frozen",False):
@@ -107,24 +190,72 @@ def openfile(window, mode, filename=None, prompt=None):
     return f
 
 
-# Application window and Z-Machine screen
+# Application window 
 
-def setup(b):
-    global currentfont
-    global inputtext
-    global timerrunning
-    global blorbs
-    blorbs = b
-    timerrunning = False
-    inputtext = []
-    pygame.key.set_repeat(100, 100)
-
-class screen:
+class VApp:
     updates = []
-    def __init__(self, width, height, title='', background=0xFFFFFF):
-        self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
+        self.screen = zscreen(width, height, title, foreground, background)
         pygame.display.set_caption(title)
-        self.screen.fill(background)
+        self.width = width
+        self.height = height
+
+    def getWidth(self):
+        return self.width
+    
+    def getHeight(self):
+        return self.height
+
+    resized = False
+    justloaded = True
+
+    def resize(self, newsize):
+        if self.justloaded:
+            self.justloaded = False
+            return False
+        self.width = newsize[0]
+        self.height = newsize[1]        
+        self.screen.resize(newsize)
+        self.resized = True
+
+    def setIcon(self, icon):
+        pygame.display.set_icon(icon)
+
+    def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
+        return 0
+    #    if number < 3 or number > 10:
+    #        return 0
+    #    if menus[number] != 0:
+    #        destroymenu(number)
+    #    menus[number] = wx.Menu()
+    #    for a in xrange(len(items)):
+    #        num = number * 100 + a
+    #        menus[number].Append(num, items[a])
+    #
+    #        menubar.Insert(number-2, menus[number], title)
+    #        return 1
+
+    def destroymenu(self, number):
+        return 0
+    #    if number < 3 or number > 10:
+    #        return 0
+    #    else:
+    #        if menus[number] == 0:
+    #            return 0
+    #        menus[number] = 0
+    #        menubar.Remove(number - 2)
+    #        return 1
+
+
+# Z-Machine screen
+
+class zscreen:
+    updates = []
+    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
+        self.canvas = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        self.canvas.fill(background)
+        self.defaultForeground = foreground
+        self.defaultBackground = background
         self.width = width
         self.height = height
         self.update()
@@ -134,7 +265,7 @@ class screen:
 
     def getWidth(self):
         return self.width
-    
+
     def getHeight(self):
         return self.height
 
@@ -149,7 +280,7 @@ class screen:
             area = pygame.Rect((area))
         else:
             area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
-        self.screen.fill(colour, area)
+        self.canvas.fill(colour, area)
         self.updates.append(area)
 
 
@@ -158,62 +289,30 @@ class screen:
     justloaded = True
 
     def resize(self, newsize):
-        if self.justloaded:
-            self.justloaded = False
-            return False
-        x = pygame.display.Info()
-        size = self.screen.get_rect()
+
         oldwidth = self.getWidth()
         oldheight = self.getHeight()
-        screenwidth = newsize[0]
-        screenheight = newsize[1]        
-        self.width = screenwidth
-        self.height = screenheight
-        backup = pygame.Surface((oldwidth, oldheight))
-        if screenwidth < oldwidth:
-            oldwidth = screenwidth
-        if screenheight < oldheight:
-            oldheight = screenheight
 
-        backup.blit(self.screen, (0,0))
-        self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
-        self.screen.set_clip(None)
+        self.width = newsize[0]
+        self.height = newsize[1]        
+
+        backup = pygame.Surface((oldwidth, oldheight))
+
+        if self.width < oldwidth:
+            oldwidth = self.width
+        if self.height < oldheight:
+            oldheight = self.height
+
+        backup.blit(self.canvas, (0,0))
+        self.canvas = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        self.canvas.set_clip(None)
 
         self.erase(self.background)
-        self.screen.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
-        self.screen.blit(backup, (0,0))
-        self.screen.set_clip(None)
+        self.canvas.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
+        self.canvas.blit(backup, (0,0))
+        self.canvas.set_clip(None)
         self.resized = True
         self.update()
-
-def setIcon(icon):
-    pygame.display.set_icon(icon)
-
-def makemenu(title, items, number): # title is a string, items is a list of strings, number is the id number
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    if menus[number] != 0:
-#        destroymenu(number)
-#    menus[number] = wx.Menu()
-#    for a in xrange(len(items)):
-#        num = number * 100 + a
-#        menus[number].Append(num, items[a])
-#
-#        menubar.Insert(number-2, menus[number], title)
-#        return 1
-
-def destroymenu(number):
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    else:
-#        if menus[number] == 0:
-#            return 0
-#        menus[number] = 0
-#        menubar.Remove(number - 2)
-#        return 1
-
 
 # Z-Machine windows
 
@@ -249,11 +348,11 @@ class window:
 
     def showCursor(self):
         area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
+        pygame.draw.rect(self.screen.canvas, self.foreground_colour, area)
 
     def hideCursor(self):
         area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.background_colour, area)
+        pygame.draw.rect(self.screen.canvas, self.background_colour, area)
 
     def setFont(self, f):
         self.font = f
@@ -299,7 +398,7 @@ class window:
 
     def erase(self):
         area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
-        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.canvas.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.line_count = 0
         self.x_cursor = 1
@@ -310,7 +409,7 @@ class window:
         x = self.x_coord - 1 + x - 1
         y = self.y_coord - 1 + y - 1
         area = pygame.Rect(x, y, w, h)
-        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.canvas.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.screen.update()
 
@@ -335,11 +434,11 @@ class window:
             height -= amount
             sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
             destRect = pygame.Rect(destx-1, desty-1, width, height)
-            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
             # draw a rectangle of the background colour with height of *amount* at the bottom of
             # the window, to cover the text left behind
             destRect = pygame.Rect(destx - 1, sourcey - 1 + height - amount, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
         else: # scroll area down
             # copy an image of the window - *amount* pixels from the bottom to
             # the origin point of the window + *amount* pixels down 
@@ -349,12 +448,12 @@ class window:
             height -= amount
             sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
             destRect = pygame.Rect(destx-1, desty-1, width, height)
-            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
-            #self.screen.screen.set_clip()
+            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
+            #self.screen.canvas.set_clip()
             # draw a rectangle of the background colour with height of *amount* at the top of
             # the window, to cover the text left behind
             destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
         area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
@@ -402,7 +501,7 @@ class window:
         x = xpos + xcursor
         y = ypos + ycursor
         if text != '':
-            self.screen.screen.blit(textsurface, (x,y))
+            self.screen.canvas.blit(textsurface, (x,y))
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
@@ -509,12 +608,12 @@ class image():
         picture = self.picture
         if self.palette:
             picture.set_palette(self.palette)
-        picture = picture.convert_alpha(window.screen.screen)
+        picture = picture.convert_alpha(window.screen.canvas)
         if part:
             r = pygame.Rect(part[0], part[1], part[2], part[3])
-            window.screen.screen.blit(picture, (x-1,y-1), r)
+            window.screen.canvas.blit(picture, (x-1,y-1), r)
         else:
-            window.screen.screen.blit(picture, (x-1,y-1))
+            window.screen.canvas.blit(picture, (x-1,y-1))
         area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
         window.screen.updates.append(area)
 
@@ -714,49 +813,8 @@ def pictureFont(font):
             return self.fontfile
 
 
-font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
-             boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
-             italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-            )
-
-#font1emoji = font(getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#             boldfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#             italicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#             bolditalicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#             fixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
-#             boldfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
-#             italicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#             bolditalicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-#            )
-
-font2 = PictureFont(blorbs)
-
-#font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#            )
-font3 = None
-
-font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-            )
-
+def getFontList():
+    return fontlist
 
 # Z-Machine sounds
 
@@ -1019,9 +1077,3 @@ def stoptimer():
     global timerrunning
     timerrunning = False
     pygame.time.set_timer(TIMEREVENT, 0)
-
-
-
-
-
-

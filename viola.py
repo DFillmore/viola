@@ -137,7 +137,12 @@ def handle_parameters(argv): # handles command line parameters
 
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
-    io.setup(blorbs)
+
+    realForeground = zcode.screen.convertBasicToRealColour(foreground)
+    realBackground = zcode.screen.convertBasicToRealColour(background)
+
+    io.setup(width, height, blorbs, title, realForeground, realBackground)
+
     zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
@@ -146,7 +151,7 @@ def setupmodules(gamefile):
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
-    zcode.screen.setup(width, height, title=title, foreground=foreground, background=background)
+    zcode.screen.setup()
     zcode.input.setup()
     zcode.output.setup([False, True, transcriptfile])
 
