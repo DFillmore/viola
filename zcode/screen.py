@@ -20,13 +20,12 @@ import settings
 import zcode
 from zcode.constants import *
 
-def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
+def setup(restarted=False):
     global zwindow
     global statusline
     global currentWindow
     global ioScreen
     global fonts
-    global blorbs
     global unitHeight
     global unitWidth
     global spectrum
@@ -34,17 +33,14 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
 
-    foreground = convertBasicToRealColour(foreground)
-    background = convertBasicToRealColour(background)
-
-    if not width:
-        width = 800
-    if not height:
-        height = 600
     if restarted == False:
-        ioScreen = io.zscreen(width, height, title)
+        ioScreen = io.zApp.screen
 
-    blorbs = b
+    foreground, background = ioScreen.defaultForeground, ioScreen.defaultBackground
+    DEFFOREGROUND, DEFBACKGROUND = convertRealToBasicColour(foreground), convertRealToBasicColour(background)
+
+    width = ioScreen.width
+    height = ioScreen.height
 
     zwindow = []
 
