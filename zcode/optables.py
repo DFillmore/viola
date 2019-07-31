@@ -207,10 +207,10 @@ def setup():
         opext[0xf] = zcode.opcodes.z_badop
         opext[0x1d] = zcode.opcodes.z_badop
     if zcode.header.zversion() != 6:
-        opext[0x5] = zcode.opcodes.z_badop
-        opext[0x6] = zcode.opcodes.z_badop
-        opext[0x7] = zcode.opcodes.z_badop
-        opext[0x8] = zcode.opcodes.z_badop
+        #opext[0x5] = zcode.opcodes.z_badop
+        #opext[0x6] = zcode.opcodes.z_badop
+        #opext[0x7] = zcode.opcodes.z_badop
+        #opext[0x8] = zcode.opcodes.z_badop
         opext[0x10] = zcode.opcodes.z_badop
         opext[0x11] = zcode.opcodes.z_badop
         opext[0x12] = zcode.opcodes.z_badop
