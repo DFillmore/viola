@@ -119,15 +119,24 @@ def openfile(window, mode, filename=None, prompt=None):
 
 # Application window and Z-Machine screen
 
-def setup(width, height, title, foreground, background):
+def setup(width, height, b, title, foreground, background):
     global currentfont
     global inputtext
     global timerrunning
-    global zApp # 
+    global zApp
+    global blorbs
+    blorbs = b
     timerrunning = False
     inputtext = []
     pygame.key.set_repeat(100, 100)
     zApp = VApp(width, height, title, foreground, background)
+    
+    icon = None
+    for a in blorbs:
+        icon = a.gettitlepic()
+    if icon:
+        zApp.setIcon(icon)
+    
 
 class VApp:
     updates = []
@@ -198,33 +207,33 @@ class VApp:
         self.resized = True
         self.update()
 
-def setIcon(icon):
-    pygame.display.set_icon(icon)
+    def setIcon(self, icon):
+        pygame.display.set_icon(icon)
 
-def makemenu(title, items, number): # title is a string, items is a list of strings, number is the id number
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    if menus[number] != 0:
-#        destroymenu(number)
-#    menus[number] = wx.Menu()
-#    for a in xrange(len(items)):
-#        num = number * 100 + a
-#        menus[number].Append(num, items[a])
-#
-#        menubar.Insert(number-2, menus[number], title)
-#        return 1
+    def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
+        return 0
+    #    if number < 3 or number > 10:
+    #        return 0
+    #    if menus[number] != 0:
+    #        destroymenu(number)
+    #    menus[number] = wx.Menu()
+    #    for a in xrange(len(items)):
+    #        num = number * 100 + a
+    #        menus[number].Append(num, items[a])
+    #
+    #        menubar.Insert(number-2, menus[number], title)
+    #        return 1
 
-def destroymenu(number):
-    return 0
-#    if number < 3 or number > 10:
-#        return 0
-#    else:
-#        if menus[number] == 0:
-#            return 0
-#        menus[number] = 0
-#        menubar.Remove(number - 2)
-#        return 1
+    def destroymenu(self, number):
+        return 0
+    #    if number < 3 or number > 10:
+    #        return 0
+    #    else:
+    #        if menus[number] == 0:
+    #            return 0
+    #        menus[number] = 0
+    #        menubar.Remove(number - 2)
+    #        return 1
 
 
 # Z-Machine Windows
@@ -494,7 +503,7 @@ class window:
 
 # Z-Machine Images
 
-class image():
+class image:
     data = None
     def __init__(self, data, filename=False):
         if type(data) == bytes:
@@ -540,6 +549,25 @@ class image():
 
     def getHeight(self):
         return self.picture.get_height()
+
+def getpic(screen, picture_number):
+    picture_data = False
+    scale = 1
+    for a in blorbs:
+        picture_data = a.getPict(picture_number)
+        scale = a.getScale(picture_number, screen.getWidth(), screen.getHeight())
+    if not picture_data:
+        return None
+    pic = image(picture_data)
+    newwidth = pic.getWidth() * scale
+    newheight = pic.getHeight() * scale
+    pic = pic.scale(newwidth, newheight)
+    palette = pic.getPalette()
+    if palette:
+        for a in blorbs:
+            palette = a.getPalette(picture_number, palette)
+        pic.setPalette(palette)
+    return pic
 
 
 # Z-Machine Fonts

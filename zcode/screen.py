@@ -35,13 +35,12 @@ basic_colours = { 'black':2,
 DEFFOREGROUND = 2
 DEFBACKGROUND = 9
 
-def setup(b, width=800, height=600, foreground=2, background=9, title='', restarted=False):
+def setup(restarted=False):
     global zwindow
     global statusline
     global currentWindow
     global ioScreen
     global fonts
-    global blorbs
     global unitHeight
     global unitWidth
     global spectrum
@@ -58,16 +57,11 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
     if restarted == False:
         ioScreen = io.zApp
 
-    
     foreground, background = ioScreen.defaultForeground, ioScreen.defaultBackground
     DEFFOREGROUND, DEFBACKGROUND = convertRealToBasicColour(foreground), convertRealToBasicColour(background)
 
-
     width = ioScreen.width
     height = ioScreen.height
-
-
-    blorbs = b
 
     zwindow = []
 
@@ -832,24 +826,7 @@ class window(io.window):
         return self.font_number
          
     def getpic(self, picture_number):
-        picture_data = False
-        scale = 1
-        for a in blorbs:
-            picture_data = a.getPict(picture_number)
-            scale = a.getScale(picture_number, ioScreen.getWidth(), ioScreen.getHeight())
-        if not picture_data:
-            return None
-        pic = io.image(picture_data)
-        newwidth = pic.getWidth() * scale
-        newheight = pic.getHeight() * scale
-        pic = pic.scale(newwidth, newheight)
-        palette = pic.getPalette()
-        if palette:
-            for a in blorbs:
-                palette = a.getPalette(picture_number, palette)
-            pic.setPalette(palette)
-        return pic
-            
+        return io.getpic(ioScreen, picture_number)            
         
     def drawpic(self, picture_number, x, y):
         pic = self.getpic(picture_number)

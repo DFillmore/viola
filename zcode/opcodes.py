@@ -215,7 +215,7 @@ def z_erase_picture():
         x = zcode.screen.currentWindow.getCursor()[0]
 
     pic = False
-    for a in zcode.screen.blorbs:
+    for a in io.blorbs:
         pic = a.getPict(picture_number)
         scale = a.getScale(picture_number, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
    
@@ -552,7 +552,7 @@ def z_picture_data():
     if picnum == 0:
         picindex = {}
         relnum = 0
-        for a in zcode.screen.blorbs:
+        for a in io.blorbs:
             keys = list(a.resindex[b'Pict'].keys())
             for key in keys:
                 picindex[key] = a.resindex[b'Pict'][key]
@@ -566,7 +566,7 @@ def z_picture_data():
             zcode.instructions.branch(0)
     else:
         pic = False
-        for a in zcode.screen.blorbs:
+        for a in io.blorbs:
             pic = a.getPict(picnum)
             scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
 
@@ -922,7 +922,7 @@ def z_restart():
     zcode.game.setup() # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
-    zcode.screen.setup(zcode.screen.blorbs, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight(), restarted=True)
+    zcode.screen.setup(io.blorbs, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight(), restarted=True)
     zcode.text.setup()
     zcode.optables.setup()
     zcode.routines.restart = 1
