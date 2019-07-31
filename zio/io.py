@@ -12,6 +12,18 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# io
+# - app
+#   - screen
+#   - windows
+#   - sound channels
+#     - effects channels
+#     - music channels
+#   - menus
+# - fonts
+# - images
+# - sounds
+
 import os
 import pygame
 import pygame.ftfont
@@ -107,20 +119,24 @@ def openfile(window, mode, filename=None, prompt=None):
 
 # Application window and Z-Machine screen
 
-def setup():
+def setup(width, height, title, foreground, background):
     global currentfont
     global inputtext
     global timerrunning
+    global zApp # 
     timerrunning = False
     inputtext = []
     pygame.key.set_repeat(100, 100)
+    zApp = VApp(width, height, title, foreground, background)
 
-class screen:
+class VApp:
     updates = []
-    def __init__(self, width, height, title='', background=0xFFFFFF):
+    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
         self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         pygame.display.set_caption(title)
         self.screen.fill(background)
+        self.defaultForeground = foreground
+        self.defaultBackground = background
         self.width = width
         self.height = height
         self.update()

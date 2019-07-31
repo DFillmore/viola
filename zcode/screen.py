@@ -54,18 +54,18 @@ def setup(b, width=800, height=600, foreground=2, background=9, title='', restar
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
-
-    DEFFOREGROUND, DEFBACKGROUND = foreground, background
-
-    foreground = convertBasicToRealColour(foreground)
-    background = convertBasicToRealColour(background)
-
-    if not width:
-        width = 800
-    if not height:
-        height = 600
+        
     if restarted == False:
-        ioScreen = io.screen(width, height, title, background)
+        ioScreen = io.zApp
+
+    
+    foreground, background = ioScreen.defaultForeground, ioScreen.defaultBackground
+    DEFFOREGROUND, DEFBACKGROUND = convertRealToBasicColour(foreground), convertRealToBasicColour(background)
+
+
+    width = ioScreen.width
+    height = ioScreen.height
+
 
     blorbs = b
 
