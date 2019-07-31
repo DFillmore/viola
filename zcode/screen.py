@@ -48,7 +48,7 @@ def setup(restarted=False):
     global DEFBACKGROUND
     global graphics_mode
 
-    if zcode.header.getflag(2, 3) or zcode.header.zversion() == 6: # if the graphics flag is set or we're running a Version 6 game
+    if zcode.header.zversion() == 6: # if we're running a Version 6 game
         graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
 
     if zcode.use_standard < STANDARD_11:
