@@ -31,7 +31,6 @@ title = None
 terpnum = None
 debug = False
 
-
 def checkgamefile(gamefile):
     gamefile.seek(0)
     id = gamefile.read(4)
@@ -139,16 +138,20 @@ def handle_parameters(argv): # handles command line parameters
 
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
-    io.setup()
+
+    realForeground = zcode.screen.convertBasicToRealColour(foreground)
+    realBackground = zcode.screen.convertBasicToRealColour(background)
+
+    io.setup(width, height, blorbs, title, realForeground, realBackground)
+
     zcode.use_standard = usespec
     if zcode.memory.setup(gamefile) == False:
         return False
 
-    
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
-    zcode.screen.setup(blorbs, width, height, title=title)
+    zcode.screen.setup()
     zcode.input.setup()
     zcode.output.setup([False, True, transcriptfile])
 
@@ -165,7 +168,7 @@ def setupmodules(gamefile):
     return True
 
 def rungame(gamedata):
-    global height, width, title, terpnum
+    global height, width, title, terpnum, foreground, background
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
     gameset = settings.getsettings(settings.findgame())
@@ -178,7 +181,17 @@ def rungame(gamedata):
         height = gameset[2]
     if width == None:
         width = gameset[1]
+
+    try:
+        foreground = zcode.screen.basic_colours[gameset[5]]
+    except:
+        foreground = 2
     
+    try:
+        background = zcode.screen.basic_colours[gameset[6]]
+    except:
+        background = 9
+        
     if gameset[3] != None:
         blorbs.append(io.findfile(gameset[3]))
 
@@ -216,15 +229,6 @@ def rungame(gamedata):
     if setupmodules(gamedata) == False:
         zcode.error.fatal('Couldn\'t open gamefile ' + sys.argv[1])  
        
-
-
-    for a in blorbs:
-        icon = a.gettitlepic()
-    if icon:
-        io.setIcon(icon)
-    
-
-
     zcode.routines.execstart(debug)
     return 1
 
