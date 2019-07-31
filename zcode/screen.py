@@ -55,7 +55,7 @@ def setup(restarted=False):
         spectrum.pop(15)
         
     if restarted == False:
-        ioScreen = io.zApp
+        ioScreen = io.zApp.screen
 
     foreground, background = ioScreen.defaultForeground, ioScreen.defaultBackground
     DEFFOREGROUND, DEFBACKGROUND = convertRealToBasicColour(foreground), convertRealToBasicColour(background)

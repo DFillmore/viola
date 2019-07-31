@@ -40,6 +40,24 @@ pygame.init()
 
 GAMEDIRECTORY = ''
 
+def setup(width, height, b, title, foreground, background):
+    global currentfont
+    global inputtext
+    global timerrunning
+    global zApp
+    global blorbs
+    blorbs = b
+    timerrunning = False
+    inputtext = []
+    pygame.key.set_repeat(100, 100)
+    zApp = VApp(width, height, title, foreground, background)
+    
+    icon = None
+    for a in blorbs:
+        icon = a.gettitlepic()
+    if icon:
+        zApp.setIcon(icon)
+
 def getBaseDir():
    if getattr(sys,"frozen",False):
        # If this is running in the context of a frozen (executable) file, 
@@ -117,41 +135,15 @@ def openfile(window, mode, filename=None, prompt=None):
     return f
 
 
-# Application window and Z-Machine screen
-
-def setup(width, height, b, title, foreground, background):
-    global currentfont
-    global inputtext
-    global timerrunning
-    global zApp
-    global blorbs
-    blorbs = b
-    timerrunning = False
-    inputtext = []
-    pygame.key.set_repeat(100, 100)
-    zApp = VApp(width, height, title, foreground, background)
-    
-    icon = None
-    for a in blorbs:
-        icon = a.gettitlepic()
-    if icon:
-        zApp.setIcon(icon)
-    
+# Application window
 
 class VApp:
     updates = []
     def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
-        self.screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        self.screen = zscreen(width, height, title, foreground, background)
         pygame.display.set_caption(title)
-        self.screen.fill(background)
-        self.defaultForeground = foreground
-        self.defaultBackground = background
         self.width = width
         self.height = height
-        self.update()
-
-    def update(self):
-        pygame.display.update()
 
     def getWidth(self):
         return self.width
@@ -159,22 +151,6 @@ class VApp:
     def getHeight(self):
         return self.height
 
-    def getPixel(self, x,y):
-        return self.screen.get_at((x-1, y-1))
-
-    def erase(self, colour, area=None):
-        if area:
-            area = list(area)
-            area[0] -= 1
-            area[1] -= 1
-            area = pygame.Rect((area))
-        else:
-            area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
-        self.screen.fill(colour, area)
-        self.updates.append(area)
-
-
-    background = 0xFFFFFF
     resized = False
     justloaded = True
 
@@ -182,30 +158,11 @@ class VApp:
         if self.justloaded:
             self.justloaded = False
             return False
-        x = pygame.display.Info()
-        size = self.screen.get_rect()
-        oldwidth = self.getWidth()
-        oldheight = self.getHeight()
-        screenwidth = newsize[0]
-        screenheight = newsize[1]        
-        self.width = screenwidth
-        self.height = screenheight
-        backup = pygame.Surface((oldwidth, oldheight))
-        if screenwidth < oldwidth:
-            oldwidth = screenwidth
-        if screenheight < oldheight:
-            oldheight = screenheight
 
-        backup.blit(self.screen, (0,0))
-        self.screen = pygame.display.set_mode((screenwidth, screenheight), pygame.RESIZABLE)
-        self.screen.set_clip(None)
-
-        self.erase(self.background)
-        self.screen.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
-        self.screen.blit(backup, (0,0))
-        self.screen.set_clip(None)
+        self.width = newsize[0]
+        self.height = newsize[1]        
+        self.screen.resize(newsize)
         self.resized = True
-        self.update()
 
     def setIcon(self, icon):
         pygame.display.set_icon(icon)
@@ -235,6 +192,72 @@ class VApp:
     #        menubar.Remove(number - 2)
     #        return 1
 
+# Z-Machine Screen
+
+class zscreen:
+    updates = []
+    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
+        self.canvas = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        self.canvas.fill(background)
+        self.defaultForeground = foreground
+        self.defaultBackground = background
+        self.width = width
+        self.height = height
+        self.update()
+
+    def update(self):
+        pygame.display.update()
+
+    def getWidth(self):
+        return self.width
+    
+    def getHeight(self):
+        return self.height
+
+    def getPixel(self, x,y):
+        return self.screen.get_at((x-1, y-1))
+
+    def erase(self, colour, area=None):
+        if area:
+            area = list(area)
+            area[0] -= 1
+            area[1] -= 1
+            area = pygame.Rect((area))
+        else:
+            area = pygame.Rect((0, 0), (self.getWidth(), self.getHeight()))
+        self.canvas.fill(colour, area)
+        self.updates.append(area)
+
+
+    background = 0xFFFFFF
+    resized = False
+    justloaded = True
+
+    def resize(self, newsize):
+
+        oldwidth = self.getWidth()
+        oldheight = self.getHeight()
+
+        self.width = newsize[0]
+        self.height = newsize[1]        
+
+        backup = pygame.Surface((oldwidth, oldheight))
+
+        if self.width < oldwidth:
+            oldwidth = self.width
+        if self.height < oldheight:
+            oldheight = self.height
+
+        backup.blit(self.canvas, (0,0))
+        self.canvas = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        self.canvas.set_clip(None)
+
+        self.erase(self.background)
+        self.canvas.set_clip(pygame.Rect(0,0,oldwidth,oldheight))
+        self.canvas.blit(backup, (0,0))
+        self.canvas.set_clip(None)
+        self.resized = True
+        self.update()
 
 # Z-Machine Windows
 
@@ -270,11 +293,11 @@ class window:
 
     def showCursor(self):
         area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.foreground_colour, area)
+        pygame.draw.rect(self.screen.canvas, self.foreground_colour, area)
 
     def hideCursor(self):
         area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
-        pygame.draw.rect(self.screen.screen, self.background_colour, area)
+        pygame.draw.rect(self.screen.canvas, self.background_colour, area)
 
     def setFont(self, f):
         self.font = f
@@ -320,7 +343,7 @@ class window:
 
     def erase(self):
         area = pygame.Rect((self.x_coord-1, self.y_coord-1), (self.x_size, self.y_size))
-        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.canvas.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.line_count = 0
         self.x_cursor = 1
@@ -331,7 +354,7 @@ class window:
         x = self.x_coord - 1 + x - 1
         y = self.y_coord - 1 + y - 1
         area = pygame.Rect(x, y, w, h)
-        self.screen.screen.fill(self.getColours()[1], area)
+        self.screen.canvas.fill(self.getColours()[1], area)
         self.screen.updates.append(area)
         self.screen.update()
 
@@ -356,11 +379,11 @@ class window:
             height -= amount
             sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
             destRect = pygame.Rect(destx-1, desty-1, width, height)
-            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
+            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
             # draw a rectangle of the background colour with height of *amount* at the bottom of
             # the window, to cover the text left behind
             destRect = pygame.Rect(destx - 1, sourcey - 1 + height - amount, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
         else: # scroll area down
             # copy an image of the window - *amount* pixels from the bottom to
             # the origin point of the window + *amount* pixels down 
@@ -370,12 +393,12 @@ class window:
             height -= amount
             sourceRect = pygame.Rect(sourcex-1, sourcey-1, width, height)
             destRect = pygame.Rect(destx-1, desty-1, width, height)
-            self.screen.screen.blit(self.screen.screen, destRect, sourceRect)
-            #self.screen.screen.set_clip()
+            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
+            #self.screen.canvas.set_clip()
             # draw a rectangle of the background colour with height of *amount* at the top of
             # the window, to cover the text left behind
             destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
-            pygame.draw.rect(self.screen.screen, self.getColours()[1], destRect)
+            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
         area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
@@ -423,7 +446,7 @@ class window:
         x = xpos + xcursor
         y = ypos + ycursor
         if text != '':
-            self.screen.screen.blit(textsurface, (x,y))
+            self.screen.canvas.blit(textsurface, (x,y))
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
@@ -530,12 +553,12 @@ class image:
         picture = self.picture
         if self.palette:
             picture.set_palette(self.palette)
-        picture = picture.convert_alpha(window.screen.screen)
+        picture = picture.convert_alpha(window.screen.canvas)
         if part:
             r = pygame.Rect(part[0], part[1], part[2], part[3])
-            window.screen.screen.blit(picture, (x-1,y-1), r)
+            window.screen.canvas.blit(picture, (x-1,y-1), r)
         else:
-            window.screen.screen.blit(picture, (x-1,y-1))
+            window.screen.canvas.blit(picture, (x-1,y-1))
         area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
         window.screen.updates.append(area)
 
