@@ -568,13 +568,14 @@ def z_picture_data():
         pic = False
         for a in io.blorbs:
             pic = a.getPict(picnum)
+            pictype - a.getPictType(picnum)
             scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getWidth())
 
         if pic != False:
             if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
                 pic = blorb.rect(pic)
             else:
-                pic = io.image(pic)
+                pic = io.image(pic, pictype)
 
             height = int(int(pic.getHeight()) * scale)
             width = int(int(pic.getWidth()) * scale)
