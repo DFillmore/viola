@@ -35,9 +35,10 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.widget import Widget
-from kivy.uix.label import Label
+from kivy.uix.label import Label as CoreLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics.texture import Texture
+from kivy.core.image import Image as CoreImage
 
 kivy.require('1.10.1') 
 
@@ -221,15 +222,19 @@ class VApp(App):
 class zscreen(Widget):
     updates = []
     def __init__(self, width, height, foreground=0x000000, background=0xFFFFFF):
-        self.canvas.fill(background)
+        super(zscreen, self).__init__()
+        #self.canvas.fill(background)
+        self.buffer = Texture.create(size=(width, height))
         self.defaultForeground = foreground
         self.defaultBackground = background
+        self.erase(self.background)
         self.width = width
         self.height = height
         self.update()
+        
 
     def update(self):
-        pygame.display.update()
+        self.canvas.ask_update()
 
     def getWidth(self):
         return self.width
@@ -241,13 +246,14 @@ class zscreen(Widget):
         return self.screen.get_at((x-1, y-1))
 
     def erase(self, colour, area=None):
+        colour = Color(kivycolour(colour))
         if area:
             area = list(area)
             area[0] -= 1
             area[1] -= 1
             area = Rectangle(pos=(area[0], area[1]), size=(area[2], area[3]))
         else:
-            area = Rectangle((0, 0), (self.getWidth(), self.getHeight()))
+            area = Rectangle(pos=(0, 0), size=(self.getWidth(), self.getHeight()))
         self.canvas.fill(colour, area)
         self.updates.append(area)
 
@@ -264,7 +270,7 @@ class zscreen(Widget):
         self.width = newsize[0]
         self.height = newsize[1]        
 
-        backup = pygame.Surface((oldwidth, oldheight))
+        backup = Texture.create(size=(oldwidth, oldheight))
 
         if self.width < oldwidth:
             oldwidth = self.width
@@ -272,7 +278,7 @@ class zscreen(Widget):
             oldheight = self.height
 
         backup.blit(self.canvas, (0,0))
-        self.canvas = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        #self.canvas = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         self.canvas.set_clip(None)
 
         self.erase(self.background)
@@ -281,6 +287,14 @@ class zscreen(Widget):
         self.canvas.set_clip(None)
         self.resized = True
         self.update()
+
+def kivycolour(colour):
+    red = (colour >> 16) / 0xff
+    green = ((colour >> 8) & 0xff) / 0xff
+    blue = (colour & 0xff) / 0xff
+    return (red,green,blue)
+
+    
 
 
 # Z-Machine Windows
@@ -298,9 +312,9 @@ class window:
     foreground_colour = 0
     background_colour = 0
     font = None
-    wrapping = 0
-    scrolling = 0
-    buffering = 0
+    wrapping = False
+    scrolling = False
+    buffering = False
     align_text = 0
     line_count = 0
     true_foreground_colour = 0
@@ -402,13 +416,13 @@ class window:
             destx, desty = self.x_coord, self.y_coord
             width, height = self.getSize()
             height -= amount
-            sourceRect = Rectangle(pos=(sourcex-1, sourcey-1), size=(width, height))
+            sourceRect = self.screen.canvas.texture.get_region(sourcex-1, sourcey-1, width, height)
             destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height))
             self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
             # draw a rectangle of the background colour with height of *amount* at the bottom of
             # the window, to cover the text left behind
             destRect = Rectangle(pos=(destx - 1, sourcey - 1 + height - amount), size=(width, amount))
-            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
+            self.canvas.add(destRect)
         else: # scroll area down
             # copy an image of the window - *amount* pixels from the bottom to
             # the origin point of the window + *amount* pixels down 
@@ -422,15 +436,14 @@ class window:
             #self.screen.canvas.set_clip()
             # draw a rectangle of the background colour with height of *amount* at the top of
             # the window, to cover the text left behind
-            destRect = pygame.Rect(destx - 1, sourcey - 1, width, amount)
-            pygame.draw.rect(self.screen.canvas, self.getColours()[1], destRect)
-        area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
-        self.screen.updates.append(area)
+            destRect = Rectangle(pos=(destx - 1, sourcey - 1), size=(width, amount))
+            self.canvas.add(destRect)
+        #area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
+        #self.screen.updates.append(area)
 
     def printText(self, text):
         self.buffertext(text)
-        buffering = self.testattribute(8)
-        if text.find('\r') != -1 or buffering == False:
+        if text.find('\r') != -1 or self.buffering == 0:
             self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
 
     def fitText(self, text, width, wrapping=True, buffering=True):
@@ -467,13 +480,18 @@ class window:
         xpos, ypos = self.x_coord-1, self.y_coord-1
         xcursor, ycursor = self.x_cursor-1, self.y_cursor-1
         width, height = self.getSize()
-        textsurface = self.getFont().render(text, 1, fg, bg)
+        #textsurface = self.getFont().render(text, 1, fg, bg)
+        l = CoreLabel(text=text, font_size=20)
+        l.texture_update()
+        textsurface = l.texture
+        print(textsurface)
         x = xpos + xcursor
         y = ypos + ycursor
         if text != '':
-            self.screen.canvas.blit(textsurface, (x,y))
-        area = pygame.Rect(xpos, ypos, width, height)
-        self.screen.updates.append(area)
+            #self.screen.canvas.blit(textsurface, (x,y))
+            self.screen.canvas.add(Rectangle(size=textsurface.size, pos=(x,y), texture=textsurface))
+        #area = pygame.Rect(xpos, ypos, width, height)
+        #self.screen.updates.append(area)
 
     def flushTextBuffer(self):
         #self.hideCursor()
@@ -485,9 +503,7 @@ class window:
         if self.x_cursor > self.x_size - self.right_margin:
             self.x_cursor = self.left_margin + 1
 
-        buffering = self.testattribute(8)
-
-        if not self.testattribute(1): # if wrapping is off
+        if not self.wrapping: # if wrapping is off
             linebuffers = []
             x = 0
             while x != -1:
@@ -499,7 +515,7 @@ class window:
                     linebuffers.append(self.textbuffer[:])
             for a in range(len(linebuffers)):
                 winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
-                x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=buffering)
+                x = self.fitText(linebuffers[a][:], winwidth, wrapping=False, buffering=self.buffering)
                 linebuffer = linebuffers[a][0:x]
                 
 
@@ -513,7 +529,7 @@ class window:
         else:
             while (len(self.textbuffer) > 0):                
                 winwidth = (self.x_size - (self.x_cursor - 1) - self.right_margin)
-                x = self.fitText(self.textbuffer[:], winwidth, buffering=buffering)
+                x = self.fitText(self.textbuffer[:], winwidth, buffering=self.buffering)
                 definitescroll = 0
                 linebuffer = self.textbuffer[:]
                 if linebuffer[:x].find('\r') != -1:
@@ -551,17 +567,19 @@ class window:
 
 # Z-Machine Images
 
-
 class image():
     data = None
-    def __init__(self, data, filename=False):
+    def __init__(self, data, pictype, filename=False):
+        if pictype == 'PNG ':
+            pictype = 'png'
+        elif pictype == 'JPEG':
+            pictype = 'jpg'
         if type(data) == bytes:
             if filename:
-                self.picture = pygame.image.load(data)
+                self.picture = CoreImage(data)
             else:
-                self.picture = pygame.image.load(io.BytesIO(data))
-            
-        else: # assume pygame surface
+                self.picture = CoreImage(io.BytesIO(data), pictype)
+        else: 
             self.picture = data
         try:
             self.palette = self.picture.get_palette()
@@ -581,17 +599,15 @@ class image():
             picture.set_palette(self.palette)
         picture = picture.convert_alpha(window.screen.canvas)
         if part:
-            r = pygame.Rect(part[0], part[1], part[2], part[3])
+            r = Rectangle(pos=(part[0], part[1]), size=(part[2], part[3]))
             window.screen.canvas.blit(picture, (x-1,y-1), r)
         else:
             window.screen.canvas.blit(picture, (x-1,y-1))
-        area = pygame.Rect((window.x_coord - 1, window.y_coord - 1), window.getSize())
+        area = Rectangle(pos=(window.x_coord - 1, window.y_coord - 1), size=window.getSize())
         window.screen.updates.append(area)
 
     def scale(self, width, height):
-        newpic = pygame.transform.scale(self.picture, (int(width), int(height)))
-        newImage = image(newpic)
-        return newImage
+        return None
 
     def getWidth(self):
         return self.picture.get_width()
@@ -606,28 +622,8 @@ class font:
     #    return 'Font: ' + str(self.name)
 
     def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, fixedfile=None, boldfixedfile=None, italicfixedfile=None, bolditalicfixedfile=None):
-        self.size = self.defaultSize()
-        self.fontfile = fontfile
-        self.boldfile = boldfile
-        self.italicfile = italicfile
-        self.bolditalicfile = bolditalicfile
-        self.fixedfile =fixedfile
-        self.boldfixedfile = boldfixedfile
-        self.italicfixedfile = italicfixedfile
-        self.bolditalicfixedfile = bolditalicfixedfile
-        self.usefile = self.fontfile
-        codePointsRoman = fonts.getCodes(fontfile)
-        codePointsBold = fonts.getCodes(boldfile)
-        codePointsItalic = fonts.getCodes(italicfile)
-        codePointsBoldItalic = fonts.getCodes(bolditalicfile)
-        codePointsFixed = fonts.getCodes(fixedfile)
-        codePointsBoldFixed = fonts.getCodes(boldfixedfile)
-        codePointsItalicFixed = fonts.getCodes(italicfixedfile)
-        codePointsBoldItalicFixed = fonts.getCodes(bolditalicfixedfile)
-        self.codePoints = list(set(codePointsRoman).intersection(*[codePointsBold, codePointsItalic,codePointsBoldItalic,codePointsFixed,codePointsBoldFixed,codePointsItalicFixed,codePointsBoldItalicFixed]))
+        pass
 
-
-    
     bold = False
     italic = False
     usefile = None
@@ -636,90 +632,47 @@ class font:
     fixedstyle = False
 
     def getUseFile(self):
-        if self.italic and self.bold and self.fixedstyle:
-            return self.bolditalicfixedfile
-        elif self.italic and self.fixedstyle:
-            return self.italicfixedfile
-        elif self.bold and self.fixedstyle:
-            return self.boldfixedfile
-        elif self.fixedstyle:
-            return self.fixedfile
-        elif self.italic and self.bold:
-            return self.bolditalicfile
-        elif self.italic:
-            return self.italicfile
-        elif self.bold:
-            return self.boldfile
-        else:
-            return self.fontfile
-           
+        return None
+    
     def setBold(self, value):
-        if value:
-            self.bold = True
-        else:
-            self.bold = False
-        self.usefile = self.getUseFile()
-
+        pass
+    
     def setItalic(self, value):
-        if value:
-            self.italic = True
-        else:
-            self.italic = False
-        self.usefile = self.getUseFile()
-
+        pass
+    
     def setReverse(self, value):
-        if value:
-            self.reversevideo = True
-        else:
-            self.reversevideo = False
+        pass
 
     def setFixed(self, value):
-        if value:
-            self.fixedstyle = True
-        else:
-            self.fixedstyle = False
-        self.usefile = self.getUseFile()
+        pass
 
     def getWidth(self):
-        self.width = self.fontData().size('0')[0]
-        return self.width
+        return 0
     
     def getHeight(self):
-        self.height = self.fontData().size('0')[1]
-        return self.height
+        return 0
 
     def getStringLength(self, text):
-        return self.fontData().size(text)[0]
+        return 0
 
     def getAscent(self):
-        return self.fontData().get_ascent()
+        return 0
 
     def getDescent(self):
-        return abs(self.fontData().get_descent())
+        return 0
 
     def checkChar(self, charnum):
-        if charnum in self.codePoints:
-            return True
         return False
 
     def defaultSize(self):
-        return 16
-
-    def increaseSize(self, amount=1):
-        self.size += amount
-        return 1
-
-    def decreaseSize(self, amount=1):
-        if self.size == 1:
-            return 0
-        self.size -= amount
-        return 1
+        return 0
 
     def resetSize(self):
         self.size = self.defaultSize()
 
     def render(self, text, antialias, colour, background):
-        unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
+        #unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
+        unavailable = []
         for elem in unavailable:
             # Check if string is in the main string
             if chr(elem) in text:
@@ -736,8 +689,7 @@ class font:
             return f.render(text, antialias, colour, background)
 
     def fontData(self):
-        fon = pygame.ftfont.Font(self.usefile, self.size)
-        return fon
+        return None
 
 font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
              boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
