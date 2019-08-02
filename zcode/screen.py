@@ -428,6 +428,8 @@ class window(io.window):
     window_id = None
     last_x_cursor = 1
 
+    transcripting = False
+
     def __init__(self, screen, font):
         self.screen = screen
         self.fontlist = fontlist[:]
@@ -657,21 +659,45 @@ class window(io.window):
 
     
     def setattributes(self, flags, operation):
-        if operation == 0:
-            self.attributes = flags
-        elif operation == 1:
-            self.attributes = self.attributes | flags
-        elif operation == 2:
-            self.attributes = self.attributes & ~flags
-        elif operation == 3:
-            self.attributes - self.attributes & flags
+        if operation == 0: # set to these settings
+            attributes = flags
+        elif operation == 1: # set the bits supplied
+            attributes = self.getattributes() | flags
+        elif operation == 2: # clear the ones supplied
+            attributes = self.getattributes() & ~flags
+        elif operation == 3: # reverse the bits supplied
+            attributes - self.getattributes() & flags
+
+        if attributes & 1:
+            self.wrapping = True
+        if attributes & 2:
+            self.scrolling = True
+        if attributes & 4:
+            self.transcripting = True
+        if attributes & 8:
+            self.buffering = True
 
     def testattributes(self, attribute):
-        result = self.attributes & attribute
-        if result == attribute:
-            return True
-        else:
-            return False
+        if attribute == 1:
+            return self.wrapping
+        if attribute == 2:
+            return self.scrolling
+        if attribute == 4:
+            return self.transcripting
+        if attribute == 8:
+            return self.buffering
+
+    def getattributes(self):
+        attributes = 0
+        if self.wrapping:
+            atttributes += 1
+        if self.scrolling:
+            attributes += 2
+        if self.transcripting:
+            attributes += 4
+        if self.buffering:
+            attributes += 8
+        return attributes
    
     textbuffer = ''
     linetextbuffer = []
@@ -789,10 +815,11 @@ class window(io.window):
         scale = 1
         for a in blorbs:
             picture_data = a.getPict(picture_number)
+            pictype = a.getPict(picture_number)
             scale = a.getScale(picture_number, ioScreen.getWidth(), ioScreen.getHeight())
         if not picture_data:
             return None
-        pic = io.image(picture_data)
+        pic = io.image(picture_data, pictype)
         newwidth = pic.getWidth() * scale
         newheight = pic.getHeight() * scale
         pic = pic.scale(newwidth, newheight)
