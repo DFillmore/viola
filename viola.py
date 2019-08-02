@@ -14,7 +14,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import zio.kivy as io
+import zio.io as io
 import sys
 import getopt
 import os
