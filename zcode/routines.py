@@ -50,8 +50,8 @@ def execloop(debug=False):
 
     zcode.screen.cursoroff()
     while (restart == 0) and (quit == 0) and (timerreturn == False):
-        if io.screen.resized:
-            io.screen.resized=False
+        if io.zApp.resized:
+            io.zApp.resized=False
             zcode.screen.resize()
         
         if timerreturn == False:
