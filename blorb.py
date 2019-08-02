@@ -138,6 +138,14 @@ class Blorb:
         data = self.data[x+8:x+8+size]
         return data
 
+    def getPictType(self, picnum): # 
+        try:
+            x = self.resindex[b'Pict'][picnum]
+        except:
+            return False
+        type = self.chunkType(x)
+        return type
+
     def getSnd(self, sndnum):
         try:
             x = self.resindex[b'Snd '][sndnum]
