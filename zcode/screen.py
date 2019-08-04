@@ -269,12 +269,12 @@ def resize():
         
     if zcode.header.zversion() > 4:
         # Screen width (units)
-        if zcode.header.zversion() == 6:
+        if graphics_mode:
             zcode.header.setscreenwidth(ioScreen.getWidth())
         else:
             zcode.header.setscreenwidth(ioScreen.getWidth() // getWindow(1).getFont().getWidth())
         # Screen height (units)
-        if zcode.header.zversion() == 6:
+        if graphics_mode:
             zcode.header.setscreenheight(ioScreen.getHeight())
         else:
             zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
@@ -292,7 +292,7 @@ def resize():
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight()-getWindow(1).getSize()[1])
 
             
-    if zcode.header.zversion() == 6:
+    if zcode.header.zversion() == 6: # set header flag to request game redraw screen
         zcode.header.setflag(2, 2, 1)
 
     
@@ -553,7 +553,34 @@ class window(io.window):
         self.setTrueColours(true_foreground, true_background)
         self.setColours(foreground, background)
 
+    def setPosition(self, x, y):
+        self.x_coord = units2pix(x, True, coord=True)
+        self.y_coord = units2pix(y, False, coord=True)
 
+    def getPosition(self):
+        return (pix2units(self.x_coord, True, coord=True), pix2units(self.y_coord, False, coord=True))
+
+    def setSize(self, width, height):
+        self.x_size = units2pix(width, True)
+        self.y_size = units2pix(height, False)
+
+    def getSize(self):
+        return (pix2units(self.x_size, True), pix2units(self.y_size, False))
+
+    def setCursor(self, x, y):
+        self.x_cursor = units2pix(x, True, coord=True)
+        self.y_cursor = units2pix(y, False, coord=True)
+
+    def getCursor(self):
+        return (pix2units(self.x_cursor, True, coord=True), pix2units(self.y_cursor, False, coord=True))
+
+    def getPixelColour(self, x, y):
+        x = units2pix(x - 1 + self.getPosition()[0] - 1, True, coord=True)
+        y = units2pix(y - 1 + self.getPosition()[1] - 1, False, coord=True)
+        try:
+            return self.screen.getPixel(x, y)
+        except:
+            return -1
    
     def setMargins(self, left, right):
         self.left_margin = left

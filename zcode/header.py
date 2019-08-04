@@ -103,9 +103,10 @@ def updateFontSize():
 
 def updateSizes():
     if zversion() > 3:
+        lines = int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight())
         columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).getFont().getWidth())
         # Screen height (lines)
-        setscreenheightlines(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
+        setscreenheightlines(lines)
         # Screen width (chars)
         setscreenwidthchars(columns)
         
@@ -119,7 +120,7 @@ def updateSizes():
         if zcode.screen.graphics_mode == 1:
             setscreenheight(zcode.screen.ioScreen.getHeight())
         else:
-            setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
+            setscreenheight(lines)
         updateFontSize()
 
 
@@ -268,7 +269,7 @@ def abbrevtableloc():
 
 file_length = None
 
-def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually. But it doesn't.
+def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually.
     global file_length
     if not file_length:
         l = (zcode.memory.getbyte(0x1a) << 8) + zcode.memory.getbyte(0x1b)
