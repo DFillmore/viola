@@ -39,6 +39,7 @@ from kivy.uix.label import Label as CoreLabel
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics.texture import Texture
 from kivy.core.image import Image as CoreImage
+from kivy.graphics import Fbo
 
 kivy.require('1.10.1') 
 
@@ -223,8 +224,8 @@ class zscreen(Widget):
     updates = []
     def __init__(self, width, height, foreground=0x000000, background=0xFFFFFF):
         super(zscreen, self).__init__()
-        #self.canvas.fill(background)
-        self.buffer = Texture.create(size=(width, height))
+
+        self.buffer = Fbo(size=(width, height))
         self.defaultForeground = foreground
         self.defaultBackground = background
         self.erase(self.background)
@@ -254,8 +255,11 @@ class zscreen(Widget):
             area = Rectangle(pos=(area[0], area[1]), size=(area[2], area[3]))
         else:
             area = Rectangle(pos=(0, 0), size=(self.getWidth(), self.getHeight()))
-        self.canvas.fill(colour, area)
-        self.updates.append(area)
+        self.buffer.add(colour)
+        self.buffer.add(area)
+        self.canvas.add(colour)
+        self.canvas.add(area)
+
 
 
     background = 0xFFFFFF
@@ -289,9 +293,14 @@ class zscreen(Widget):
         self.update()
 
 def kivycolour(colour):
-    red = (colour >> 16) / 0xff
-    green = ((colour >> 8) & 0xff) / 0xff
-    blue = (colour & 0xff) / 0xff
+    if type(colour) == int:
+        red = (colour >> 16) / 0xff
+        green = ((colour >> 8) & 0xff) / 0xff
+        blue = (colour & 0xff) / 0xff
+    else:
+        red = colour[0] / 0xff
+        green = colour[1] / 0xff
+        blue = colour[2] / 0xff        
     return (red,green,blue)
 
     
@@ -382,8 +391,9 @@ class window:
 
     def erase(self):
         area = Rectangle(pos=(self.x_coord-1, self.y_coord-1), size=(self.x_size, self.y_size))
-        self.screen.canvas.fill(self.getColours()[1], area)
-        self.screen.updates.append(area)
+        background = Color(kivycolour(self.getColours()[1]))
+        self.screen.buffer.add(background)
+        self.screen.buffer.add(area)
         self.line_count = 0
         self.x_cursor = 1
         self.y_cursor = 1
@@ -401,7 +411,6 @@ class window:
     def getFont(self):
         return font
 
-
     def preNewline():
         pass
 
@@ -416,13 +425,13 @@ class window:
             destx, desty = self.x_coord, self.y_coord
             width, height = self.getSize()
             height -= amount
-            sourceRect = self.screen.canvas.texture.get_region(sourcex-1, sourcey-1, width, height)
-            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height))
-            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
+            sourceRect = self.screen.buffer.texture.get_region(sourcex-1, sourcey-1, width, height)
+            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height), texture=sourceRect)
+            self.screen.buffer.add(destRect)
             # draw a rectangle of the background colour with height of *amount* at the bottom of
             # the window, to cover the text left behind
             destRect = Rectangle(pos=(destx - 1, sourcey - 1 + height - amount), size=(width, amount))
-            self.canvas.add(destRect)
+            self.screen.buffer.add(destRect)
         else: # scroll area down
             # copy an image of the window - *amount* pixels from the bottom to
             # the origin point of the window + *amount* pixels down 
@@ -430,14 +439,13 @@ class window:
             destx, desty = self.x_coord, self.y_coord + amount
             width, height = self.getSize()
             height -= amount
-            sourceRect = Rectangle(pos=(sourcex-1, sourcey-1), size=(width, height))
-            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height))
-            self.screen.canvas.blit(self.screen.canvas, destRect, sourceRect)
-            #self.screen.canvas.set_clip()
+            sourceRect = self.screen.buffer.texture.get_region(sourcex-1, sourcey-1, width, height)
+            destRect = Rectangle(pos=(destx-1, desty-1), size=(width, height), texture=sourceRect)
+            self.screen.buffer.add(destRect)
             # draw a rectangle of the background colour with height of *amount* at the top of
             # the window, to cover the text left behind
             destRect = Rectangle(pos=(destx - 1, sourcey - 1), size=(width, amount))
-            self.canvas.add(destRect)
+            self.screen.buffer,add(destRect)
         #area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         #self.screen.updates.append(area)
 
@@ -484,7 +492,6 @@ class window:
         l = CoreLabel(text=text, font_size=20)
         l.texture_update()
         textsurface = l.texture
-        print(textsurface)
         x = xpos + xcursor
         y = ypos + ycursor
         if text != '':
@@ -555,7 +562,9 @@ class window:
         
 
         #self.showCursor()
-        #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
+        self.screen.canvas.add(Rectangle(size=(self.screen.getWidth(), self.screen.getHeight()), pos=(0,0), texture=self.screen.buffer.texture))
+        self.screen.canvas.ask_update()
+
 
 
     def getStringLength(self, text):
@@ -647,25 +656,25 @@ class font:
         pass
 
     def getWidth(self):
-        return 0
+        return 1
     
     def getHeight(self):
-        return 0
+        return 1
 
     def getStringLength(self, text):
-        return 0
+        return 1
 
     def getAscent(self):
-        return 0
+        return 1
 
     def getDescent(self):
-        return 0
+        return 1
 
     def checkChar(self, charnum):
         return False
 
     def defaultSize(self):
-        return 0
+        return 1
 
     def resetSize(self):
         self.size = self.defaultSize()
@@ -889,15 +898,38 @@ def initsound():
 
 # Z-Machine input
 
+
+
+
+
+
 class input:
     def __init__(self, screen):
         self.screen = screen
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+    def _keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+        self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'w':
+            self.player1.center_y += 10
+        elif keycode[1] == 's':
+            self.player1.center_y -= 10
+        elif keycode[1] == 'up':
+            self.player2.center_y += 10
+        elif keycode[1] == 'down':
+            self.player2.center_y -= 10
+        return True
+
 
     def getinput(self):
-        pygame.display.update(self.screen.updates)
+        #pygame.display.update(self.screen.updates)
         self.screen.updates = []
-        
-        event = pygame.event.wait()
+        return keypress(ord("n"), "n", None)
+        #event = pygame.event.wait()
 
         if event.type == QUIT:
             sys.exit()
