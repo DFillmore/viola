@@ -1299,6 +1299,8 @@ def z_sound_effect():
         else:
             volume = 8
             repeats = 1
+        if repeats == 0:
+            repeats = 1
         if volume == 255:
             volume = 8
         volume = (1/8) * volume
