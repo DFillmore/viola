@@ -196,7 +196,7 @@ def gettextlength(address): # this determines how much space an encoded string t
     a = 1
     while endbit == 0:
         word = zcode.memory.getword(loc)
-        if (word >> 8) & 128 == 128:
+        if word & 0x8000:
             endbit = 1
         loc += 2
         a += 1
