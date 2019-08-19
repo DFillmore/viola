@@ -110,6 +110,9 @@ class Sound:
         except:
             pass
 
+    def stop(self):
+        self.sound.stop()
+
     type = 0
     routine = 0
     repeats = 1

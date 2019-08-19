@@ -799,6 +799,9 @@ class musicobject():
     def set_volume(self, volume):
         self.volume = volume
 
+    def stop(self):
+        pygame.mixer.music.stop()
+
 
 def sound(data, type):
     if type == 0:
