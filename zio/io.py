@@ -215,7 +215,7 @@ class zscreen:
         return self.height
 
     def getPixel(self, x,y):
-        return self.screen.get_at((x-1, y-1))
+        return self.canvas.get_at((x-1, y-1))
 
     def erase(self, colour, area=None):
         if area:
