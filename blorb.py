@@ -183,6 +183,21 @@ class Blorb:
             return 0 # effect
         return 1 # music
 
+    def getRepeats(self, sndnum):
+        """returns 1 if a sound is to be played once, 0 if the sound is to be repeated indefinitely"""
+        x = self.findChunk(b'Loop')
+        if x == 0: # no loop chunk, play once
+            return 1
+        clen = self.chunkSize(x)
+        cdata = self.data[x+8:x+8+clen]        
+        entries_count = clen // 8
+        repeats = 1
+        for e in entries_count:
+            s = int.from_bytes(cdata[e*8:e*8+4], byteorder='big')
+            if s == sndnum:
+                repeats = int.from_bytes(cdata[e*8+4:e*8+8], byteorder='big')
+        return repeats
+
     def getWinSizes(self):
         x = self.findChunk(b'Reso')
         if x == 0:
