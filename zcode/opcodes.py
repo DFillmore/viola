@@ -1301,6 +1301,11 @@ def z_sound_effect():
             repeats = 1
         if repeats == 0:
             repeats = 1
+        if zcode.header.zversion() < 5:
+            for a in io.blorbs:
+                repeats = a.getRepeats(number)
+            if repeats == 0:
+                repeats = 255
         if volume == 255:
             volume = 8
         volume = (1/8) * volume
