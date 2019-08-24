@@ -334,7 +334,6 @@ class Blorb:
             picnum = babel.getcoverpicture(iFiction)
         else:
             resosize = int.from_bytes(self.data[resoplace+4:resoplace+8], 'big')
-            print('size', resosize)
             if resosize != 4:
                 return None
             picnum = int.from_bytes(self.data[resoplace+8:resoplace+12], 'big')
