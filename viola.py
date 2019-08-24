@@ -213,16 +213,14 @@ def rungame(gamedata):
                 title = babel.gettitle(iFiction)
                 headline = babel.getheadline(iFiction)
                 author = babel.getauthor(iFiction)
-                if headline != None:
-                    title = title + ': ' + headline
-                if author != None:
-                    title += ' by ' + author
                 if title == None:
                     title = ''
-                else:
-                    title = ' - ' + title
+                if headline != None:
+                    title = title + ' (' + headline + ')'
+                if author != None:
+                    title += ' by ' + author
 
-    if title == None:
+    if title == '':
         title = 'Viola'
     else:
         title = 'Viola - ' + title
