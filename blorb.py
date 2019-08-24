@@ -332,19 +332,17 @@ class Blorb:
         if resoplace == None:
             iFiction = self.getmetadata()
             picnum = babel.getcoverpicture(iFiction)
-            if picnum != None:
-                pic = getpic(picnum, titlepic=True)
-            else:
-                pic = None
-            return pic
-        #rfile.seek(resoplace + 4)
-        #resosize = fbnum(rfile.read(4))
-        #if resosize != 4:
-        #    return None
-        #rfile.seek(resoplace+8)
-        #picnum = fbnum(rfile.read(4))
-        #pic = getpic(picnum, titlepic=True)
-        return None
+        else:
+            resosize = int.from_bytes(self.data[resoplace+4:resoplace+8], 'big')
+            print('size', resosize)
+            if resosize != 4:
+                return None
+            picnum = int.from_bytes(self.data[resoplace+8:resoplace+12], 'big')
+        if picnum != None:
+            pic = self.getPict(picnum)
+        else:
+            pic = None
+        return pic
 
 def fbnum(b):
     return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3]
