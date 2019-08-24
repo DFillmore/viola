@@ -816,7 +816,8 @@ def z_read():
                 c = zcode.input.instring.pop()
                 zcode.screen.currentWindow.backspace(chr(c))
         elif inchar and display:
-            zcode.input.instring.append(inchar)
+            if inchar in zcode.text.inputvalues and inchar in zcode.text.outputvalues:
+                zcode.input.instring.append(inchar)
             #zcode.screen.currentWindow.showCursor()
     #zcode.screen.currentWindow.hideCursor()
     if zcode.game.timervalue == True:
