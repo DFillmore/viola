@@ -205,7 +205,7 @@ def rungame(gamedata):
 
     if title == None:
         title = gameset[0]
-    icon = None
+    
     if title == None:
         for a in blorbs:
             iFiction = a.getmetadata()
