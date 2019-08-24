@@ -165,6 +165,7 @@ class VApp:
         self.resized = True
 
     def setIcon(self, icon):
+        icon = pygame.image.load(io.BytesIO(icon))
         pygame.display.set_icon(icon)
 
     def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
