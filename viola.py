@@ -220,7 +220,7 @@ def rungame(gamedata):
                 if author != None:
                     title += ' by ' + author
 
-    if title == '':
+    if title == '' or title == None:
         title = 'Viola'
     else:
         title = 'Viola - ' + title
