@@ -75,8 +75,8 @@ def setup(restarted=False):
     if zcode.header.zversion() == 6:
         for a in range(6):
             zwindow.append(window(ioScreen, fontlist[1])) # windows 2 to 7
-    for a in range(len(zwindow)):
-        getWindow(a).window_id = str(a)
+    for count, value in enumerate(zwindow):
+        getWindow(count).window_id = str(count)
 
 
     if graphics_mode == 1: # units are pixels
@@ -108,9 +108,9 @@ def setup(restarted=False):
     # position and size the windows
 
     if zcode.header.zversion() == 6: # version 6
-        for a in range(len(zwindow)):
-            getWindow(a).setPosition(1, 1)
-            getWindow(a).setSize(0,0)
+        for count, value in enumerate(zwindow):
+            getWindow(count).setPosition(1, 1)
+            getWindow(count).setSize(0,0)
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
         getWindow(1).setSize(ioScreen.getWidth(), 0)
     elif zcode.header.zversion() < 4: # version 1, 2 and 3
@@ -130,8 +130,8 @@ def setup(restarted=False):
     # set the cursor in the windows
 
     if zcode.header.zversion() == 6:
-        for a in range(len(zwindow)):
-            getWindow(a).setCursor(1,1)
+        for count, value in enumerate(zwindow):
+            getWindow(count).setCursor(1,1)
     elif zcode.header.zversion() < 5:
         getWindow(0).setCursor(1, getWindow(0).y_size - getWindow(0).getFont().getHeight() + 1)
     else:
@@ -140,8 +140,8 @@ def setup(restarted=False):
     # set up window attributes
 
     if zcode.header.zversion() == 6:
-        for a in range(len(zwindow)):
-            getWindow(a).setattributes(8, 0)
+        for count, value in enumerate(zwindow):
+            getWindow(count).setattributes(8, 0)
         getWindow(0).setattributes(15, 0)
     elif zcode.header.zversion() < 4:
         getWindow(0).setattributes(15,0)
@@ -154,9 +154,9 @@ def setup(restarted=False):
 
     # set other default window properties
 
-    for a in range(len(zwindow)):
-        getWindow(a).setRealColours(foreground, background)
-        getWindow(a).font_size = (getWindow(a).getFont().getHeight() << 8) + getWindow(a).getFont().getWidth()
+    for count, value in enumerate(zwindow):
+        getWindow(count).setRealColours(foreground, background)
+        getWindow(count).font_size = (getWindow(count).getFont().getHeight() << 8) + getWindow(count).getFont().getWidth()
     if zcode.header.zversion() < 4:
         statusline.setRealColours(background, foreground)
         statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
@@ -855,9 +855,9 @@ def eraseWindow(winnum):
     elif zcode.numbers.signed(winnum) == -1: # this should unsplit the screen, too. And move the cursor.
         ioScreen.erase(currentWindow.getColours()[1])
         split(0)
-        for a in range(len(zwindow)):
-            getWindow(a).setCursor(1, 1)
-            getWindow(a).line_count = 0
+        for count, value in enumerate(zwindow):
+            getWindow(count).setCursor(1, 1)
+            getWindow(count).line_count = 0
     elif zcode.numbers.signed(winnum) == -2: # doesn't unsplit the screen, doesn't move the cursor
         ioScreen.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1][3] != 0:

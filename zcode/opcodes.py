@@ -189,8 +189,8 @@ def z_encode_text():
     codedtext = zcode.instructions.operands[3]
     intext = list(zcode.memory.getarray(zsciitext+frombyte, length))
     outtext = zcode.text.encodetext(intext)
-    for a in range(len(outtext)):
-        zcode.memory.setbyte(codedtext+a, outtext[a])
+    for count, value in enumerate(outtext):
+        zcode.memory.setbyte(codedtext+count, value)
 
 def z_erase_line():
     value = zcode.instructions.operands[0]
@@ -848,8 +848,8 @@ def z_read():
 
     chplace = -1
 
-    for a in range(len(inp)):
-        zcode.memory.setbyte(text + start + a, ord(inp[a]))
+    for count, value in enumerate(inp):
+        zcode.memory.setbyte(text + start + count, ord(value))
 
     if zcode.header.zversion() < 5:
         zcode.memory.setbyte(text+1+len(inp), 0)
@@ -960,8 +960,8 @@ def z_restore():
             zcode.instructions.store(0)
         else:
             data = data[:bytes]
-            for a in range(len(data)):
-                zcode.memory.setbyte(table+a, data[a])
+            for count, value in enumerate(data):
+                zcode.memory.setbyte(table+count, value)
             zcode.instructions.store(len(data))
                  
     else:       

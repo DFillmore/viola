@@ -261,8 +261,8 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         currentframe.flags += len(currentframe.lvars)
         while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
             args.pop()
-        for a in range(len(args)): # overlay the local variables with the arguments
-            setlocal(a, args[a])
+        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
+            setlocal(lvar, arg)
 
 def ret(value):
     global PC
