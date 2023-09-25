@@ -261,7 +261,7 @@ def printabbrev(table, code):
 
 
 def zcharstozscii(address):
-    global  A0, A1, A2
+    global A0, A1, A2
     codes = []
     loc = address
     finished = False
