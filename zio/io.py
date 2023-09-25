@@ -746,16 +746,16 @@ font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
 
 font2 = None
 
-#font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#            )
-font3 = None
+font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+            )
+#font3 = None
 
 font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
              boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
