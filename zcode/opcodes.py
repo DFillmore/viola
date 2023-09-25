@@ -465,7 +465,7 @@ def z_make_menu():
     number = zcode.instructions.operands[0]
     table = zcode.instructions.operands[1]
     if table == 0:
-        result = io.destroymenu(number)
+        result = io.zApp.destroymenu(number)
         zcode.instructions.branch(result)
     else:
         tablelen = zcode.memory.getword(table)
@@ -482,7 +482,7 @@ def z_make_menu():
             item = ''.join(itemlist)
             items.append(item)
             address += 2
-        result = io.makemenu(items[0], items[1:len(items)], number)
+        result = io.zApp.makemenu(items[0], items[1:len(items)], number)
         zcode.instructions.branch(result)
 
 def z_mod():
