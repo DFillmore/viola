@@ -240,12 +240,12 @@ def getZSCIIchar(code):
             char = unitable[code]
             char = chr(char)
         except:
-            zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
+            zcode.error.warning(f'ZSCII character {code} undefined for output.')
             return ''
 
         return char
     else:
-        zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
+        zcode.error.warning(f'ZSCII character {code} undefined for output.')
         return ''
     
 def printabbrev(table, code):
