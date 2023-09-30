@@ -314,7 +314,10 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
         type = 0
     statusline.setCursor(2 * statusline.getFont().getWidth() + 1, 1)
     location = zcode.objects.getShortName(zcode.game.getglobal(0))
-    statusline.printText(location)    
+    if location == 0:
+        zcode.error.strictz('Tried to print short name of object 0') 
+    else:
+        statusline.printText(location)    
     statusline.flushTextBuffer()
     if type == 0:
         statusline.setCursor(statusline.getSize()[0] - (23 * statusline.getFont().getWidth()) + 1, 1)
