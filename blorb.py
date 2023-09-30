@@ -192,7 +192,7 @@ class Blorb:
         cdata = self.data[x+8:x+8+clen]        
         entries_count = clen // 8
         repeats = 1
-        for e in entries_count:
+        for e in range(entries_count):
             s = int.from_bytes(cdata[e*8:e*8+4], byteorder='big')
             if s == sndnum:
                 repeats = int.from_bytes(cdata[e*8+4:e*8+8], byteorder='big')
