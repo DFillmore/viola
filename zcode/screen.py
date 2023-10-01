@@ -32,6 +32,8 @@ basic_colours = { 'black':2,
                   'white':9
                 }
 
+cursor = True
+
 DEFFOREGROUND = 2
 DEFBACKGROUND = 9
 
@@ -606,7 +608,6 @@ class window(io.window):
     def setCursorToMargin(self): # makes sure the cursor is inside the margins
         if (self.getCursor()[0] <= self.left_margin) or (self.getCursor()[0] >= (self.getSize()[0] - self.right_margin)):
             self.setCursor(self.left_margin+1, self.getCursor()[1])
-
     
     def setprops(self, property, value):
         """General purpose routine to set the value of a window property by property number. Generally not used."""
@@ -800,7 +801,6 @@ class window(io.window):
 
  
     def backspace(self, char):
-        self.hideCursor()
         charwidth = self.getStringLength(char)
         charheight = self.getStringHeight(char)
         self.setCursor(self.getCursor()[0] - charwidth, self.getCursor()[1])
@@ -867,18 +867,6 @@ def eraseWindow(winnum):
         getWindow(winnum).erase()
         if zcode.header.zversion() < 5 and winnum == 0:
             getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getSize()[1] - getWindow(0).getFont().getHeight())
-
-
-
-def cursoron(): # makes the cursor visible
-    global showcursor
-    #showcursor = 1
-    #io.showcursor()
-
-def cursoroff(): # makes the cursor invisible
-    global showcursor
-    #showcursor = 0
-    #io.hidecursor()
 
 def split(size): 
     oldycoord = getWindow(0).getPosition()[1]

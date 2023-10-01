@@ -805,6 +805,8 @@ def z_read():
     for a in range(leftover):
         zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
+    
+    zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
         if len(zcode.input.instring) < maxinput:
             display = True
@@ -814,12 +816,13 @@ def z_read():
         if inchar == 8:
             if zcode.input.instring:
                 c = zcode.input.instring.pop()
+                zcode.screen.currentWindow.hideCursor()
                 zcode.screen.currentWindow.backspace(chr(c))
         elif inchar and display:
             if inchar in zcode.text.inputvalues and inchar in zcode.text.outputvalues:
                 zcode.input.instring.append(inchar)
-            #zcode.screen.currentWindow.showCursor()
-    #zcode.screen.currentWindow.hideCursor()
+    zcode.screen.currentWindow.hideCursor()
+    
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False

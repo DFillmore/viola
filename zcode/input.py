@@ -100,6 +100,7 @@ def getInput(display=True, ignore=False, chistory=True):
     zcode.game.interrupt_call()
     if stream == 0:
         input = ioInput.getinput()
+        zcode.screen.currentWindow.hideCursor()
         if ignore:
             if isinstance(input, io.keypress):
                 return input.value
@@ -124,6 +125,7 @@ def getInput(display=True, ignore=False, chistory=True):
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
+                zcode.screen.currentWindow.showCursor()
                 return None
             if chistory and input.value == 274: # pressed down key
                 if chplace >= 0:
@@ -146,7 +148,7 @@ def getInput(display=True, ignore=False, chistory=True):
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
-
+                zcode.screen.currentWindow.showCursor()
                 return None
                     
             if len(input.character) == 1:
@@ -185,7 +187,9 @@ def getInput(display=True, ignore=False, chistory=True):
                     #    zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
 
             else:
+                zcode.screen.currentWindow.showCursor()
                 return None
+        zcode.screen.currentWindow.showCursor()
         return zsciivalue
     else:
         currentcommand = filecommands.pop()
