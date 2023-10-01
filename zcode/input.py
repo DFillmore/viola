@@ -125,7 +125,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
-                zcode.screen.currentWindow.showCursor()
+                if zcode.screen.cursor:
+                    zcode.screen.currentWindow.showCursor()
                 return None
             if chistory and input.value == 274: # pressed down key
                 if chplace >= 0:
@@ -148,7 +149,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     for c in instring:
                         zcode.output.streams[1].write(chr(c))
                     zcode.screen.currentWindow.flushTextBuffer()
-                zcode.screen.currentWindow.showCursor()
+                if zcode.screen.cursor:
+                    zcode.screen.currentWindow.showCursor()
                 return None
                     
             if len(input.character) == 1:
@@ -187,7 +189,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     #    zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
 
             else:
-                zcode.screen.currentWindow.showCursor()
+                if zcode.screen.cursor:
+                    zcode.screen.currentWindow.showCursor()
                 return None
         zcode.screen.currentWindow.showCursor()
         return zsciivalue

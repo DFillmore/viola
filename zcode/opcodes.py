@@ -769,7 +769,6 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
-    #zcode.screen.currentWindow.showCursor()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -806,7 +805,8 @@ def z_read():
         zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
     
-    zcode.screen.currentWindow.showCursor()
+    if zcode.screen.cursor:
+        zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
         if len(zcode.input.instring) < maxinput:
             display = True
@@ -875,7 +875,6 @@ def z_read_char():
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
     inchar = None
-    #zcode.screen.currentWindow.showCursor()
     while inchar == None:
         if zcode.game.timervalue == True:
             inchar = 0
@@ -1177,9 +1176,9 @@ def z_set_cursor():
     window.flushTextBuffer()
     if zcode.header.zversion() == 6 and y < 0:
         if y == -1:
-            zcode.screen.cursoroff()
+            zcode.screen.cursor = False
         elif y == -2:
-            zcode.screen.cursoron()
+            zcode.screen.cursor = True
     elif x:
         window.setCursor(zcode.screen.units2pix(x, horizontal=True, coord=True), zcode.screen.units2pix(y, horizontal=False, coord=True))
         window.setCursorToMargin()
