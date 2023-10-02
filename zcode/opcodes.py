@@ -876,6 +876,8 @@ def z_read_char():
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
+    if zcode.screen.cursor:
+        zcode.screen.currentWindow.showCursor()
     inchar = None
     while inchar == None:
         if zcode.game.timervalue == True:
@@ -884,7 +886,7 @@ def z_read_char():
         else:
             inchar = zcode.input.getInput(False, chistory=False)
     io.stoptimer()
-    #zcode.screen.currentWindow.hideCursor()
+    zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
 def z_read_mouse():
