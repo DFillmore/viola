@@ -818,6 +818,8 @@ def z_read():
                 c = zcode.input.instring.pop()
                 zcode.screen.currentWindow.hideCursor()
                 zcode.screen.currentWindow.backspace(chr(c))
+                if zcode.screen.cursor:
+                    zcode.screen.currentWindow.showCursor()
         elif inchar and display:
             if inchar in zcode.text.inputvalues and inchar in zcode.text.outputvalues:
                 zcode.input.instring.append(inchar)
