@@ -200,7 +200,29 @@ def rungame(gamedata):
         if blorbs[a] == False:
             blorbs.pop(a)
 
-        
+    bwidth = 0
+    bheight = 0
+    for a in blorbs:
+        bwidth, bheight = a.getWinSizes()[:2]
+    
+    if bwidth == 0:
+        wrat = 1
+        bwidth = width
+    else:
+        wrat = width / bwidth
+    if bheight == 0:
+        hrat = 1
+        bheight = height
+    else:
+        hrat = height / bheight
+    
+    if wrat < hrat:
+        rat = wrat
+    else:
+        rat = hrat        
+    width = round(bwidth * rat)
+    height = round(bheight * rat) 
+
     terpnum = gameset[4]
 
     if title == None:
