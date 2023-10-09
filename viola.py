@@ -199,11 +199,14 @@ def rungame(gamedata):
     for a in range(len(blorbs)):
         if blorbs[a] == False:
             blorbs.pop(a)
-
+    
     bwidth = 0
     bheight = 0
     for a in blorbs:
-        bwidth, bheight = a.getWinSizes()[:2]
+        try:
+            bwidth, bheight = a.getWinSizes()[:2]
+        except:
+            pass
     
     if bwidth == 0:
         wrat = 1
