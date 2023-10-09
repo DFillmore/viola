@@ -199,13 +199,38 @@ def rungame(gamedata):
     for a in range(len(blorbs)):
         if blorbs[a] == False:
             blorbs.pop(a)
+    
+    bwidth = 0
+    bheight = 0
+    for a in blorbs:
+        try:
+            bwidth, bheight = a.getWinSizes()[:2]
+        except:
+            pass
+    
+    if bwidth == 0:
+        wrat = 1
+        bwidth = width
+    else:
+        wrat = width / bwidth
+    if bheight == 0:
+        hrat = 1
+        bheight = height
+    else:
+        hrat = height / bheight
+    
+    if wrat < hrat:
+        rat = wrat
+    else:
+        rat = hrat        
+    width = round(bwidth * rat)
+    height = round(bheight * rat) 
 
-        
     terpnum = gameset[4]
 
     if title == None:
         title = gameset[0]
-    icon = None
+    
     if title == None:
         for a in blorbs:
             iFiction = a.getmetadata()
@@ -213,16 +238,14 @@ def rungame(gamedata):
                 title = babel.gettitle(iFiction)
                 headline = babel.getheadline(iFiction)
                 author = babel.getauthor(iFiction)
-                if headline != None:
-                    title = title + ': ' + headline
-                if author != None:
-                    title += ' by ' + author
                 if title == None:
                     title = ''
-                else:
-                    title = ' - ' + title
+                if headline != None:
+                    title = title + ' (' + headline + ')'
+                if author != None:
+                    title += ' by ' + author
 
-    if title == None:
+    if title == '' or title == None:
         title = 'Viola'
     else:
         title = 'Viola - ' + title

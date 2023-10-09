@@ -189,8 +189,8 @@ def z_encode_text():
     codedtext = zcode.instructions.operands[3]
     intext = list(zcode.memory.getarray(zsciitext+frombyte, length))
     outtext = zcode.text.encodetext(intext)
-    for a in range(len(outtext)):
-        zcode.memory.setbyte(codedtext+a, outtext[a])
+    for count, value in enumerate(outtext):
+        zcode.memory.setbyte(codedtext+count, value)
 
 def z_erase_line():
     value = zcode.instructions.operands[0]
@@ -465,7 +465,7 @@ def z_make_menu():
     number = zcode.instructions.operands[0]
     table = zcode.instructions.operands[1]
     if table == 0:
-        result = io.destroymenu(number)
+        result = io.zApp.destroymenu(number)
         zcode.instructions.branch(result)
     else:
         tablelen = zcode.memory.getword(table)
@@ -482,7 +482,7 @@ def z_make_menu():
             item = ''.join(itemlist)
             items.append(item)
             address += 2
-        result = io.makemenu(items[0], items[1:len(items)], number)
+        result = io.zApp.makemenu(items[0], items[1:len(items)], number)
         zcode.instructions.branch(result)
 
 def z_mod():
@@ -769,7 +769,6 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
-    #zcode.screen.currentWindow.showCursor()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -805,6 +804,9 @@ def z_read():
     for a in range(leftover):
         zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
     inchar = None
+    
+    if zcode.screen.cursor:
+        zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
         if len(zcode.input.instring) < maxinput:
             display = True
@@ -814,11 +816,15 @@ def z_read():
         if inchar == 8:
             if zcode.input.instring:
                 c = zcode.input.instring.pop()
+                zcode.screen.currentWindow.hideCursor()
                 zcode.screen.currentWindow.backspace(chr(c))
+                if zcode.screen.cursor:
+                    zcode.screen.currentWindow.showCursor()
         elif inchar and display:
-            zcode.input.instring.append(inchar)
-            #zcode.screen.currentWindow.showCursor()
-    #zcode.screen.currentWindow.hideCursor()
+            if inchar in zcode.text.inputvalues and inchar in zcode.text.outputvalues:
+                zcode.input.instring.append(inchar)
+    zcode.screen.currentWindow.hideCursor()
+    
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -847,8 +853,8 @@ def z_read():
 
     chplace = -1
 
-    for a in range(len(inp)):
-        zcode.memory.setbyte(text + start + a, ord(inp[a]))
+    for count, value in enumerate(inp):
+        zcode.memory.setbyte(text + start + count, ord(value))
 
     if zcode.header.zversion() < 5:
         zcode.memory.setbyte(text+1+len(inp), 0)
@@ -870,8 +876,9 @@ def z_read_char():
         zcode.game.timerroutine = r
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
+    if zcode.screen.cursor:
+        zcode.screen.currentWindow.showCursor()
     inchar = None
-    #zcode.screen.currentWindow.showCursor()
     while inchar == None:
         if zcode.game.timervalue == True:
             inchar = 0
@@ -879,7 +886,7 @@ def z_read_char():
         else:
             inchar = zcode.input.getInput(False, chistory=False)
     io.stoptimer()
-    #zcode.screen.currentWindow.hideCursor()
+    zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
 def z_read_mouse():
@@ -922,7 +929,7 @@ def z_restart():
     zcode.game.setup() # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
-    zcode.screen.setup(io.blorbs, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight(), restarted=True)
+    zcode.screen.setup(restarted=True)
     zcode.text.setup()
     zcode.optables.setup()
     zcode.routines.restart = 1
@@ -959,8 +966,8 @@ def z_restore():
             zcode.instructions.store(0)
         else:
             data = data[:bytes]
-            for a in range(len(data)):
-                zcode.memory.setbyte(table+a, data[a])
+            for count, value in enumerate(data):
+                zcode.memory.setbyte(table+count, value)
             zcode.instructions.store(len(data))
                  
     else:       
@@ -1173,9 +1180,9 @@ def z_set_cursor():
     window.flushTextBuffer()
     if zcode.header.zversion() == 6 and y < 0:
         if y == -1:
-            zcode.screen.cursoroff()
+            zcode.screen.cursor = False
         elif y == -2:
-            zcode.screen.cursoron()
+            zcode.screen.cursor = True
     elif x:
         window.setCursor(zcode.screen.units2pix(x, horizontal=True, coord=True), zcode.screen.units2pix(y, horizontal=False, coord=True))
         window.setCursorToMargin()
@@ -1299,6 +1306,13 @@ def z_sound_effect():
         else:
             volume = 8
             repeats = 1
+        if repeats == 0:
+            repeats = 1
+        if zcode.header.zversion() < 5:
+            for a in io.blorbs:
+                repeats = a.getRepeats(number)
+            if repeats == 0:
+                repeats = 255
         if volume == 255:
             volume = 8
         volume = (1/8) * volume
