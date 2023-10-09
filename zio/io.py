@@ -165,6 +165,7 @@ class VApp:
         self.resized = True
 
     def setIcon(self, icon):
+        icon = pygame.image.load(io.BytesIO(icon))
         pygame.display.set_icon(icon)
 
     def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
@@ -215,7 +216,7 @@ class zscreen:
         return self.height
 
     def getPixel(self, x,y):
-        return self.screen.get_at((x-1, y-1))
+        return self.canvas.get_at((x-1, y-1))
 
     def erase(self, colour, area=None):
         if area:
@@ -292,11 +293,11 @@ class window:
         self.setFont(font)
 
     def showCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord-1+self.y_cursor-1, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.canvas, self.foreground_colour, area)
 
     def hideCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord-1+self.y_cursor-1, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.canvas, self.background_colour, area)
 
     def setFont(self, f):
@@ -745,16 +746,16 @@ font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
 
 font2 = None
 
-#font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-#            )
-font3 = None
+font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+            )
+#font3 = None
 
 font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
              boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
@@ -798,6 +799,9 @@ class musicobject():
         pygame.mixer.music.play(loops=loops)
     def set_volume(self, volume):
         self.volume = volume
+
+    def stop(self):
+        pygame.mixer.music.stop()
 
 
 def sound(data, type):

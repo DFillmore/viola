@@ -20,11 +20,11 @@ from zcode.constants import *
 def setup(startstreams=[False, True, False, False, False]):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
-    for a in range(len(startstreams)):
-        if startstreams[2]:
-            streams[2].filename = startstreams[2]
-        if startstreams[a]:
-            streams[a].open()
+    if startstreams[2]:
+        streams[2].filename = startstreams[2]
+    for stream, start in enumerate(startstreams):
+        if start:
+            streams[stream].open()
 
 
 
@@ -134,8 +134,9 @@ class memorystream(outputstream):
                 for c in line:
                     data.append(ord(c))
   
-        for a in (list(range(len(data)))):
-            zcode.memory.setbyte(self.location+OFFSET+a, data[a])
+        for count, value in enumerate(data):
+            zcode.memory.setbyte(self.location+OFFSET+count, value)
+
         if self.width != None: # if a width operand was passed to output stream 3, we need to add a 0 word on the end of the text
             zcode.memory.setword(self.location+len(data), 0)
         self.data = []

@@ -16,6 +16,8 @@ import string
 
 import zcode
 
+import re
+
 
 def importdict(address):
     numcodes = zcode.memory.getbyte(address)
@@ -40,10 +42,9 @@ def getseperators(address):
 
 
 def splitinput(text, seperators):
-    for a in range(len(seperators)):
-        x = seperators[a]
-        x2 = x.center(3)
-        text = text.replace(x, x2)
+    for count, value in enumerate(seperators):
+        newvalue = value.center(3)
+        text = text.replace(value, newvalue)
     text = text.split()
     return text
 
@@ -58,32 +59,37 @@ def findword(word, dictionary): # attempts to find a word in a dictionary, retur
     else:
         return 0
         
-def findstarts(textarray, seperators): # this is old code from old viola, and it actually works! AMAZING!
-    x = []
-    newword = 0
-    inword = 0
-    for a in range(len(textarray)):
-        if (textarray[a-1] == ' ') and (textarray[a] != ' '): # if the previous byte was a space and this one isn't
-            newword = 1 # this byte is the start of a new word
-        elif seperators.count(textarray[a]) != 0: # otherwise, if this byte is a seperator
-            newword = 1 # this byte is the start of a new word
-        elif (a == 0) and (textarray[a] != ' '): # otherwise, if this is the first byte, and it's not a space
-            newword = 1 # this byte is the start of a new word
-        elif seperators.count(textarray[a-1]) != 0: # othewise, if the *previous* byte is a seperator
-            newword = 1
-        else: # otherwise
-            newword = 0 # this byte is NOT the start of a new word
-        if newword == 1: # if this byte is the start of a new word
-            x.append(a) # write the position of this byte into the list
+def findstarts(textarray, seperators):
+    if zcode.header.zversion() < 5:
+        offset = 1
+    else:
+        offset = 2
+    s = '[' + ''.join(seperators) + ']| +'
+    #print(s)
+    p = re.compile(s)
+    #print(p)
+    #print(type(textarray))
+    #for a in re.finditer(p, textarray):
+    #    print(a)
+    
+    
+    wordstarts = []
+    for count, value in enumerate(textarray):
+        if (textarray[count-1]) == ' ' and (value != ' '): # if the previous character was a space and this one isn't
+            wordstarts.append(count+offset) # this byte is the start of a new word
 
-    for a in range(len(x)):
-        if zcode.header.zversion() < 5:
-            x[a] += 1
-        else:
-            x[a] += 2
-    return x
+        elif seperators.count(value) != 0: # if the current character is a seperator
+            wordstarts.append(count+offset)
+
+        elif (count == 0) and (value != ' '): # if this is the first character, and it's not a space
+            wordstarts.append(count+offset)
+
+        elif seperators.count(textarray[count-1]) != 0: # if the *previous* character is a seperator
+            wordstarts.append(count+offset)
+    
+    return wordstarts
             
-def tokenise(intext, parseaddress=0, dictionary=0, flag=0): # this should work, I think
+def tokenise(intext, parseaddress=0, dictionary=0, flag=0):
     if zcode.header.zversion() > 4 and parseaddress == 0:
         pass
     else:
@@ -97,12 +103,12 @@ def tokenise(intext, parseaddress=0, dictionary=0, flag=0): # this should work, 
         zcode.memory.setbyte(parseaddress + 1, len(words))
         address = parseaddress + 2
         starts = findstarts(intext, seperators)
-        for a in range(len(words)):
-            dictloc = findword(words[a], dictionary)
+        for count, value in enumerate(words):
+            dictloc = findword(value, dictionary)
             if dictloc == 0 and flag == 1:
                 pass
             else:
                 zcode.memory.setword(address, dictloc)
-                zcode.memory.setbyte(address + 2, len(words[a]))
-                zcode.memory.setbyte(address + 3, starts[a])
+                zcode.memory.setbyte(address + 2, len(value))
+                zcode.memory.setbyte(address + 3, starts[count])
             address += 4
