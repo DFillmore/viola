@@ -15,7 +15,7 @@
 
 import sys
 import string
-import zio.io as io
+import vio.zcode as io
 import settings
 import zcode
 from zcode.constants import *

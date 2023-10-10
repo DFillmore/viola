@@ -14,7 +14,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import zio.io as io
+import vio.zcode as io
 import sys
 import getopt
 import os

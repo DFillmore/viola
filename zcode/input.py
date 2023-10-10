@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 
 import sys
-import zio.io as io
+import vio.zcode as io
 import zcode
 
 stream = 0

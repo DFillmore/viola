@@ -18,7 +18,7 @@ restart = 0
 timerreturn = False
 
 import zcode
-import zio.io as io
+import vio.zcode as io
 
 def setup():
     global quit, input, restart

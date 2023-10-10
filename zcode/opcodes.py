@@ -14,7 +14,7 @@
 
 import sys
 import blorb
-import zio.io as io
+import vio.zcode as io
 import zcode
 from zcode.constants import *
 
