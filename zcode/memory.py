@@ -60,7 +60,7 @@ def verify():
 def getbyte(offset):
     global data
 
-    offset = zcode.numbers.unneg(offset)
+    offset = zcode.numbers.unsigned(offset)
 
     if offset == 0x26 or offset == 0x27:
         zcode.header.updateFontSize() 
@@ -72,7 +72,7 @@ def getbyte(offset):
 
 def setbyte(offset, byte):
     global data
-    offset = zcode.numbers.unneg(offset)
+    offset = zcode.numbers.unsigned(offset)
 
     if offset == 0x11:
         # if the transcription bit is being set, start transcription
@@ -91,13 +91,13 @@ def setbyte(offset, byte):
     if offset >= zcode.header.statmembase():
         zcode.error.fatal("Tried to write a byte beyond dynamic memory at " + hex(offset) + ".")
 
-    byte = zcode.numbers.unneg(byte) & 0xFF 
+    byte = zcode.numbers.unsigned(byte) & 0xFF 
     data[offset] = int(byte)
 
 def getword(offset):
     global data
 
-    offset = zcode.numbers.unneg(offset)
+    offset = zcode.numbers.unsigned(offset)
 
     if offset == 0x26:
         zcode.header.updateFontSize() 
@@ -110,7 +110,7 @@ def getword(offset):
 def setword(offset, word):
     global data
     
-    offset = zcode.numbers.unneg(offset)
+    offset = zcode.numbers.unsigned(offset)
 
     if offset == 0x10:
         # if the transcription bit is being set, start transcription
@@ -128,20 +128,20 @@ def setword(offset, word):
     if offset >= zcode.header.statmembase():
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
 
-    word = zcode.numbers.unneg(word)
+    word = zcode.numbers.unsigned(word)
     data[offset:offset+WORDSIZE] = array.array(data.typecode, int.to_bytes(word, WORDSIZE, byteorder='big'))
 
 
 def getarray(offset, length):
-    offset = zcode.numbers.unneg(offset)
+    offset = zcode.numbers.unsigned(offset)
     return data[offset:offset+length]
 
 def setarray(offset, newdata):
     global data
-    offset = zcode.numbers.unneg(offset)
-    if len(newdata) + offset >= zcode.header.statmembase():
-        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
-    data[offset:offset+len(newdata)] = newdata
+    offset = zcode.numbers.unsigned(offset)
+    if len(newdata) + offset > zcode.header.statmembase():
+        zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset+len(newdata)) + ".")
+    data[offset:offset+len(newdata)] = array.array(data.typecode, newdata)
 
 
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.

@@ -51,10 +51,10 @@ def mod(a, b): # divide a by b and return the remainder
         return z
 
 def reduce(num): # reduces out of range numbers
-    num = unneg(num)
+    num = unsigned(num)
     if num > 0xFFFF:
         num = num % 0x10000
-    num = neg(num)
+    num = signed(num)
     return num
 
 mode = 0 # 0 is random mode. 1 is predictable mode.
@@ -64,14 +64,14 @@ sequence = 1
 # since the z-machine uses 16-bit numbers and python uses 32-bit numbers,
 # we have to convert back and forth a bit. If we want to do signed maths with
 # numbers from memory, we have to convert them using neg. If we want to store
-# the result of a calculation in memory, we have to convert it using unneg.
+# the result of a calculation in memory, we have to convert it using unsigned.
 
-def neg(negnum): 
+def signed(negnum): 
     if (negnum & 32768 == 32768) and (negnum != 0): 
         negnum -= 0x10000
     return negnum
 
-def unneg(negnum):
+def unsigned(negnum):
     if (negnum < 0):
         negnum += 0x10000
     return negnum

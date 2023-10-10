@@ -45,7 +45,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
     # Flags 2 - If unset by the game, the terp should leave them like that.
     if zversion() > 4:
         if getflag(2, 3): # pictures
-            setflag(2, 3, zcode.screen.supportedgraphics(3)) 
+            setflag(2, 3, zcode.screen.supportedgraphics(3))
         if getflag(2, 4): # undo
             setflag(2, 4, 1)            
         if getflag(2, 5): # mouse
@@ -77,9 +77,9 @@ def setup(): # set all the relevant bits and bytes and words in the header
 
     if zversion() > 4:
         # Default foreground colour
-        setdeffgcolour(2)
+        setdeffgcolour(zcode.screen.DEFFOREGROUND)
         # Default background colour
-        setdefbgcolour(9)
+        setdefbgcolour(zcode.screen.DEFBACKGROUND)
         settruedefaultforeground(zcode.screen.spectrum[2])
         settruedefaultbackground(zcode.screen.spectrum[9])
     # Z-machine Standard number
@@ -90,12 +90,12 @@ def setup(): # set all the relevant bits and bytes and words in the header
 def updateFontSize():
     if zversion() > 4:
         # Font width 
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
         else:
             setfontwidth(1)
         # Font height
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setfontheight(zcode.screen.currentWindow.getFont().getHeight())
         else:
             setfontheight(1)
@@ -111,12 +111,12 @@ def updateSizes():
         
     if zversion() > 4:
         # Screen width (units)
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setscreenwidth(zcode.screen.ioScreen.getWidth())
         else:
             setscreenwidth(columns)
         # Screen height (units)
-        if zversion() == 6:
+        if zcode.screen.graphics_mode == 1:
             setscreenheight(zcode.screen.ioScreen.getHeight())
         else:
             setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))

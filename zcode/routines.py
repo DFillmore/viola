@@ -18,6 +18,7 @@ restart = 0
 timerreturn = False
 
 import zcode
+import vio.zcode as io
 
 def setup():
     global quit, input, restart
@@ -47,8 +48,14 @@ def execloop(debug=False):
     global oldpc
     global timerreturn
 
-    zcode.screen.cursoroff()
     while (restart == 0) and (quit == 0) and (timerreturn == False):
+        try:
+            if zcode.screen.ioScreen.resized:
+                zcode.screen.ioScreen.resized=False
+                zcode.screen.resize()
+        except:
+            pass
+        
         if timerreturn == False:
             zcode.game.interrupt_call()
         oldpc = zcode.game.PC

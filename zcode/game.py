@@ -17,7 +17,7 @@ import copy
 import os
 
 import quetzal
-import zio.pygame as io
+import vio.zcode as io
 import zcode
 
 
@@ -159,7 +159,7 @@ def getstack(indirect=False):
 
 def putstack(value, indirect=False):
     global currentframe
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     if indirect == True:
         currentframe.evalstack[-1] = value
     else:
@@ -175,17 +175,17 @@ def getglobal(varnum):
 
 def setlocal(varnum, value):
     global currentframe
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     currentframe.lvars[varnum] = value
 
 def setglobal(varnum, value):
-    value = zcode.numbers.unneg(value)
+    value = zcode.numbers.unsigned(value)
     table = zcode.header.globalsloc()
     zcode.memory.setword(table + (varnum * 2), value)
 
 
 def interrupt_call():
-    if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine
+    if len(interruptstack) > 0 and not returning:# and currentframe.interrupt == False : # if there are calls on the interrupt stack ~~and we're not in an interrupt routine
         i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
             zcode.game.PC = zcode.routines.oldpc
@@ -261,8 +261,8 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         currentframe.flags += len(currentframe.lvars)
         while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
             args.pop()
-        for a in range(len(args)): # overlay the local variables with the arguments
-            setlocal(a, args[a])
+        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
+            setlocal(lvar, arg)
 
 def ret(value):
     global PC

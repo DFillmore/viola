@@ -13,22 +13,23 @@
 # GNU General Public License for more details.
 
 import blorb
-import zio.pygame as io
+import vio.zcode as io
 import zcode
 from zcode.constants import *
+from vio.zcode import soundchannels
 
 
 AVAILABLE = False
 
-soundchannels = [[],[]]
+
 
 def setup(b):
     global device, channel, currentchannel, x, sounds, effectschannel, musicchannel
     global AVAILABLE, blorbs
     try:
         io.initsound()
-        soundchannels[0].append(effectsChannel(a))
-        soundchannels[1].append(musicChannel(a))
+        soundchannels[0].append(effectsChannel(0))
+        soundchannels[1].append(musicChannel(0))
         AVAILABLE = True
     except:
         pass
@@ -39,8 +40,11 @@ def availablechannels(arg):
         return len(soundchannels[arg])
     return 0 # no sound capablities, no sound channels available
 
-def beep(type): # Either a low or a high beep. 1 is low, 2 is high
-    pass
+def bleep(type): # Either a high or a low bleep. 1 is high, 2 is low
+    if type == 1:
+        io.beep()
+    if type == 2:
+        io.boop()
 
 # It might be a good idea to check the relevant flag in Flags 2 to see
 # if the game wants to use sounds. If it does, various sound setting-up stuff can be done (such
@@ -51,10 +55,6 @@ def beep(type): # Either a low or a high beep. 1 is low, 2 is high
 #SOUND
 
 
-def soundhandler():
-    for a in soundchannels:
-        for b in a:
-            b.Notify()
 
 class Channel(io.soundChannel):
     sound = None
@@ -96,7 +96,7 @@ class Sound:
             self.type = a.getSndType(sound_number)
         # Standards below 1.1 do not support seperate channels for different sound types, so we 
         # just don't support music in that case
-        if use_standard < STANDARD_11 and self.type != 0: 
+        if zcode.use_standard < STANDARD_11 and self.type != 0: 
             self.sound = None
         elif sound_data:
             self.sound = io.sound(sound_data, self.type)
@@ -109,6 +109,9 @@ class Sound:
             self.sound.play(loops=repeats)
         except:
             pass
+
+    def stop(self):
+        self.sound.stop()
 
     type = 0
     routine = 0
@@ -129,7 +132,7 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
         return False
     elif effect == 2:
         try:
-            s = Sound(sound)
+            s = Sound(sound)        
             soundchannels[s.type][currentchannel[s.type]-1].play(s, volume, repeats, routine)
             return True
         except:

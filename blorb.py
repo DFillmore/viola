@@ -110,7 +110,25 @@ class Blorb:
             self.release = (self.data[x] << 8) + self.data[x+1]
 
     def checkgame(self, game):
-        return True
+        x = self.findChunk(b'IFhd')
+        if x == 0:
+            return True
+        x += 8
+        idRelease = int.from_bytes(self.data[x:x+2], byteorder='big')
+        x += 2
+        idSerial = self.data[x:x+6]
+        x+=6
+        idChecksum = int.from_bytes(self.data[x:x+2], byteorder='big')
+
+        x = 2
+        gameRelease = int.from_bytes(game[x:x+2], byteorder='big')
+        x = 0x12
+        gameSerial = game[x:x+6]
+        x = 0x1C
+        gameChecksum = int.from_bytes(game[x:x+2], byteorder='big')
+        if gameRelease == idRelease and gameSerial == idSerial and gameChecksum == idChecksum:
+            return True
+        return False
 
     def chunkSize(self, place):
         size = fbnum(self.data[place+4:place+8])
@@ -164,6 +182,21 @@ class Blorb:
         if type == b'FORM':
             return 0 # effect
         return 1 # music
+
+    def getRepeats(self, sndnum):
+        """returns 1 if a sound is to be played once, 0 if the sound is to be repeated indefinitely"""
+        x = self.findChunk(b'Loop')
+        if x == 0: # no loop chunk, play once
+            return 1
+        clen = self.chunkSize(x)
+        cdata = self.data[x+8:x+8+clen]        
+        entries_count = clen // 8
+        repeats = 1
+        for e in range(entries_count):
+            s = int.from_bytes(cdata[e*8:e*8+4], byteorder='big')
+            if s == sndnum:
+                repeats = int.from_bytes(cdata[e*8+4:e*8+8], byteorder='big')
+        return repeats
 
     def getWinSizes(self):
         x = self.findChunk(b'Reso')
@@ -219,6 +252,8 @@ class Blorb:
         minden = fbnum(entry[16:20])
         maxnum = fbnum(entry[20:24])
         maxden = fbnum(entry[24:28])
+
+        
  
         stdratio = ratnum / ratden
         if minnum != 0:
@@ -297,19 +332,16 @@ class Blorb:
         if resoplace == None:
             iFiction = self.getmetadata()
             picnum = babel.getcoverpicture(iFiction)
-            if picnum != None:
-                pic = getpic(picnum, titlepic=True)
-            else:
-                pic = None
-            return pic
-        #rfile.seek(resoplace + 4)
-        #resosize = fbnum(rfile.read(4))
-        #if resosize != 4:
-        #    return None
-        #rfile.seek(resoplace+8)
-        #picnum = fbnum(rfile.read(4))
-        #pic = getpic(picnum, titlepic=True)
-        return None
+        else:
+            resosize = int.from_bytes(self.data[resoplace+4:resoplace+8], 'big')
+            if resosize != 4:
+                return None
+            picnum = int.from_bytes(self.data[resoplace+8:resoplace+12], 'big')
+        if picnum != None:
+            pic = self.getPict(picnum)
+        else:
+            pic = None
+        return pic
 
 def fbnum(b):
     return (b[0] << 24) + (b[1] << 16) + (b[2] << 8) + b[3]
