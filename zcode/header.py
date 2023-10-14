@@ -45,7 +45,8 @@ def setup(): # set all the relevant bits and bytes and words in the header
     # Flags 2 - If unset by the game, the terp should leave them like that.
     if zversion() > 4:
         if getflag(2, 3): # pictures
-            setflag(2, 3, zcode.screen.supportedgraphics(3))
+            #setflag(2, 3, zcode.screen.supportedgraphics(3)) # this sets the flag if the terp supports pictures (that is, only v6)
+            setflag(2, 3, 1) # set for all versions 5 and above, causes the terp to use pixel units instead of character units
         if getflag(2, 4): # undo
             setflag(2, 4, 1)            
         if getflag(2, 5): # mouse
