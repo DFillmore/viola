@@ -790,6 +790,20 @@ def boop():
     except:
         pass
 
+text2speak = []
+
+textChannel = pygame.mixer.Channel(1)
+
+def play(mp3):
+    mp3 = pygame.mixer.Sound(mp3)
+    text2speak.append(mp3)
+    if textChannel.get_busy():
+        if not textChannel.get_queue():
+            textChannel.set_queue(text2speak.pop(0))
+    else:
+        textChannel.play(text2speak.pop(0))
+
+
 class musicobject():
     def __init__(self, data):
         self.data = data

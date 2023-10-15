@@ -17,6 +17,25 @@ import vio.zcode as io
 import zcode
 from zcode.constants import *
 
+from gtts import gTTS
+from io import BytesIO
+
+text2speech = True
+
+def speak(t):
+    t.encode('utf-8')
+    if t.strip() == '':
+        return False
+    # Use gTTS to Store Speech on Buffer
+    tts = gTTS(text=t, lang='en')
+    mp3 = BytesIO()
+    tts.write_to_fp(mp3)
+    mp3.seek(0)
+    
+    io.play(mp3)
+
+
+
 def setup(startstreams=[False, True, False, False, False]):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
@@ -302,6 +321,8 @@ def closestream(stream):
             m.close()
         
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
+    if not special:
+        speak(text)
     streams[1].write(text)
     if len(streams[3]) > 0:
         streams[3][-1].write(text)
