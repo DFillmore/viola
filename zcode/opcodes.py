@@ -769,6 +769,7 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
+    io.stoptimer()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -868,6 +869,7 @@ def z_read():
         zcode.instructions.store(termchar)
     
 def z_read_char():
+    io.stoptimer()
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
