@@ -16,6 +16,7 @@ quit = 0
 input = 0
 restart = 0
 timerreturn = False
+debug = False
 
 import zcode
 import vio.zcode as io
@@ -42,7 +43,7 @@ def setuproutine(address):
     return address
 
 
-def execloop(debug=False):
+def execloop():
     global input
     global restart
     global oldpc
@@ -60,20 +61,22 @@ def execloop(debug=False):
             zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
-        zcode.instructions.runops(oldpc, debug)                  
+        zcode.instructions.runops(oldpc, debug)             
     timerreturn = False
 
 
-def execstart(debug=False): 
+def execstart(setdebug=False): 
     """set up the Z-Machine to start executing instructions"""
     global quit # if set to 1, game ends
     global restart
+    global debug
+    debug = setdebug
     if zcode.header.zversion() != 6:
         zcode.game.PC = zcode.header.initialPC()
     else:
         address = zcode.header.mainroutine()
         zcode.game.call(address, [], 0, 0, 1)
-    execloop(debug)
+    execloop()
     while restart:
         if zcode.header.zversion() != 6:
             zcode.game.PC = zcode.header.initialPC()
@@ -81,5 +84,5 @@ def execstart(debug=False):
             address = zcode.header.mainroutine()
             zcode.game.call(address, [], 0, 0, 1)
         restart = 0
-        execloop(debug)
+        execloop()
 
