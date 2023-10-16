@@ -1027,9 +1027,10 @@ timerroutine = None
 def starttimer(time, r=None):
     global timerrunning 
     global timerroutine
+    period = 100 # how often, in milliseconds, to fire the timer (should be every tenth of a second, or 100 milliseconds)
     timerroutine = r
     timerrunning = True
-    time *= 100
+    time *= period
     pygame.time.set_timer(TIMEREVENT, time)
     
 def stoptimer():
