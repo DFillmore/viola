@@ -57,8 +57,8 @@ def execloop():
         except:
             pass
         
-        if timerreturn == False:
-            zcode.game.interrupt_call()
+        
+        zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
         zcode.instructions.runops(oldpc, debug)             
