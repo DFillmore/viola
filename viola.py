@@ -100,13 +100,13 @@ def handle_parameters(argv): # handles command line parameters
     global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)')
         sys.exit()
 
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:T:', 'zspec=')
+    args = getopt.getopt(argv[1:], 'dh:w:T:t:', 'zspec=')
     options = args[0]
     args = args[1]
     transcriptfile = False
@@ -120,6 +120,8 @@ def handle_parameters(argv): # handles command line parameters
             width = int(a[1])
         elif a[0] == '-T':
             transcriptfile = a[1]
+        elif a[0] == '-t':
+            io.timer_period = int(a[1])
         elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:

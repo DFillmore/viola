@@ -38,6 +38,8 @@ from pygame.locals import *
 os.environ['PYGAME_FREETYPE'] = '1'
 pygame.init()
 
+timer_period = 100 # how often, in milliseconds, to fire the timer (should be every tenth of a second, or 100 milliseconds)
+
 GAMEDIRECTORY = ''
 
 def setup(width, height, b, title, foreground, background):
@@ -1027,10 +1029,10 @@ timerroutine = None
 def starttimer(time, r=None):
     global timerrunning 
     global timerroutine
-    period = 100 # how often, in milliseconds, to fire the timer (should be every tenth of a second, or 100 milliseconds)
+    global timer_period
     timerroutine = r
     timerrunning = True
-    time *= period
+    time *= timer_period
     pygame.time.set_timer(TIMEREVENT, time)
     
 def stoptimer():
