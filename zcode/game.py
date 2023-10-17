@@ -341,6 +341,7 @@ def firetimer():
     global PC
     oldPC = PC   
     zcode.screen.currentWindow.flushTextBuffer()
+    zcode.screen.currentWindow.screen.update()
     timerreturned = 0
     timer = True
     i = interruptdata(INT_INPUT, timerroutine)
