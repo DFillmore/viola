@@ -884,6 +884,8 @@ def z_read_char():
         zcode.screen.currentWindow.showCursor()
     inchar = None
     while inchar == None:
+        if zcode.routines.quit:
+            return None
         if zcode.game.timervalue == True:
             inchar = 0
             zcode.game.timervalue = False
