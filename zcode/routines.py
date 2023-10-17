@@ -48,7 +48,8 @@ def execloop():
     global restart
     global oldpc
     global timerreturn
-
+    global quit
+    
     while (restart == 0) and (quit == 0) and (timerreturn == False):
         try:
             if zcode.screen.ioScreen.resized:
