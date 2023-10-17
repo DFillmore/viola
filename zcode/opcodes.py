@@ -756,9 +756,10 @@ def z_quit():
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
-    while inp == None:
-        inp = zcode.input.getInput()
-    sys.exit()
+    #while inp == None:
+    zcode.input.getInput(quit=True)
+    zcode.routines.quit = 1
+    io.quit()
 
 def z_random():
     range = zcode.numbers.signed(zcode.instructions.operands[0])

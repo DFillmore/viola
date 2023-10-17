@@ -60,6 +60,10 @@ def setup(width, height, b, title, foreground, background):
     if icon:
         zApp.setIcon(icon)
 
+def quit():
+    pygame.quit()
+    sys.exit()
+
 def getBaseDir():
    if getattr(sys,"frozen",False):
        # If this is running in the context of a frozen (executable) file, 
