@@ -756,10 +756,9 @@ def z_quit():
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
-    #while inp == None:
-    zcode.input.getInput(quit=True)
+    while not isinstance(inp, io.keypress):
+        inp = zcode.input.ioInput.getinput()
     zcode.routines.quit = 1
-    io.quit()
 
 def z_random():
     range = zcode.numbers.signed(zcode.instructions.operands[0])
@@ -810,6 +809,8 @@ def z_read():
     if zcode.screen.cursor:
         zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
+        if zcode.routines.quit:
+            return None
         if len(zcode.input.instring) < maxinput:
             display = True
         else:

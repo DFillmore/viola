@@ -97,6 +97,8 @@ def getInput(display=True, ignore=False, chistory=True):
     global instring
     global chplace
     termchar = False
+    if zcode.routines.quit:
+        return None
     zcode.game.interrupt_call()
     if stream == 0:
         input = ioInput.getinput()
