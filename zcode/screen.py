@@ -726,11 +726,6 @@ class window(io.window):
     def updatestylebuffer():
         pass
 
-    def buffertext(self, text):
-        x = list(self.textbuffer)
-        x.extend(text)
-        self.textbuffer = ''.join(x)
-
     def alterTabs(self): # changes the tab character to various spaces
         x = list(self.textbuffer)
         if len(x) > 0 and x[0] == '\t' and self.atMargin():

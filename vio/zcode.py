@@ -409,6 +409,11 @@ class window:
         area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
+    def buffertext(self, text):
+        x = list(self.textbuffer)
+        x.extend(text)
+        self.textbuffer = ''.join(x)
+        
     def printText(self, text):
         self.buffertext(text)
         buffering = self.testattribute(8)
