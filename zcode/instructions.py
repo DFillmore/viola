@@ -143,6 +143,7 @@ inputInstruction = False
 def runops(address, debug=False):
     global inputInstruction
     optype = zcode.memory.getbyte(address)
+    inputInstruction = False    
     if optype < 0x80:
         if debug == True:
             print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
@@ -167,8 +168,8 @@ def runops(address, debug=False):
             print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         if optype & 0x1f == 0x4 or optype & 0x1f == 0x16:
             inputInstruction = True
-        else:
-            inputInstruction = False
+        
+            
 
         zcode.optables.opvar[optype & 0x1f]()
     if debug:

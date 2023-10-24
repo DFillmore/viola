@@ -776,8 +776,7 @@ font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf",
 
 # Z-Machine Sounds
 
-SOUNDEVENT = pygame.USEREVENT + 1
-SOUNDEVENTHANDLER = None
+SOUNDENDEVENT = pygame.USEREVENT + 1
 
 def beep():
     try:
@@ -824,20 +823,52 @@ def maxeffectschannels():
 def maxmusicchannels():
     return 1
 
+interruptstack = []
+
+INT_INPUT = 1
+INT_NEWLINE = 2
+INT_SOUND = 3
+
+class interruptdata:
+    def __init__(self, itype, routine):
+        self.routine = routine
+        self.type = itype
+    routine = None
+    type = 0
+
+# every time a sound channel that is playing sound has that sound stop, it should call an routine that checks to see if we call a z-machine routine
+# pygame can have channels trigger events when the sound stops, but there does not seem to be a way to have the Event record which channel stopped playing
+# so every time a channel triggers a sound-end-event, we run the same routine. this routine checks every channel, to see if it is currently playing sound
+# we can have a flag on the channel to indicate 'started playing sound', and if it is not currently playing sound, but it started, we clear the flag, and 
+# add the channel's z-machine routine to the z-machine interrupt queue
+#
+# If two channels finish at the same time, or close enough, both will trigger pygame sound end events, which will look through all the channels for finished sounds.
+# one event will likely notice both sound-end channels, and add interrupts to the z-machine, while the other sound-end-event will find no channels.
+
+def soundEndEventHandler():
+    for sndtypes in soundchannels:
+        for channel in sndtypes:
+            if channel.started and not channel.playing():
+                # create z-machine event and put on z-machine event queue
+                channel.started = False
+                i = interruptdata(INT_SOUND, channel.routine)
+                interruptstack.append(i)
+                
+
 class soundChannel():
     sound = None
     routine = None
     type = None
+    started = False
     def __init__(self, id):
         self.id = id
 
     def setup(self, routine): # sets up to start timer events to check if the channel is playing
         global SOUNDEVENTHANDLER
         if self.type == 0:
-            self.channelobj.set_endevent(SOUNDEVENT)
+            self.channelobj.set_endevent(SOUNDENDEVENT)
         elif self.type == 1:
-            pygame.mixer.music.set_endevent(SOUNDEVENT)
-        SOUNDEVENTHANDLER = routine
+            pygame.mixer.music.set_endevent(SOUNDENDEVENT)
         if self.type == 0:
             self.clock = pygame.time.Clock()
             self.clock.tick()
@@ -871,7 +902,7 @@ def soundhandler():
 class musicChannel(soundChannel):
     type = 1
 
-    def getbusy(self):
+    def playing(self):
         return pygame.mixer.music.get_busy()
 
     def play(self, sound, volume, repeats, routine):
@@ -879,6 +910,7 @@ class musicChannel(soundChannel):
         if self.sound.type != 1:
             self.sound = None
             return False
+        self.started = True
         self.routine = routine
         self.sound.play(volume, repeats)
         self.setup(soundhandler)
@@ -890,6 +922,7 @@ class musicChannel(soundChannel):
         if self.sound == None:
             return False
         if self.sound.number == sound.number:
+            self.started = Falses
             self.routine = None
             self.sound.stop()
             self.sound = None
@@ -906,7 +939,7 @@ class effectsChannel(soundChannel):
 
     channelobj = None
 
-    def getbusy(self):
+    def playing(self):
         try:
             busy = self.channelobj.get_busy()
         except:
@@ -917,7 +950,8 @@ class effectsChannel(soundChannel):
         self.sound = sound
         if self.sound.type != 0:
             self.sound = None
-            return False      
+            return False     
+        self.started = True 
         self.routine = routine
         self.setvolume(volume)
         self.channelobj.play(self.sound.sound, repeats)
@@ -930,6 +964,7 @@ class effectsChannel(soundChannel):
         if self.sound == None:
             return False
         if self.sound.number == sound.number:
+            self.started = False
             self.routine = None
             self.channelobj.stop()
             self.sound = None
@@ -942,6 +977,8 @@ def stopallsounds():
 def initsound():
     pygame.mixer.init()
 
+
+    
 
 # Z-Machine input
 
@@ -972,8 +1009,8 @@ class input:
                 timerroutine()
             except:
                 pass
-        if event.type == SOUNDEVENT:
-            SOUNDEVENTHANDLER()
+        if event.type == SOUNDENDEVENT:
+            soundEndEventHandler()
 
 class keypress:
     def __init__(self, value, character, modifier):

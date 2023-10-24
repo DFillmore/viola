@@ -28,18 +28,9 @@ undolist = []
 
 LARGEST_STACK = 0
 
-interruptstack = []
-
 INT_INPUT = 1
 INT_NEWLINE = 2
 INT_SOUND = 3
-
-class interruptdata:
-    def __init__(self, itype, routine):
-        self.routine = routine
-        self.type = itype
-    routine = None
-    type = 0
 
 
 def setup():
@@ -96,8 +87,8 @@ def save_undo():
 def restore(filename=None, prompt=1):
     global PC, callstack, currentframe, interruptstack
     zcode.sounds.stopall()
-    bis = interruptstack[:] 
-    interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
+    bis = io.interruptstack[:] 
+    io.interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
     f = io.openfile(zcode.screen.currentWindow, 'r')
     sd = quetzal.qdata()
     sd.release = zcode.header.release()
@@ -107,7 +98,7 @@ def restore(filename=None, prompt=1):
 
     sd = quetzal.restore(f.read(), sd)
     if sd == False:
-        interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
+        io.interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
         return 0
 
     zcode.memory.setarray(0, sd.memory)
@@ -185,14 +176,19 @@ def setglobal(varnum, value):
 
 
 def interrupt_call():
+    global PC
     if zcode.routines.quit:
         return None
-    if len(interruptstack) > 0 and not returning:# and currentframe.interrupt == False : # if there are calls on the interrupt stack ~~and we're not in an interrupt routine
-        i = interruptstack.pop()
+
+    if len(io.interruptstack) > 0 and not returning:
+        oldPC = PC 
+        i = io.interruptstack.pop()
         if zcode.instructions.inputInstruction:
-            zcode.game.PC = zcode.routines.oldpc
+            PC = zcode.routines.oldpc
         address = i.routine
         call(address, [], 0, 1)
+        zcode.routines.execloop()
+        PC = oldPC
 
 
         
@@ -344,9 +340,7 @@ def firetimer():
     zcode.screen.currentWindow.screen.update()
     timerreturned = 0
     timer = True
-    i = interruptdata(INT_INPUT, timerroutine)
-    interruptstack.append(i)
+    i = io.interruptdata(INT_INPUT, timerroutine)
+    io.interruptstack.append(i)
     interrupt_call()
     zcode.routines.timerreturn = False
-    zcode.routines.execloop()
-    PC = oldPC
