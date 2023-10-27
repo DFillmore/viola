@@ -59,8 +59,15 @@ def z_buffer_mode():
         window.flushTextBuffer()
     window.setattributes(8, flag) # set the buffer attribute for the lower window
 
-def z_buffer_screen(): # Works as per standard, but doesn't actually do anything.
-    zcode.instructions.store(0)
+def z_buffer_screen(): # Sets the current screen buffering mode. Currently both modes are identical in viola.
+    old_mode = zcode.screen.screen_buffer_mode
+    new_mode = zcode.numbers.signed(zcode.instructions.operands[0])
+    if new_mode == -1:
+        zcode.screen.currentWindow.screen.update()
+    else:
+        zcode.screen.screen_buffer_mode = new_mode
+    
+    zcode.instructions.store(old_mode)
 
 def z_call_1n():
     routine = zcode.instructions.operands[0]

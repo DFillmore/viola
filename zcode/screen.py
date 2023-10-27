@@ -20,6 +20,8 @@ import settings
 import zcode
 from zcode.constants import *
 
+screen_buffer_mode = 0
+
 graphics_mode = 0
 
 basic_colours = { 'black':2,
