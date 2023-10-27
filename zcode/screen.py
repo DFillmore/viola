@@ -877,7 +877,7 @@ def split(size):
     if zcode.header.zversion() == 3:
         eraseWindow(1)
 
-    # move the window's cursor to the same absolute position in was in before the split
+    # move the window's cursor to the same absolute position it was in before the split
 
     difference = getWindow(0).getPosition()[1] - oldycoord
     getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getCursor()[1] - difference)
