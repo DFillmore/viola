@@ -15,10 +15,12 @@
 
 import sys
 import string
-import zio.io as io
+import vio.zcode as io
 import settings
 import zcode
 from zcode.constants import *
+
+screen_buffer_mode = 0
 
 graphics_mode = 0
 
@@ -754,11 +756,6 @@ class window(io.window):
     def updatestylebuffer():
         pass
 
-    def buffertext(self, text):
-        x = list(self.textbuffer)
-        x.extend(text)
-        self.textbuffer = ''.join(x)
-
     def alterTabs(self): # changes the tab character to various spaces
         x = list(self.textbuffer)
         if len(x) > 0 and x[0] == '\t' and self.atMargin():
@@ -910,7 +907,7 @@ def split(size):
     if zcode.header.zversion() == 3:
         eraseWindow(1)
 
-    # move the window's cursor to the same absolute position in was in before the split
+    # move the window's cursor to the same absolute position it was in before the split
 
     difference = getWindow(0).getPosition()[1] - oldycoord
     getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getCursor()[1] - difference)

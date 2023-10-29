@@ -14,7 +14,7 @@
 
 import sys
 import blorb
-import zio.io as io
+import vio.zcode as io
 import zcode
 from zcode.constants import *
 
@@ -59,8 +59,15 @@ def z_buffer_mode():
         window.flushTextBuffer()
     window.setattributes(8, flag) # set the buffer attribute for the lower window
 
-def z_buffer_screen(): # Works as per standard, but doesn't actually do anything.
-    zcode.instructions.store(0)
+def z_buffer_screen(): # Sets the current screen buffering mode. Currently both modes are identical in viola.
+    old_mode = zcode.screen.screen_buffer_mode
+    new_mode = zcode.numbers.signed(zcode.instructions.operands[0])
+    if new_mode == -1:
+        zcode.screen.currentWindow.screen.update()
+    else:
+        zcode.screen.screen_buffer_mode = new_mode
+    
+    zcode.instructions.store(old_mode)
 
 def z_call_1n():
     routine = zcode.instructions.operands[0]
@@ -756,9 +763,9 @@ def z_quit():
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
-    while inp == None:
-        inp = zcode.input.getInput()
-    sys.exit()
+    while not isinstance(inp, io.keypress):
+        inp = zcode.input.ioInput.getinput()
+    zcode.routines.quit = 1
 
 def z_random():
     range = zcode.numbers.signed(zcode.instructions.operands[0])
@@ -769,6 +776,7 @@ def z_random():
         zcode.instructions.store(0)
 
 def z_read():
+    io.stoptimer()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() < 4:
         zcode.screen.updatestatusline()
@@ -808,6 +816,8 @@ def z_read():
     if zcode.screen.cursor:
         zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
+        if zcode.routines.quit:
+            return None
         if len(zcode.input.instring) < maxinput:
             display = True
         else:
@@ -868,6 +878,7 @@ def z_read():
         zcode.instructions.store(termchar)
     
 def z_read_char():
+    io.stoptimer()
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
@@ -880,6 +891,8 @@ def z_read_char():
         zcode.screen.currentWindow.showCursor()
     inchar = None
     while inchar == None:
+        if zcode.routines.quit:
+            return None
         if zcode.game.timervalue == True:
             inchar = 0
             zcode.game.timervalue = False
@@ -1178,14 +1191,23 @@ def z_set_cursor():
     else:
         window = zcode.screen.getWindow(1)
     window.flushTextBuffer()
+    
+    
+    
     if zcode.header.zversion() == 6 and y < 0:
         if y == -1:
             zcode.screen.cursor = False
         elif y == -2:
             zcode.screen.cursor = True
     elif x:
-        window.setCursor(zcode.screen.units2pix(x, horizontal=True, coord=True), zcode.screen.units2pix(y, horizontal=False, coord=True))
+        x = zcode.screen.units2pix(x, horizontal=True, coord=True)
+        y = zcode.screen.units2pix(y, horizontal=False, coord=True)
+        yplus = y + window.getFont().getHeight()
+        window.setCursor(x, y)
         window.setCursorToMargin()
+        if zcode.header.zversion() != 6 and yplus > window.y_size:
+            zcode.error.strictz('cursor moved to position outside window 1 (window automaticall resized)')
+            zcode.screen.split(yplus)
 
 def z_set_font():
     font = zcode.instructions.operands[0]
