@@ -13,10 +13,10 @@
 # GNU General Public License for more details.
 
 import blorb
-import zio.io as io
+import vio.zcode as io
 import zcode
 from zcode.constants import *
-from zio.io import soundchannels
+from vio.zcode import soundchannels
 
 
 AVAILABLE = False
@@ -115,6 +115,9 @@ class Sound:
             self.sound.play(loops=repeats)
         except:
             pass
+
+    def stop(self):
+        self.sound.stop()
 
     type = 0
     routine = 0

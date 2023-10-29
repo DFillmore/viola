@@ -208,7 +208,7 @@ def gettextlength(address): # this determines how much space an encoded string t
     a = 1
     while endbit == 0:
         word = zcode.memory.getword(loc)
-        if (word >> 8) & 128 == 128:
+        if word & 0x8000:
             endbit = 1
         loc += 2
         a += 1
@@ -252,12 +252,12 @@ def getZSCIIchar(code):
             char = unitable[code]
             char = chr(char)
         except:
-            zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
+            zcode.error.warning(f'ZSCII character {code} undefined for output.')
             return ''
 
         return char
     else:
-        zcode.error.warning('ZSCII character ' + str(code) + ' undefined for output.')
+        zcode.error.warning(f'ZSCII character {code} undefined for output.')
         return ''
     
 def printabbrev(table, code):
@@ -270,8 +270,10 @@ def printabbrev(table, code):
     return chars
 
 
-def unpackzchars(address):
-    global  A0, A1, A2
+
+
+def zcharstozscii(address):
+    global A0, A1, A2
     codes = []
     loc = address
     finished = False

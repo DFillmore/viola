@@ -17,7 +17,7 @@ import copy
 import os
 
 import quetzal
-import zio.io as io
+import vio.zcode as io
 import zcode
 
 
@@ -185,12 +185,18 @@ def setglobal(varnum, value):
 
 
 def interrupt_call():
-    if len(interruptstack) > 0 and currentframe.interrupt == False and not returning: # if there are calls on the interrupt stack and we're not in an interrupt routine
+    global PC   
+    if zcode.routines.quit:
+        return None
+    oldPC = PC
+    if len(interruptstack) > 0 and not returning:# and currentframe.interrupt == False : # if there are calls on the interrupt stack ~~and we're not in an interrupt routine
         i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
-            zcode.game.PC = zcode.routines.oldpc
+            PC = zcode.routines.oldpc
         address = i.routine
         call(address, [], 0, 1)
+        zcode.routines.execloop()
+        PC = oldPC
 
 
         
@@ -261,8 +267,8 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         currentframe.flags += len(currentframe.lvars)
         while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
             args.pop()
-        for a in range(len(args)): # overlay the local variables with the arguments
-            setlocal(a, args[a])
+        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
+            setlocal(lvar, arg)
 
 def ret(value):
     global PC
@@ -336,14 +342,13 @@ def popuserstack(address, items):
 def firetimer():
     global timerreturned
     global timer
-    global PC
-    oldPC = PC   
+
     zcode.screen.currentWindow.flushTextBuffer()
+    zcode.screen.currentWindow.screen.update()
     timerreturned = 0
     timer = True
     i = interruptdata(INT_INPUT, timerroutine)
     interruptstack.append(i)
-    zcode.game.interrupt_call()
+    interrupt_call()
     zcode.routines.timerreturn = False
-    zcode.routines.execloop()
-    PC = oldPC
+

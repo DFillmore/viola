@@ -25,9 +25,6 @@
 # - sounds
 
 import os
-os.environ['PYGAME_FREETYPE'] = '1'
-
-
 import pygame
 import pygame.ftfont
 import io
@@ -36,9 +33,12 @@ import inspect
 import types
 import numpy
 import fonts.font as fonts
-
 from pygame.locals import *
+
+os.environ['PYGAME_FREETYPE'] = '1'
 pygame.init()
+
+timer_period = 100 # how often, in milliseconds, to fire the timer (should be every tenth of a second, or 100 milliseconds)
 
 GAMEDIRECTORY = ''
 
@@ -48,83 +48,34 @@ def setup(width, height, b, title, foreground, background):
     global timerrunning
     global zApp
     global blorbs
-    global fontlist
     blorbs = b
     timerrunning = False
     inputtext = []
     pygame.key.set_repeat(100, 100)
     zApp = VApp(width, height, title, foreground, background)
-
+    
     icon = None
     for a in blorbs:
         icon = a.gettitlepic()
     if icon:
         zApp.setIcon(icon)
 
-    font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
-                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
-                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
-                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
-                 fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-                 boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-                 italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-                 bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-                )
-
-    #font1emoji = font(getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #             boldfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #             italicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #             bolditalicfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #             fixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
-    #             boldfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf", 
-    #             italicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #             bolditalicfixedfile=getBaseDir() + "//fonts//OpenSansEmoji//OpenSansEmoji.ttf",
-    #            )
-
-    font2 = pictureFont(blorbs)
-
-    #font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
-    #             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-    #            )
-
-    font3 = None
-
-    font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-                 fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-                 boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-                 italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-                 bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-                )
-
-    fontlist = [ None, 
-                 font1,
-                 font2, # picture font.
-                 font3, # Beyond Zork font. 
-                 font4
-               ]
-
+def quit():
+    pygame.quit()
+    sys.exit()
 
 def getBaseDir():
-   if getattr(sys,"frozen",False):
-       # If this is running in the context of a frozen (executable) file, 
-       # we return the path of the main application executable
-       return os.path.dirname(os.path.abspath(sys.executable))
-   else:
-       # If we are running in script or debug mode, we need 
-       # to inspect the currently executing frame. This enable us to always
-       # derive the directory of main.py no matter from where this function
-       # is being called
-       thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-       return os.path.abspath(os.path.join(thisdir, os.pardir))
+    if getattr(sys,"frozen",False):
+        # If this is running in the context of a frozen (executable) file, 
+        # we return the path of the main application executable
+        return os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        # If we are running in script or debug mode, we need 
+        # to inspect the currently executing frame. This enable us to always
+        # derive the directory of main.py no matter from where this function
+        # is being called
+        thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+        return os.path.abspath(os.path.join(thisdir, os.pardir))
 
 def findfile(filename, gamefile=False):
     global GAMEDIRECTORY
@@ -190,7 +141,7 @@ def openfile(window, mode, filename=None, prompt=None):
     return f
 
 
-# Application window 
+# Application window
 
 class VApp:
     updates = []
@@ -213,12 +164,14 @@ class VApp:
         if self.justloaded:
             self.justloaded = False
             return False
+
         self.width = newsize[0]
         self.height = newsize[1]        
         self.screen.resize(newsize)
         self.resized = True
 
     def setIcon(self, icon):
+        icon = pygame.image.load(io.BytesIO(icon))
         pygame.display.set_icon(icon)
 
     def makemenu(self, title, items, number): # title is a string, items is a list of strings, number is the id number
@@ -246,8 +199,7 @@ class VApp:
     #        menubar.Remove(number - 2)
     #        return 1
 
-
-# Z-Machine screen
+# Z-Machine Screen
 
 class zscreen:
     updates = []
@@ -265,12 +217,12 @@ class zscreen:
 
     def getWidth(self):
         return self.width
-
+    
     def getHeight(self):
         return self.height
 
     def getPixel(self, x,y):
-        return self.screen.get_at((x-1, y-1))
+        return self.canvas.get_at((x-1, y-1))
 
     def erase(self, colour, area=None):
         if area:
@@ -314,7 +266,7 @@ class zscreen:
         self.resized = True
         self.update()
 
-# Z-Machine windows
+# Z-Machine Windows
 
 class window:
     y_coord = 1
@@ -347,11 +299,11 @@ class window:
         self.setFont(font)
 
     def showCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord-1+self.y_cursor-1, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.canvas, self.foreground_colour, area)
 
     def hideCursor(self):
-        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord+self.y_cursor, 1, self.getFont().getHeight())
+        area = pygame.Rect(self.x_coord+self.x_cursor, self.y_coord-1+self.y_cursor-1, 1, self.getFont().getHeight())
         pygame.draw.rect(self.screen.canvas, self.background_colour, area)
 
     def setFont(self, f):
@@ -457,6 +409,11 @@ class window:
         area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
+    def buffertext(self, text):
+        x = list(self.textbuffer)
+        x.extend(text)
+        self.textbuffer = ''.join(x)
+        
     def printText(self, text):
         self.buffertext(text)
         buffering = self.testattribute(8)
@@ -579,9 +536,9 @@ class window:
         return self.getFont().getHeight()
 
 
-# Z-Machine images
+# Z-Machine Images
 
-class image():
+class image:
     data = None
     def __init__(self, data, filename=False):
         if type(data) == bytes:
@@ -646,9 +603,9 @@ def getpic(screen, picture_number):
             palette = a.getPalette(picture_number, palette)
         pic.setPalette(palette)
     return pic
-   
 
-# Z-Machine fonts
+
+# Z-Machine Fonts
 
 class font:
     #def __str__(self):
@@ -754,6 +711,19 @@ class font:
     def defaultSize(self):
         return 16
 
+    def increaseSize(self, amount=1):
+        self.size += amount
+        return 1
+
+    def decreaseSize(self, amount=1):
+        if self.size == 1:
+            return 0
+        self.size -= amount
+        return 1
+
+    def resetSize(self):
+        self.size = self.defaultSize()
+
     def render(self, text, antialias, colour, background):
         unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
         for elem in unavailable:
@@ -775,51 +745,44 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
 
-def pictureFont(font):
+font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+            )
 
-    def render(self, text, antialias, colour, background): # antialias, colour and background are ignored (only here for compatibility with other fonts
-       f = self.fontData()
-       i = []
-       for a in text:
-          if ord(a) in f:
-             i.append(f[a])
-          else:
-             p = getpic(a)
-             f[a] = p
-             i.append(p)
-             
-       
-   
-    def __init__(self, blorbs):
-        self.size = self.defaultSize()
-        self.usefile = self.fontfile
-        self.codePoints = list(set(codePointsRoman).intersection(*[codePointsBold, codePointsItalic,codePointsBoldItalic,codePointsFixed,codePointsBoldFixed,codePointsItalicFixed,codePointsBoldItalicFixed]))
-    def getUseFile(self):
-        if self.italic and self.bold and self.fixedstyle:
-            return self.bolditalicfixedfile
-        elif self.italic and self.fixedstyle:
-            return self.italicfixedfile
-        elif self.bold and self.fixedstyle:
-            return self.boldfixedfile
-        elif self.fixedstyle:
-            return self.fixedfile
-        elif self.italic and self.bold:
-            return self.bolditalicfile
-        elif self.italic:
-            return self.italicfile
-        elif self.bold:
-            return self.boldfile
-        else:
-            return self.fontfile
+font2 = None
+
+font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
+             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
+             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
+            )
+#font3 = None
+
+font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+            )
 
 
-def getFontList():
-    return fontlist
+# Z-Machine Sounds
 
-# Z-Machine sounds
-
-SOUNDEVENTHANDLER = None
 SOUNDEVENT = pygame.USEREVENT + 1
+SOUNDEVENTHANDLER = None
 
 def beep():
     try:
@@ -828,6 +791,7 @@ def beep():
         b.play()
     except:
         pass
+
 
 def boop():
     try:
@@ -847,12 +811,17 @@ class musicobject():
     def set_volume(self, volume):
         self.volume = volume
 
+    def stop(self):
+        pygame.mixer.music.stop()
+
 
 def sound(data, type):
     if type == 0:
         return pygame.mixer.Sound(io.BytesIO(data))
     else:
         return musicobject(io.BytesIO(data))
+        
+
 
 def maxeffectschannels():
     return pygame.mixer.get_num_channels()
@@ -1052,7 +1021,7 @@ def getinput(screen):
         return i
     else:
         return None
-    
+
 def nextinput():
     pass
    
@@ -1063,14 +1032,16 @@ def previnput():
 # Z-Machine timer
 
 TIMEREVENT = pygame.USEREVENT
+        
 timerroutine = None
         
 def starttimer(time, r=None):
     global timerrunning 
     global timerroutine
+    global timer_period
     timerroutine = r
     timerrunning = True
-    time *= 100
+    time *= timer_period
     pygame.time.set_timer(TIMEREVENT, time)
     
 def stoptimer():

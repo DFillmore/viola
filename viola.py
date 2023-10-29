@@ -14,7 +14,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import zio.io as io
+import vio.zcode as io
 import sys
 import getopt
 import os
@@ -98,13 +98,13 @@ def handle_parameters(argv): # handles command line parameters
     global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)')
         sys.exit()
 
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:T:', 'zspec=')
+    args = getopt.getopt(argv[1:], 'dh:w:T:t:', 'zspec=')
     options = args[0]
     args = args[1]
     transcriptfile = False
@@ -118,6 +118,8 @@ def handle_parameters(argv): # handles command line parameters
             width = int(a[1])
         elif a[0] == '-T':
             transcriptfile = a[1]
+        elif a[0] == '-t':
+            io.timer_period = int(a[1])
         elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:
@@ -198,13 +200,38 @@ def rungame(gamedata):
     for a in range(len(blorbs)):
         if blorbs[a] == False:
             blorbs.pop(a)
+    
+    bwidth = 0
+    bheight = 0
+    for a in blorbs:
+        try:
+            bwidth, bheight = a.getWinSizes()[:2]
+        except:
+            pass
+    
+    if bwidth == 0:
+        wrat = 1
+        bwidth = width
+    else:
+        wrat = width / bwidth
+    if bheight == 0:
+        hrat = 1
+        bheight = height
+    else:
+        hrat = height / bheight
+    
+    if wrat < hrat:
+        rat = wrat
+    else:
+        rat = hrat        
+    width = round(bwidth * rat)
+    height = round(bheight * rat) 
 
-        
     terpnum = gameset[4]
 
     if title == None:
         title = gameset[0]
-    icon = None
+    
     if title == None:
         for a in blorbs:
             iFiction = a.getmetadata()
@@ -212,16 +239,14 @@ def rungame(gamedata):
                 title = babel.gettitle(iFiction)
                 headline = babel.getheadline(iFiction)
                 author = babel.getauthor(iFiction)
-                if headline != None:
-                    title = title + ': ' + headline
-                if author != None:
-                    title += ' by ' + author
                 if title == None:
                     title = ''
-                else:
-                    title = ' - ' + title
+                if headline != None:
+                    title = title + ' (' + headline + ')'
+                if author != None:
+                    title += ' by ' + author
 
-    if title == None:
+    if title == '' or title == None:
         title = 'Viola'
     else:
         title = 'Viola - ' + title
@@ -231,10 +256,6 @@ def rungame(gamedata):
        
 
 
-    for a in blorbs:
-        icon = a.gettitlepic()
-    if icon:
-        io.setIcon(icon)
     
 
 
