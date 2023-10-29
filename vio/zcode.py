@@ -38,6 +38,8 @@ from pygame.locals import *
 os.environ['PYGAME_FREETYPE'] = '1'
 pygame.init()
 
+timer_period = 100 # how often, in milliseconds, to fire the timer (should be every tenth of a second, or 100 milliseconds)
+
 GAMEDIRECTORY = ''
 
 def setup(width, height, b, title, foreground, background):
@@ -58,18 +60,22 @@ def setup(width, height, b, title, foreground, background):
     if icon:
         zApp.setIcon(icon)
 
+def quit():
+    pygame.quit()
+    sys.exit()
+
 def getBaseDir():
-   if getattr(sys,"frozen",False):
-       # If this is running in the context of a frozen (executable) file, 
-       # we return the path of the main application executable
-       return os.path.dirname(os.path.abspath(sys.executable))
-   else:
-       # If we are running in script or debug mode, we need 
-       # to inspect the currently executing frame. This enable us to always
-       # derive the directory of main.py no matter from where this function
-       # is being called
-       thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-       return os.path.abspath(os.path.join(thisdir, os.pardir))
+    if getattr(sys,"frozen",False):
+        # If this is running in the context of a frozen (executable) file, 
+        # we return the path of the main application executable
+        return os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        # If we are running in script or debug mode, we need 
+        # to inspect the currently executing frame. This enable us to always
+        # derive the directory of main.py no matter from where this function
+        # is being called
+        thisdir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+        return os.path.abspath(os.path.join(thisdir, os.pardir))
 
 def findfile(filename, gamefile=False):
     global GAMEDIRECTORY
@@ -403,6 +409,11 @@ class window:
         area = pygame.Rect(sourcex - 1, sourcey - 1, width, height)
         self.screen.updates.append(area)
 
+    def buffertext(self, text):
+        x = list(self.textbuffer)
+        x.extend(text)
+        self.textbuffer = ''.join(x)
+        
     def printText(self, text):
         self.buffertext(text)
         buffering = self.testattribute(8)
@@ -1027,9 +1038,10 @@ timerroutine = None
 def starttimer(time, r=None):
     global timerrunning 
     global timerroutine
+    global timer_period
     timerroutine = r
     timerrunning = True
-    time *= 100
+    time *= timer_period
     pygame.time.set_timer(TIMEREVENT, time)
     
 def stoptimer():
