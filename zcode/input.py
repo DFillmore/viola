@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 
 import sys
-import zio.io as io
+import vio.zcode as io
 import zcode
 
 stream = 0
@@ -97,6 +97,8 @@ def getInput(display=True, ignore=False, chistory=True):
     global instring
     global chplace
     termchar = False
+    if zcode.routines.quit:
+        return None
     zcode.game.interrupt_call()
     if stream == 0:
         input = ioInput.getinput()
