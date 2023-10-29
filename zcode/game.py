@@ -176,12 +176,11 @@ def setglobal(varnum, value):
 
 
 def interrupt_call():
-    global PC
+    global PC   
     if zcode.routines.quit:
         return None
-
+    oldPC = PC
     if len(io.interruptstack) > 0 and not returning:
-        oldPC = PC 
         i = io.interruptstack.pop()
         if zcode.instructions.inputInstruction:
             PC = zcode.routines.oldpc
@@ -334,8 +333,7 @@ def popuserstack(address, items):
 def firetimer():
     global timerreturned
     global timer
-    global PC
-    oldPC = PC   
+
     zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.screen.update()
     timerreturned = 0
@@ -344,3 +342,4 @@ def firetimer():
     io.interruptstack.append(i)
     interrupt_call()
     zcode.routines.timerreturn = False
+

@@ -59,8 +59,15 @@ def z_buffer_mode():
         window.flushTextBuffer()
     window.setattributes(8, flag) # set the buffer attribute for the lower window
 
-def z_buffer_screen(): # Works as per standard, but doesn't actually do anything.
-    zcode.instructions.store(0)
+def z_buffer_screen(): # Sets the current screen buffering mode. Currently both modes are identical in viola.
+    old_mode = zcode.screen.screen_buffer_mode
+    new_mode = zcode.numbers.signed(zcode.instructions.operands[0])
+    if new_mode == -1:
+        zcode.screen.currentWindow.screen.update()
+    else:
+        zcode.screen.screen_buffer_mode = new_mode
+    
+    zcode.instructions.store(old_mode)
 
 def z_call_1n():
     routine = zcode.instructions.operands[0]
@@ -1184,14 +1191,23 @@ def z_set_cursor():
     else:
         window = zcode.screen.getWindow(1)
     window.flushTextBuffer()
+    
+    
+    
     if zcode.header.zversion() == 6 and y < 0:
         if y == -1:
             zcode.screen.cursor = False
         elif y == -2:
             zcode.screen.cursor = True
     elif x:
-        window.setCursor(zcode.screen.units2pix(x, horizontal=True, coord=True), zcode.screen.units2pix(y, horizontal=False, coord=True))
+        x = zcode.screen.units2pix(x, horizontal=True, coord=True)
+        y = zcode.screen.units2pix(y, horizontal=False, coord=True)
+        yplus = y + window.getFont().getHeight()
+        window.setCursor(x, y)
         window.setCursorToMargin()
+        if zcode.header.zversion() != 6 and yplus > window.y_size:
+            zcode.error.strictz('cursor moved to position outside window 1 (window automaticall resized)')
+            zcode.screen.split(yplus)
 
 def z_set_font():
     font = zcode.instructions.operands[0]
