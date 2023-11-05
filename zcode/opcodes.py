@@ -1206,7 +1206,7 @@ def z_set_cursor():
         window.setCursor(x, y)
         window.setCursorToMargin()
         if zcode.header.zversion() != 6 and yplus > window.y_size:
-            zcode.error.strictz('cursor moved to position outside window 1 (window automaticall resized)')
+            zcode.error.strictz('cursor moved to position outside window 1 (window automatically resized)')
             zcode.screen.split(yplus)
 
 def z_set_font():
