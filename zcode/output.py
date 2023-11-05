@@ -301,13 +301,17 @@ def closestream(stream):
             m = streams[3].pop()
             m.close()
         
-def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
-    streams[1].write(text)
-    if len(streams[3]) > 0:
+def printtext(text, special=False, error=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
+    if error:
+        if not io.error(text): # if the io module doesn't have a special case for printing errors, print them to the screen normally
+            streams[1].write(text)
+    else:
+        streams[1].write(text)
+    if len(streams[3]) > 0 and not error:
         streams[3][-1].write(text)
     text = text.replace('\r', '\n')
     streams[2].write(text)
-    if special:
+    if special and not error:
         streams[4].write(text)
 
 

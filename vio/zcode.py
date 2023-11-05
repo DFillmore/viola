@@ -42,6 +42,9 @@ timer_period = 100 # how often, in milliseconds, to fire the timer (should be ev
 
 GAMEDIRECTORY = ''
 
+def error(text):
+    return False
+
 def setup(width, height, b, title, foreground, background):
     global currentfont
     global inputtext

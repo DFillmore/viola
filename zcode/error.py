@@ -18,31 +18,32 @@ import zcode
 
 strictzlevel = 1
 
-errors = []
+errors = set()
 
-def fatal(message):
-    for a in range(1,3):
-        zcode.output.streams[a].write('Fatal Error: ' + str(message))
+def fatal(message, stream):
+    zcode.output.printtext('Fatal Error: ' + str(message) + '\r', error=True)
     print('Fatal Error:', message, file=sys.stderr)
-    sys.exit()
+    routines.quit = 1
 
 def strictz(message):
     global errors, strictzlevel
     if strictzlevel == 0: # ignore all levels
-        pass
-    elif strictzlevel == 1: # report first error 
-        if message not in errors:
-            for a in range(1,3):
-                zcode.output.streams[a].write('Warning: ' + str(message) + ' (will ignore further occurences)\r')
-            errors.append(message)
-    elif strictzlevel == 2: # report all errors
-        for a in range(1,3):
-            zcode.output.streams[a].write('Warning: ' + str(message) + '\r')
-    else: # exit after any error
-        for a in range(1,3):
-            zcode.output.streams[a].write('Fatal Error: ' + str(message) + '\r')
-        routines.quit = 1
+        return False
 
-def warning(message):
-    for a in range(1,3):
-        zcode.output.streams[a].write('Warning: ' + str(message) + '\r')
+    ignore = False
+    for stream in zcode.output.streams:
+        if stream: # because stream 0 is None
+            if strictzlevel == 3: # exit after any error
+                fatal(message, stream)
+            if strictzlevel == 1: # report first error only
+                if message in errors: 
+                    continue
+                ignore = True
+                errors.add(message)
+            warning(message, stream, ignore)
+
+def warning(message, stream, ignore=False):   
+    zcode.output.printtext('Warning: ' + str(message), error=True)
+    if ignore:
+        zcode.output.printtext(' (will ignore further occurences)', error=True)
+    zcode.output.printtext('\r', error=True)
