@@ -492,8 +492,7 @@ class window(io.window):
 
     def testfont(self, font):
         """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
-
-        if font > len(self.fontlist):
+        if font > len(self.fontlist)-1:
             return False
         if self.fontlist[font] == None:
             return False
