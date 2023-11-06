@@ -703,14 +703,14 @@ class window(io.window):
 
     
     def setattributes(self, flags, operation):
-        if operation == 0: # wrapping
+        if operation == 0: # set attributes to match flags exactly
             self.attributes = flags
-        elif operation == 1: # scrolling
+        elif operation == 1: # set attributes in flags, leave others as is
             self.attributes = self.attributes | flags
-        elif operation == 2: # transcripting (copy text printed to the this window to output stream 2)
-            self.attributes = self.attributes & ~flags
-        elif operation == 3: # buffered printing
-            self.attributes - self.attributes & flags
+        elif operation == 2: # unset attributes in flags, leave others as is
+            self.attributes = self.attributes & (flags ^ 15)
+        elif operation == 3: # reverse attributes set in flags, leave others
+            self.attributes = self.attributes ^ flags
 
     def testattribute(self, attribute):
         result = self.attributes & attribute
