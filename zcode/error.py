@@ -42,8 +42,9 @@ def strictz(message):
                 errors.add(message)
             warning(message, stream, ignore)
 
-def warning(message, stream, ignore=False):   
-    zcode.output.printtext('Warning: ' + str(message), error=True)
+def warning(message, stream, ignore=False):
+    w =  'Warning: ' + str(message)
     if ignore:
-        zcode.output.printtext(' (will ignore further occurences)', error=True)
-    zcode.output.printtext('\r', error=True)
+        w += ' (will ignore further occurences)'
+    w += '\r'
+    zcode.output.printtext(w, error=True)

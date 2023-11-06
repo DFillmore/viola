@@ -81,7 +81,20 @@ def setup(restarted=False):
             zwindow.append(window(ioScreen, fontlist[1])) # windows 2 to 7
     for count, value in enumerate(zwindow):
         getWindow(count).window_id = str(count)
-
+    
+    error_window = window(ioScreen, fontlist[4])
+    error_window.setSize(ioScreen.getWidth(), 0)
+    error_window.setPosition(1, ioScreen.getHeight())
+    error_window.setCursor(1,1)
+    fg = zcode.screen.convertBasicToRealColour(colours['black'])
+    bg = zcode.screen.convertBasicToRealColour(colours['red'])
+    error_window.setColours(fg, bg)
+    error_window.setattributes(1, 0)
+    error_window.setattributes(2, 1)
+    error_window.setattributes(4, 1)
+    error_window.setattributes(8, 0)
+    io.error_window = error_window
+    
 
     if graphics_mode == 1: # units are pixels
         unitHeight = 1
