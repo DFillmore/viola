@@ -804,7 +804,7 @@ def z_read():
     
     maxinput = zcode.memory.getbyte(text)
     if zcode.header.zversion() < 5:
-        maxinput += 1
+        maxinput -= 1 # leave one space for the zero terminator
         start = 1
     else:
         start = 2
