@@ -22,6 +22,7 @@ from zcode.constants import *
 data = None
 originaldata = None
 WORDSIZE = 2
+memory_size = 0
 
 
 def setup(gamedata):
@@ -29,7 +30,9 @@ def setup(gamedata):
     global originaldata
     global filelen
     global WORDSIZE
+    global memory_size
     data = gamedata[:]
+    memory_size = len(data)
 
     version = data[0]
     if version > 6 and zcode.use_standard == STANDARD_00:
@@ -65,7 +68,7 @@ def getbyte(offset):
     if offset == 0x26 or offset == 0x27:
         zcode.header.updateFontSize() 
 
-    if offset >= len(data):
+    if offset >= memory_size:
         zcode.error.fatal("Tried to read a byte beyond available memory at " + hex(offset) + ".")
 
     return data[offset]
@@ -102,7 +105,7 @@ def getword(offset):
     if offset == 0x26:
         zcode.header.updateFontSize() 
 
-    if offset >= len(data):
+    if offset >= memory_size:
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
     
     return int.from_bytes(data[offset:offset+2], byteorder='big')
