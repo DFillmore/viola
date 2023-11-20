@@ -20,10 +20,10 @@ strictzlevel = 1
 
 errors = set()
 
-def fatal(message, stream):
+def fatal(message, stream=1):
     zcode.output.printtext('Fatal Error: ' + str(message) + '\r', error=True)
     print('Fatal Error:', message, file=sys.stderr)
-    routines.quit = 1
+    zcode.routines.quit = 1
 
 def strictz(message):
     global errors, strictzlevel
@@ -42,7 +42,7 @@ def strictz(message):
                 errors.add(message)
             warning(message, stream, ignore)
 
-def warning(message, stream, ignore=False):
+def warning(message, stream=1, ignore=False):
     w =  'Warning: ' + str(message)
     if ignore:
         w += ' (will ignore further occurences)'
