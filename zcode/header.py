@@ -19,8 +19,44 @@ from zcode.constants import *
 
 standards = [(0,0), (0,2), (1,0), (1,1)]
 
+ZVERSION_ADDRESS = 0x0
+FLAGS1_ADDRESS = 0x1
+RELEASE_ADDRESS = 0x2
+HIGHMEM_ADDRESS = 0x4
+INITIALPC_ADDRESS = 0x6
+DICTIONARY_ADDRESS = 0x8
+OBJECTS_ADDRESS = 0xA
+GLOBALS_ADDRESS = 0xC
+STATICMEM_ADDRESS = 0xE
+FLAGS2_ADDRESS = 0x10
+SERIAL_ADDRESS = 0x12
+ABBREVS_ADDRESS = 0x18
+FILELEN_ADDRESS = 0x1A
+CHECKSUM_ADDRESS = 0x1C
+TERPNUM_ADDRESS = 0x1E
+TERPVER_ADDRESS = 0x1F
+SLINES_ADDRESS = 0x20
+SCHARS_ADDRESS = 0x21
+SWIDTH_ADDRESS = 0x22
+SHEIGHT_ADDRESS = 0x24
+FWIDTH_ADDRESS = 0x26
+FHEIGHT_ADDRESS = 0x27
+ROFFSET_ADDRESS = 0x28
+SOFFSET_ADDRESS = 0x2A
+BG_ADDRESS = 0x2C
+FG_ADDRESS = 0x2D
+TERMCHARS_ADDRESS = 0x2E
+TEXTWIDTH_ADDRESS = 0x30
+STANDARD_ADDRESS = 0x32
+ALPHATABLE_ADDRESS = 0x34
+HEADEREXT_ADDRESS = 0x36
+
 
 def setup(): # set all the relevant bits and bytes and words in the header
+    if zversion() == 6:
+        FWIDTH_ADDRESS = 0x27
+        FHEIGHT_ADDRESS = 0x26
+    
     # Flags 1
     if zversion() == 3:
         setflag(1, 4, 0) # status line is available
@@ -124,10 +160,10 @@ def updateSizes():
 
 
 def release():
-    return zcode.memory.getword(0x2)
+    return zcode.memory.getword(RELEASE_ADDRESS)
 
 def serial():
-    x = zcode.memory.getarray(0x12,6)
+    x = zcode.memory.getarray(SERIAL_ADDRESS,6)
     return ''.join([chr(b) for b in x])
 
 def identifier():
@@ -148,7 +184,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
         for a in range(bit):
             flag = flag * 2
 
-        if zcode.memory.getbyte(1) & flag == flag:
+        if zcode.memory.getbyte(FLAGS1_ADDRESS) & flag == flag:
             return 1
         else:
             return 0
@@ -156,7 +192,7 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
         flag = 1
         for a in range(bit):
             flag = flag * 2
-        if zcode.memory.getword(0x10) & flag == flag:
+        if zcode.memory.getword(FLAGS2_ADDRESS) & flag == flag:
             return 1
         else:
             return 0
@@ -181,17 +217,17 @@ def setflag(bitmap, bit, value):
         for a in range(bit):
             flag = flag * 2
         if value:
-            zcode.memory.setbyte(1, zcode.memory.getbyte(1) | flag)
+            zcode.memory.setbyte(FLAGS1_ADDRESS, zcode.memory.getbyte(FLAGS1_ADDRESS) | flag)
         else:
-            zcode.memory.setbyte(1, zcode.memory.getbyte(1) & ~flag)
+            zcode.memory.setbyte(FLAGS1_ADDRESS, zcode.memory.getbyte(FLAGS1_ADDRESS) & ~flag)
     elif bitmap == 2:
         flag = 1      
         for a in range(bit):
             flag = flag * 2
         if value:
-            zcode.memory.setword(0x10, zcode.memory.getword(0x10) | flag)
+            zcode.memory.setword(FLAGS2_ADDRESS, zcode.memory.getword(FLAGS2_ADDRESS) | flag)
         else:
-            zcode.memory.setword(0x10, zcode.memory.getword(0x10) & ~flag)
+            zcode.memory.setword(FLAGS2_ADDRESS, zcode.memory.getword(FLAGS2_ADDRESS) & ~flag)
     elif bitmap == 3:
         if headerextsize() >= 4:
             flag = 1
@@ -207,7 +243,7 @@ high_memory = None
 def highmembase():
     global high_memory
     if not high_memory:
-        high_memory = zcode.memory.getword(0x4)
+        high_memory = zcode.memory.getword(HIGHMEM_ADDRESS)
     return high_memory
 
 initial_PC = None
@@ -215,7 +251,7 @@ initial_PC = None
 def initialPC(): # for non z6
     global initial_PC
     if not initial_PC:
-        initial_PC = zcode.memory.getword(0x6)
+        initial_PC = zcode.memory.getword(INITIALPC_ADDRESS)
     return initial_PC
 
 main_routine = None
@@ -223,7 +259,7 @@ main_routine = None
 def mainroutine(): # for z6
     global main_routine
     if not main_routine:
-        main_routine = zcode.memory.getword(0x6)
+        main_routine = zcode.memory.getword(INITIALPC_ADDRESS)
     return main_routine
 
 dictionary_location = None
@@ -231,7 +267,7 @@ dictionary_location = None
 def dictionaryloc():
     global dictionary_location
     if not dictionary_location:
-        dictionary_location = zcode.memory.getword(0x8)
+        dictionary_location = zcode.memory.getword(DICTIONARY_ADDRESS)
     return dictionary_location
 
 object_table = None
@@ -239,7 +275,7 @@ object_table = None
 def objtableloc():
     global object_table
     if not object_table:
-        object_table = zcode.memory.getword(0xA)
+        object_table = zcode.memory.getword(OBJECTS_ADDRESS)
     return object_table
 
 globals_location = None
@@ -247,7 +283,7 @@ globals_location = None
 def globalsloc():
     global globals_location
     if not globals_location:
-        globals_location = zcode.memory.getword(0xC)
+        globals_location = zcode.memory.getword(GLOBALS_ADDRESS)
     return globals_location
 
 static_memory = None
@@ -255,7 +291,7 @@ static_memory = None
 def statmembase():
     global static_memory
     if not static_memory:
-        static_memory = zcode.memory.getword(0xE)
+        static_memory = zcode.memory.getword(STATICMEM_ADDRESS)
     return static_memory
 
 abbreviations_table = None
@@ -263,7 +299,7 @@ abbreviations_table = None
 def abbrevtableloc():
     global abbreviations_table
     if not abbreviations_table:
-        abbreviations_table = zcode.memory.getword(0x18)
+        abbreviations_table = zcode.memory.getword(ABBREVS_ADDRESS)
     return abbreviations_table
 
 file_length = None
@@ -271,7 +307,7 @@ file_length = None
 def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually. But it doesn't.
     global file_length
     if not file_length:
-        l = (zcode.memory.getbyte(0x1a) << 8) + zcode.memory.getbyte(0x1b)
+        l = zcode.memory.getword(FILELEN_ADDRESS)
         if l == 0:
             file_length = len(memory.data)
         elif zversion() < 4: # versions 1 to 3
@@ -287,76 +323,64 @@ checksum = None
 def getchecksum():
     global checksum
     if not checksum:
-        checksum = zcode.memory.getword(0x1C)
+        checksum = zcode.memory.getword(CHECKSUM_ADDRESS)
     return checksum
 
 def setterpnum(number):
-    zcode.memory.setbyte(0x1E, number)
+    zcode.memory.setbyte(TERPNUM_ADDRESS, number)
 
 def setterpversion(number):
-    zcode.memory.setbyte(0x1F, number)
+    zcode.memory.setbyte(TERPVER_ADDRESS, number)
 
 def getterpnum():
-    return zcode.memory.getbyte(0x1E)
+    return zcode.memory.getbyte(TERPNUM_ADDRESS)
 
 def getterpversion(): # I doubt this will be needed
-    return zcode.memory.getbyte(0x1F)
+    return zcode.memory.getbyte(TERPVER_ADDRESS)
 
 def getscreenheightlines():
-    return zcode.memory.getbyte(0x20)
+    return zcode.memory.getbyte(SLINES_ADDRESS)
 
 def getscreenwidthchars():
-    return zcode.memory.getbyte(0x21)
+    return zcode.memory.getbyte(SCHARS_ADDRESS)
 
 def getscreenwidth(): # screen width in units
-    return zcode.memory.getword(0x22)
+    return zcode.memory.getword(SWIDTH_ADDRESS)
 
 def getscreenheight(): # screen height in units
-    return zcode.memory.getword(0x24)
+    return zcode.memory.getword(SHEIGHT_ADDRESS)
 
 def getfontwidth():
-    if zversion() == 6:
-        return zcode.memory.getbyte(0x27)
-    else:
-        return zcode.memory.getbyte(0x26)
-
+    return zcode.memory.getbyte(FWIDTH_ADDRESS)
+    
 def getfontheight():
-    if zversion() == 6:
-        return zcode.memory.getbyte(0x26)
-    else:
-        return zcode.memory.getbyte(0x27)
-
-
+    return zcode.memory.getbyte(FHEIGHT_ADDRESS)
 
 def setscreenheightlines(lines):
-    zcode.memory.setbyte(0x20, lines)
+    zcode.memory.setbyte(SLINES_ADDRESS, lines)
 
 def setscreenwidthchars(chars):
-    zcode.memory.setbyte(0x21, chars)
+    zcode.memory.setbyte(SCHARS_ADDRESS, chars)
 
 def setscreenwidth(units): # screen width in units
-    zcode.memory.setword(0x22, units)
+    zcode.memory.setword(SWIDTH_ADDRESS, units)
 
 def setscreenheight(units): # screen height in units
-    zcode.memory.setword(0x24, units)
+    zcode.memory.setword(SHEIGHT_ADDRESS, units)
 
 def setfontwidth(units):
-    if zversion() == 6:
-        zcode.memory.setbyte(0x27, units)
-    else:
-        zcode.memory.setbyte(0x26, units)
+    zcode.memory.setbyte(FWIDTH_ADDRESS, units)
+
 
 def setfontheight(units):
-    if zversion() == 6:
-        zcode.memory.setbyte(0x26, units)
-    else:
-        zcode.memory.setbyte(0x27, units)
+    zcode.memory.setbyte(FHEIGHT_ADDRESS, units)
+
     
 routines_offset = None
 def routineoffset(): # z6 only
     global routines_offset
     if not routines_offset:
-        routines_offset = zcode.memory.getword(0x28) * 8
+        routines_offset = zcode.memory.getword(ROFFSET_ADDRESS) * 8
     return routines_offset
 
 strings_offset = None
@@ -364,39 +388,39 @@ strings_offset = None
 def stringoffset(): # z6 only
     global strings_offset
     if not strings_offset:
-        strings_offset = zcode.memory.getword(0x2A) * 8
+        strings_offset = zcode.memory.getword(SOFFSET_ADDRESS) * 8
     return strings_offset
 
 def setdefbgcolour(colour):
-    zcode.memory.setbyte(0x2c, colour)
+    zcode.memory.setbyte(BG_ADDRESS, colour)
 
 def setdeffgcolour(colour):
-    zcode.memory.setbyte(0x2D, colour)
+    zcode.memory.setbyte(FG_ADDRESS, colour)
 
 def getdefbgcolour():
-    return zcode.memory.getbyte(0x2C)
+    return zcode.memory.getbyte(BG_ADDRESS)
 
 def getdeffgcolour():
-    return zcode.memory.getbyte(0x2D)
+    return zcode.memory.getbyte(FG_ADDRESS)
 
 terminating_characters = None
 
 def termcharloc():
     global terminating_characters
     if terminating_characters == None:
-        terminating_characters = zcode.memory.getword(0x2E)
+        terminating_characters = zcode.memory.getword(TERMCHARS_ADDRESS)
     return terminating_characters
 
 def settextwidth(len): # total width in units of text sent to output stream 3
-    zcode.memory.setword(0x30, len)
+    zcode.memory.setword(TEXTWIDTH_ADDRESS, len)
 
 def setstandardnum(n, m): # for standard 1.0, setstandardnum(1, 0) would be sent.
-    zcode.memory.setbyte(0x32, n)
-    zcode.memory.setbyte(0x33, m)
+    zcode.memory.setbyte(STANDARD_ADDRESS, n)
+    zcode.memory.setbyte(STANDARD_ADDRESS+1, m)
 
 def getstandardnum():
-    n = zcode.memory.getbyte(0x32)
-    m = zcode.memory.getbyte(0x33)
+    n = zcode.memory.getbyte(STANDARD_ADDRESS)
+    m = zcode.memory.getbyte(STANDARD_ADDRESS+1)
     return (n,m)
 
 alphabet_table = None
@@ -404,7 +428,7 @@ alphabet_table = None
 def alphatableloc():
     global alphabet_table
     if alphabet_table == None:
-        alphabet_table = zcode.memory.getword(0x34)
+        alphabet_table = zcode.memory.getword(ALPHATABLE_ADDRESS)
     return alphabet_table
 
 header_extension = None
@@ -412,7 +436,7 @@ header_extension = None
 def headerextloc():
     global header_extension
     if header_extension == None:
-        header_extension = zcode.memory.getword(0x36)
+        header_extension = zcode.memory.getword(HEADEREXT_ADDRESS)
     return header_extension
 
 
