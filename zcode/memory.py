@@ -52,12 +52,9 @@ def setup(gamedata):
     
 def verify():
     global originaldata
-    checksum = 0
-    for a in range(0x40, filelen):
-        checksum += originaldata[a]
-        checksum %= 0x10000
+    checksum = sum(originaldata[0x40:zcode.header.filelen()]) % 0x10000 
     if checksum == zcode.header.getchecksum():
-        return True
+        return True      
     return False
 
 def getbyte(offset):
