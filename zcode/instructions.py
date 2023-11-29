@@ -131,25 +131,30 @@ inputInstruction = False
 def runops(address):
     global inputInstruction
     optype = zcode.memory.getbyte(address)
+    optable = None
+    mask = 0x1f
     if optype < 0x80:
         if zcode.debug:
             print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op2[optype & 0x1f]()
+        optable = zcode.optables.op2
+        #zcode.optables.op2[optype & 0x1f]()
     elif optype < 0xb0:
         if zcode.debug:
             print(zcode.optables.op1[optype & 0xf].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op1[optype & 0xf]()
+        optable = zcode.optables.op1
+        mask = 0xf
+        #zcode.optables.op1[optype & 0xf]()
     elif optype < 0xc0:
         if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and zcode.debug:
             print(zcode.optables.op0[optype & 0xf].__name__.replace('z_', '@'), end=' ')
-        if zcode.optables.op0[optype & 0xf].__name__ == 'z_extended':
-            zcode.optables.op0[optype & 0xf]()
-        else:
-            zcode.optables.op0[optype & 0xf]()
+        optable = zcode.optables.op0
+        mask = 0xf
+        #zcode.optables.op0[optype & 0xf]()
     elif optype < 0xe0:
         if zcode.debug:
             print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op2[optype & 0x1f]()
+        optable = zcode.optables.op2
+        #zcode.optables.op2[optype & 0x1f]()
     elif optype < 0x100:
         if zcode.debug:
             print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
@@ -157,20 +162,26 @@ def runops(address):
             inputInstruction = True
         else:
             inputInstruction = False
-
-        zcode.optables.opvar[optype & 0x1f]()
+        optable = zcode.optables.opvar
+        #zcode.optables.opvar[optype & 0x1f]()
     if zcode.debug:
         for a in operands:
             print(a, end=' ')
+    optable[optype & mask]()
+    if zcode.debug:
         print()
 
 def store(value):
     value = zcode.numbers.unsigned(value)
     var = zcode.memory.getbyte(zcode.game.PC)
+    if zcode.debug:
+        print('->', var, end=' ')
     zcode.game.PC += 1
     zcode.game.setvar(var, value)
 
 def branch(condition):
+    if zcode.debug:
+        print('?', end='')
     byte1 = zcode.memory.getbyte(zcode.game.PC)
     zcode.game.PC += 1
     if byte1 & 64 == 64: # if bit 6 is set, branch information only occupies 1 byte
@@ -187,15 +198,20 @@ def branch(condition):
     if (byte1 & 128 == 128) and (condition == 1): # if the top bit is set, branch on true
         dobranch = 1
     elif (byte1 & 128 != 128) and (condition == 0): # if it isn't set, branch on false
+        if zcode.debug:
+            print('~', end='')
         dobranch = 1
     else:
         dobranch = 0
     if dobranch == 1:
         if offset == 0:
             zcode.game.ret(0)
+            print('rfalse', end=' ')
         elif offset == 1:
             zcode.game.ret(1)
+            print('rtrue', end=' ')
         else:
             zcode.game.PC = zcode.game.PC + offset - 2
+            print(hex(zcode.game.PC), end=' ')
 
         

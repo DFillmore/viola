@@ -38,8 +38,10 @@ def setuproutine(address):
     else:
         for a in range(varnum):
             vars.append(0)
-    
     zcode.game.currentframe.lvars = vars
+    if zcode.debug:
+        print()
+        print(varnum, 'local variables', end='')
     return address
 
 
