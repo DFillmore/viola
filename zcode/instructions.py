@@ -17,9 +17,9 @@ operands = []
 import zcode
 
 
-def decode(address, debug=False):
+def decode(address):
     global operands
-    if debug == True:
+    if zcode.debug:
         print(hex(address), end=' ')
     operands = []
     optype = zcode.memory.getbyte(address)
@@ -128,30 +128,30 @@ def decodeextended(address):
 
 inputInstruction = False
     
-def runops(address, debug=False):
+def runops(address):
     global inputInstruction
     optype = zcode.memory.getbyte(address)
     if optype < 0x80:
-        if debug == True:
+        if zcode.debug:
             print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op2[optype & 0x1f]()
     elif optype < 0xb0:
-        if debug == True:
+        if zcode.debug:
             print(zcode.optables.op1[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op1[optype & 0xf]()
     elif optype < 0xc0:
-        if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and debug:
+        if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and zcode.debug:
             print(zcode.optables.op0[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         if zcode.optables.op0[optype & 0xf].__name__ == 'z_extended':
-            zcode.optables.op0[optype & 0xf](debug)
+            zcode.optables.op0[optype & 0xf]()
         else:
             zcode.optables.op0[optype & 0xf]()
     elif optype < 0xe0:
-        if debug:
+        if zcode.debug:
             print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         zcode.optables.op2[optype & 0x1f]()
     elif optype < 0x100:
-        if debug:
+        if zcode.debug:
             print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         if optype & 0x1f == 0x4 or optype & 0x1f == 0x16:
             inputInstruction = True
@@ -159,7 +159,7 @@ def runops(address, debug=False):
             inputInstruction = False
 
         zcode.optables.opvar[optype & 0x1f]()
-    if debug:
+    if zcode.debug:
         for a in operands:
             print(a, end=' ')
         print()

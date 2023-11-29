@@ -24,4 +24,7 @@ __all__ = ["dictionary",
            "sounds", 
            "text"
           ]
+          
 from zcode import *
+
+debug = False

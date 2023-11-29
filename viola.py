@@ -29,7 +29,6 @@ height = None
 width = None
 title = None
 terpnum = None
-debug = False
 
 
 def checkgamefile(gamefile):
@@ -97,7 +96,6 @@ def getgame(filename):
 def handle_parameters(argv): # handles command line parameters
     global blorbfiles
     global height, width, title, transcriptfile, usespec
-    global debug
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
         print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)')
@@ -113,7 +111,7 @@ def handle_parameters(argv): # handles command line parameters
     usespec = 3
     for a in options:
         if a[0] == '-d':
-            debug = True
+            zcode.debug = True
         elif a[0] == '-h':
             height = int(a[1])
         elif a[0] == '-w':
@@ -260,7 +258,7 @@ def rungame(gamedata):
     
 
 
-    zcode.routines.execstart(debug)
+    zcode.routines.execstart()
     return 1
 
 gamedata = handle_parameters(sys.argv)
