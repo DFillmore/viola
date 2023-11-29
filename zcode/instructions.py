@@ -203,15 +203,23 @@ def branch(condition):
         dobranch = 1
     else:
         dobranch = 0
-    if dobranch == 1:
+    if zcode.debug:
         if offset == 0:
-            zcode.game.ret(0)
             print('rfalse', end=' ')
         elif offset == 1:
-            zcode.game.ret(1)
             print('rtrue', end=' ')
         else:
+            print(hex(zcode.game.PC + offset - 2), end=' ')
+    if dobranch == 1:
+        if zcode.debug:
+            print('(success)', end=' ')
+        if offset == 0:
+            zcode.game.ret(0)
+        elif offset == 1:
+            zcode.game.ret(1)
+        else:
             zcode.game.PC = zcode.game.PC + offset - 2
-            print(hex(zcode.game.PC), end=' ')
+    elif zcode.debug:
+        print('(fail)', end=' ')
 
         
