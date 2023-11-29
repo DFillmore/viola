@@ -65,12 +65,7 @@ def findstarts(textarray, seperators):
     else:
         offset = 2
     s = '[' + ''.join(seperators) + ']| +'
-    #print(s)
     p = re.compile(s)
-    #print(p)
-    #print(type(textarray))
-    #for a in re.finditer(p, textarray):
-    #    print(a)
     
     
     wordstarts = []

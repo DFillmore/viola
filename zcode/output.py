@@ -47,11 +47,6 @@ class screenstream(outputstream):
     active = True
     interruptprinted = False
     def output(self, data):
-        try:
-            print(chr(data))
-        except:
-            print(data)
-        
         if zcode.game.currentframe.interrupt:
             self.interruptprinted = True
         zcode.screen.printtext(data)
