@@ -67,11 +67,13 @@ def decode(address, debug=False):
             else:
                 pass
         address += 1
-    elif optype < 0x100: # variable VAR    
+    elif optype < 0x100: # variable VAR  
+        address += 1  
         if (optype & 0x1f == 12) or (optype & 0x1f == 26): # if the opcode is call_vs2 or call_vn2, there can be up to 8 operands
             operandtype = zcode.memory.getword(address) 
-            address += 2
+            address += 1
             for x in range(14,-2,-2):
+            
                 if ((operandtype >> x) & 3) == 0:
                     address += 1
                     operands.append(zcode.memory.getword(address))
@@ -86,7 +88,6 @@ def decode(address, debug=False):
                     pass
         else:
             operandtype = zcode.memory.getbyte(address)
-            address += 1
             for x in range(6,-2,-2):
                 if ((operandtype >> x) & 3) == 0:
                     address += 1
