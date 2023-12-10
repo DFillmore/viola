@@ -47,6 +47,10 @@ class screenstream(outputstream):
     active = True
     interruptprinted = False
     def output(self, data):
+        if zcode.debug:
+            print('"', end='')
+            print(data.replace('\r', '\n'), end='')
+            print('"', end=' ')
         if zcode.game.currentframe.interrupt:
             self.interruptprinted = True
         zcode.screen.printtext(data)
