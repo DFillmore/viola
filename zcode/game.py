@@ -137,7 +137,7 @@ def getvar(varnum, indirect=False):
     else:
         return getglobal(varnum - 0x10)
 
-def setvar(varnum, value, indirect=False):   
+def setvar(varnum, value, indirect=False): 
     if varnum == 0:
         putstack(value, indirect)
     elif varnum < 0x10:

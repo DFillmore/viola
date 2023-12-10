@@ -181,11 +181,6 @@ def setupalphatable():
         temp[7] = '\r'
         A2 = ''.join(temp)
 
-
-
-
-
-
 def splitwords(word):
     chars = (word >> 10 & 31, word >> 5 & 31, word & 31)
     return chars

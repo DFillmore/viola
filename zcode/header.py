@@ -304,7 +304,7 @@ def abbrevtableloc():
 
 file_length = None
 
-def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually. But it doesn't.
+def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually.
     global file_length
     if not file_length:
         l = zcode.memory.getword(FILELEN_ADDRESS)
