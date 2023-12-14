@@ -93,9 +93,6 @@ class memorystream(outputstream):
     def close(self):
         global stream
         self.active = False
-        streams[1].quiet = False
-        streams[2].quiet = False
-        streams[4].quiet = False
         if self.width == None:
             zcode.memory.setword(self.location, len(self.data))
             OFFSET = 2
@@ -304,6 +301,10 @@ def closestream(stream):
         else:
             m = streams[3].pop()
             m.close()
+            if len(streams[3]) == 0:
+                streams[1].quiet = False
+                streams[2].quiet = False
+                streams[4].quiet = False
         
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)
