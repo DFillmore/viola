@@ -259,12 +259,11 @@ def branch(condition):
     # the offset is a 14-bit signed number, so we have to convert it a bit.
     if ((offset >> 13) & 1 == 1) and (offset != 0): 
         offset = offset - 0x4000
-        
+    if zcode.debug and (byte1 & 128 != 128):
+        print('~', end='')
     if (byte1 & 128 == 128) and (condition == 1): # if the top bit is set, branch on true
         dobranch = 1
     elif (byte1 & 128 != 128) and (condition == 0): # if it isn't set, branch on false
-        if zcode.debug:
-            print('~', end='')
         dobranch = 1
     else:
         dobranch = 0
