@@ -204,7 +204,7 @@ def runops(address):
                     print('l' + str(op['varnum']-1), end='(')
                 else:
                     print('g' + str(op['varnum']-0x10), end='(')
-                    print(op['value'], end=') ')
+                print(op['value'], end=') ')
             elif op['type'] == 1:
                 print('#', end='')
                 print(f"{op['value']:02d}", end=' ')
