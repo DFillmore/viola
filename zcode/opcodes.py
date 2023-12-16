@@ -400,7 +400,7 @@ def z_insert_obj():
 def z_je():
     condition = 0
     for a in range(1, len(zcode.instructions.operands)):
-        if zcode.instructions.operands[0]['value'] == zcode.instructions.operands[a]:
+        if zcode.instructions.operands[0]['value'] == zcode.instructions.operands[a]['value']:
             condition = 1
     zcode.instructions.branch(condition)
     
