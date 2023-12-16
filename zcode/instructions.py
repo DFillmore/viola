@@ -50,7 +50,7 @@ def decode(address):
     elif optype < 0x60: # long 2OP, variable, small constant
         varnum = zcode.memory.getbyte(address+1)
         op1 = {'type':2, 'varnum':varnum, 'value': zcode.game.getvar(varnum)}
-        op2 = {'type':1, 'varnum':None, 'value': zcode.memory.getbyte(address + 1)}
+        op2 = {'type':1, 'varnum':None, 'value': zcode.memory.getbyte(address + 2)}
         operands.extend([op1, op2])
         address += 3
     elif optype < 0x80: # long 2OP, variable, variable
