@@ -417,8 +417,8 @@ class window:
     def printText(self, text):
         self.buffertext(text)
         buffering = self.testattribute(8)
-        if text.find('\r') != -1 or buffering == False:
-            self.flushTextBuffer() # flush the text buffer if a new line has been printed (or buffering is off)
+        if text.find('\r') != -1:# or buffering == False: 
+            self.flushTextBuffer() # flush the text buffer if a new line has been printed 
 
     def fitText(self, text, width, wrapping=True, buffering=True):
         # if the text doesn't already fit, we make an educated guess at the right size
