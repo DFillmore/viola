@@ -165,6 +165,11 @@ inputInstruction = False
     
 def runops(address):
     global inputInstruction
+    if address in instructions:
+        try:
+            instructions[address]['optable']['opcode']()
+        except:
+            pass
     optype = zcode.memory.getbyte(address)
     optable = None
     mask = 0x1f
@@ -212,7 +217,9 @@ def runops(address):
                 print('#', end='')
                 print(f"{op['value']:04d}", end=' ')
             
-            
+    if address > zcode.header.statmembase():
+        instructions[address]['optable'] = optable
+        instructions[address]['opcode'] = optype & mask
     optable[optype & mask]()
     if zcode.debug:
         print()
