@@ -20,6 +20,7 @@ from zcode.constants import *
 object_location = {}
 object_properties_address = {}
 object_properties_data_address = {}
+object_property_address = {}
 object_data = []
 largest_object_number = 0
 object_data_length = 0
@@ -280,6 +281,14 @@ def getFirstProperty(obj): # returns the address of obj's first property
     return address
 
 def getPropertyAddress(obj, prop): # returns the address of the property prop of the object obj (this returns the address of the first byte of the size info, not the first byte of the data)
+    global object_property_address
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_property_address:
+            if prop in object_property_address[obj]:
+                return object_property_address[obj][prop]
+    else:
+        updateObjectData(wipe=True)
+    
     address = getFirstProperty(obj)
     num = getPropertyNumber(address)
     if num == 0:
@@ -290,6 +299,9 @@ def getPropertyAddress(obj, prop): # returns the address of the property prop of
         if num == 0:
             prop = 0
             address = 0
+    if obj not in object_property_address:
+        object_property_address[obj] = {}
+    object_property_address[obj][prop] = address
     return address
 
 def getPropertyDataAddress(obj, prop): # returns the address of the first byte of the data of the given property of the given object. No, really.
