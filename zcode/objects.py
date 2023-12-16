@@ -17,10 +17,16 @@ import sys
 import zcode
 from zcode.constants import *
 
+object_location = {}
+object_properties_address = {}
+object_properties_data_address = {}
+object_data = []
+largest_object_number = 0
+object_data_length = 0
 
 def setup():
     global propdef
-    global objstart 
+    global objstart
     propdef = zcode.header.objtableloc()
     if zcode.header.zversion() < 4:
         objstart = propdef + 62
@@ -31,12 +37,32 @@ def getDefaultProperty(propnum):
     address = ((propnum - 1) * 2) + propdef
     return zcode.memory.getword(address)
 
+def updateObjectData():
+    global object_data
+    global object_data_length
+
+    if zcode.header.zversion() < 4:
+        object_data_length = (9*largest_object_number) - 9
+    else:
+        object_data_length = (12*largest_object_number) - 12
+        
+    object_data = zcode.memory.data[objstart:objstart + object_data_length]
+    
 def findObject(obj):
     """returns the address in memory of the object with the number given"""
+    global object_location
+    global largest_object_number
+    global object_data
+    if obj > largest_object_number:
+        largest_object_number = obj
+        updateObjectData()
+    if obj in object_location:
+        return object_location[obj]
     if zcode.header.zversion() < 4:
         address = objstart + (9 * obj) - 9
     else:
         address = objstart + (14 * obj) - 14
+    object_location[obj] = address
     return address
 
 def getParent(obj):
@@ -84,6 +110,7 @@ def setParent(obj, parent): # sets obj's parent to parent
         zcode.memory.setbyte(address + 4, parent)
     else:
         zcode.memory.setword(address + 6, parent)
+    updateObjectData()
 
 def setSibling(obj, sibling): # sets obj's sibling to sibling
     address = findObject(obj)
@@ -91,6 +118,7 @@ def setSibling(obj, sibling): # sets obj's sibling to sibling
         zcode.memory.setbyte(address + 5, sibling)
     else:
         zcode.memory.setword(address + 8, sibling)
+    updateObjectData()
 
 def setChild(obj, child): # sets obj's child to child
     address = findObject(obj)
@@ -98,14 +126,25 @@ def setChild(obj, child): # sets obj's child to child
         zcode.memory.setbyte(address + 6, child)
     else:
         zcode.memory.setword(address + 10, child)
+    updateObjectData()
 
 def getPropertiesAddress(obj): # returns the address of the properties table for the object numbered obj
+    global object_properties_address
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_properties_address:
+            return object_properties_address[obj]
+    else:
+         updateObjectData()
+    
+
     address = findObject(obj)
     if zcode.header.zversion() < 4:
-        return zcode.memory.getword(address + 7)
+        address = zcode.memory.getword(address + 7)
     else:
-        return zcode.memory.getword(address + 12)
-
+        address = zcode.memory.getword(address + 12)
+    object_properties_address[obj] = address
+    return address
+    
 def setAttribute(obj, attr): # sets attribute number attr in object number obj
     address = findObject(obj)
     if attr < 16:
@@ -248,13 +287,23 @@ def getPropertyAddress(obj, prop): # returns the address of the property prop of
     return address
 
 def getPropertyDataAddress(obj, prop): # returns the address of the first byte of the data of the given property of the given object. No, really.
-    sizeaddr = getPropertyAddress(obj, prop)
-    if sizeaddr == 0:
-        return 0
-    if zcode.header.zversion() < 4:
-        return sizeaddr + 1
-    elif (zcode.memory.getbyte(sizeaddr) >> 7) & 1 == 1:
-        return sizeaddr + 2
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_properties_data_address:
+            if prop in object_properties_data_address[obj]:
+                return object_properties_data_address[obj][prop]
     else:
-        return sizeaddr + 1
+         updateObjectData()
+    
+    sizeaddr = getPropertyAddress(obj, prop)
+    if sizeaddr != 0:
+        if zcode.header.zversion() < 4:
+            sizeaddr += 1
+        elif (zcode.memory.getbyte(sizeaddr) >> 7) & 1 == 1:
+            sizeaddr += 2
+        else:
+            sizeaddr += 1
+    if obj not in object_properties_data_address:
+        object_properties_data_address[obj] = {}
+    object_properties_data_address[obj][prop] = sizeaddr
+    return sizeaddr
 
