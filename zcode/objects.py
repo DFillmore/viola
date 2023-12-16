@@ -37,7 +37,7 @@ def getDefaultProperty(propnum):
     address = ((propnum - 1) * 2) + propdef
     return zcode.memory.getword(address)
 
-def updateObjectData():
+def updateObjectData(wipe=False):
     global object_data
     global object_data_length
 
@@ -47,6 +47,12 @@ def updateObjectData():
         object_data_length = (12*largest_object_number) - 12
         
     object_data = zcode.memory.data[objstart:objstart + object_data_length]
+    
+    if wipe: # the object table in the game's memory has been altered unexpectedly, so all our cached data is useless
+        object_location = {}
+        object_properties_address = {}
+        object_properties_data_address = {}
+        object_property_address = {}
     
 def findObject(obj):
     """returns the address in memory of the object with the number given"""
@@ -134,7 +140,7 @@ def getPropertiesAddress(obj): # returns the address of the properties table for
         if obj in object_properties_address:
             return object_properties_address[obj]
     else:
-         updateObjectData()
+         updateObjectData(wipe=True)
     
 
     address = findObject(obj)
@@ -258,7 +264,7 @@ def getPropertyNumber(address): # given the address of the size byte of a proper
 def getNextProperty(address):
     if zcode.header.zversion() < 4:
         sizelen = 1 # for z3 and earlier games, there is only one size byte
-    else: #  in higher versions of the z-machine there may be either one or two bytes
+    else: #  in later versions of the z-machine there may be either one or two bytes
         if zcode.memory.getbyte(address) & 128 == 128: # if the top bit of the first size byte is set, there are two size bytes
             sizelen = 2
         else: # if it is unset, there is only one size byte
@@ -292,7 +298,7 @@ def getPropertyDataAddress(obj, prop): # returns the address of the first byte o
             if prop in object_properties_data_address[obj]:
                 return object_properties_data_address[obj][prop]
     else:
-         updateObjectData()
+         updateObjectData(wipe=True)
     
     sizeaddr = getPropertyAddress(obj, prop)
     if sizeaddr != 0:
