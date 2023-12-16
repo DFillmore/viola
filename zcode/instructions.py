@@ -15,6 +15,7 @@
 operands = []
 
 instructions = {}
+branches = {}
 
 import zcode
 
@@ -241,28 +242,38 @@ def store(value):
 
 
 def branch(condition):
+    global branches
     if zcode.debug:
         print('?', end='')
-    byte1 = zcode.memory.getbyte(zcode.game.PC)
-    zcode.game.PC += 1
-    if byte1 & 64 == 64: # if bit 6 is set, branch information only occupies 1 byte
-        offset = byte1 & 63
-    else: # if bit 6 is clear, branch information occupies 2 bytes
-        byte2 = zcode.memory.getbyte(zcode.game.PC)
-        offset = ((byte1 & 63) << 8) + byte2
+    inaddress = zcode.game.PC
+    if inaddress in branches:
+        bdata = branches[inaddress]
+        offset = bdata['offset']
+        byte1 = bdata['mode']
+    else:
+        byte1 = zcode.memory.getbyte(zcode.game.PC)
         zcode.game.PC += 1
+        if byte1 & 64 == 64: # if bit 6 is set, branch information only occupies 1 byte
+            offset = byte1 & 63
+        else: # if bit 6 is clear, branch information occupies 2 bytes
+            byte2 = zcode.memory.getbyte(zcode.game.PC)
+            offset = ((byte1 & 63) << 8) + byte2
+            zcode.game.PC += 1
 
-    # the offset is a 14-bit signed number, so we have to convert it a bit.
-    if ((offset >> 13) & 1 == 1) and (offset != 0): 
-        offset = offset - 0x4000
+        # the offset is a 14-bit signed number, so we have to convert it a bit.
+        if ((offset >> 13) & 1 == 1) and (offset != 0): 
+            offset = offset - 0x4000
+
     if zcode.debug and (byte1 & 128 != 128):
         print('~', end='')
+        
     if (byte1 & 128 == 128) and (condition == 1): # if the top bit is set, branch on true
         dobranch = 1
     elif (byte1 & 128 != 128) and (condition == 0): # if it isn't set, branch on false
         dobranch = 1
     else:
         dobranch = 0
+        
     if zcode.debug:
         if offset == 0:
             print('rfalse', end=' ')
@@ -270,6 +281,7 @@ def branch(condition):
             print('rtrue', end=' ')
         else:
             print(hex(zcode.game.PC + offset - 2), end=' ')
+            
     if dobranch == 1:
         if zcode.debug:
             print('(success)', end=' ')
@@ -281,5 +293,7 @@ def branch(condition):
             zcode.game.PC = zcode.game.PC + offset - 2
     elif zcode.debug:
         print('(fail)', end=' ')
+    if inaddress > zcode.header.statmembase():
+        branches[inaddress] = {'offset': offset, 'mode': byte1}
 
         
