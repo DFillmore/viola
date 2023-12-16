@@ -29,8 +29,6 @@ def decode(address):
     
     if address in instructions:
         operands = instructions[address]['operands']
-        if zcode.debug:
-            print(' (saved) ', end='')
         for a in operands:
             if a['type'] == 2: # variable
                 varnum = a['varnum']
