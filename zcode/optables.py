@@ -171,7 +171,7 @@ def setup():
         opext[0x3] = zcode.opcodes.z_log_shift
         opext[0x4] = zcode.opcodes.z_set_font
         opext[0x9] = zcode.opcodes.z_save_undo
-        opext[0x9] = zcode.opcodes.z_restore_undo
+        opext[0xa] = zcode.opcodes.z_restore_undo
         if zcode.use_standard >= STANDARD_10: # Standard 1.0 or later
             opext[0xb] = zcode.opcodes.z_print_unicode
             opext[0xc] = zcode.opcodes.z_check_unicode
