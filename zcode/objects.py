@@ -25,6 +25,17 @@ object_data = []
 largest_object_number = 0
 object_data_length = 0
 
+object_list = {} # not a list
+
+class z_object():
+    location = False
+    properties_address = False
+    parent = False
+    sibling = False
+    child = False
+    attributes = False
+    elder_sibling = False
+
 def setup():
     global propdef
     global objstart
@@ -50,96 +61,181 @@ def updateObjectData(wipe=False):
     object_data = zcode.memory.data[objstart:objstart + object_data_length]
     
     if wipe: # the object table in the game's memory has been altered unexpectedly, so all our cached data is useless
-        object_location = {}
+        object_list = {}
         object_properties_address = {}
         object_properties_data_address = {}
         object_property_address = {}
     
 def findObject(obj):
     """returns the address in memory of the object with the number given"""
-    global object_location
+    global object_list
     global largest_object_number
-    global object_data
     if obj > largest_object_number:
         largest_object_number = obj
         updateObjectData()
-    if obj in object_location:
-        return object_location[obj]
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_list and object_list[obj].location:
+            return object_list[obj].location
+    else:
+        updateObjectData(wipe=True)
     if zcode.header.zversion() < 4:
         address = objstart + (9 * obj) - 9
     else:
         address = objstart + (14 * obj) - 14
-    object_location[obj] = address
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.location = address
+    object_list[obj] = o
     return address
 
 def getParent(obj):
     """returns the number of the parent object of the object with the number given"""
+    global object_list
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_list and object_list[obj].parent:
+            return object_list[obj].parent
+    else:
+        updateObjectData(wipe=True)
     address = findObject(obj)
     if zcode.header.zversion() < 4:
-        return zcode.memory.getbyte(address + 4)
+        parent = zcode.memory.getbyte(address + 4)
     else:
-        return zcode.memory.getword(address + 6)
+        parent = zcode.memory.getword(address + 6)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.parent = parent
+    object_list[obj] = o
+    return parent
+    
         
 def getSibling(obj): 
     """returns the number of the sibling object of the object with the number given"""
+    global object_list
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_list and object_list[obj].sibling:
+            return object_list[obj].sibling
+    else:
+        updateObjectData(wipe=True)
     address = findObject(obj)
     if zcode.header.zversion() < 4:
-        return zcode.memory.getbyte(address + 5)
+        sibling = zcode.memory.getbyte(address + 5)
     else:
-        return zcode.memory.getword(address + 8)
+        sibling = zcode.memory.getword(address + 8)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.sibling = sibling
+    object_list[obj] = o
+    return sibling
 
 def getChild(obj):
     """returns the number of the child object of the object with the number given"""
+    global object_list
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_list and object_list[obj].child:
+            return object_list[obj].child
+    else:
+        updateObjectData(wipe=True)
     address = findObject(obj)
     if zcode.header.zversion() < 4:
-        return zcode.memory.getbyte(address + 6)
+        child = zcode.memory.getbyte(address + 6)
     else:
-        return zcode.memory.getword(address + 10)
+        child = zcode.memory.getword(address + 10)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.child = child
+    object_list[obj] = o
+    return child
 
 def getElderSibling(obj):
     """returns the number of the object to which the object with the number given is the sibling"""
+    global object_list
+    if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
+        if obj in object_list and object_list[obj].elder_sibling:
+            return object_list[obj].elder_sibling
+    else:
+        updateObjectData(wipe=True)
+    
     parent = getParent(obj)
     if parent == 0: # there is no parent, so there is no elder sibling
-        return 0 
-    eldestchild = getChild(parent)
-    if eldestchild == obj: # there is no elder sibling
-        return 0
-    sibling = getSibling(eldestchild)
-    eldersibling = eldestchild
-    while sibling != obj:
-        eldersibling = getSibling(eldersibling)
-        sibling = getSibling(eldersibling)
+        eldersibling = 0
+    else:
+        eldestchild = getChild(parent)
+        if eldestchild == obj: # there is no elder sibling
+            eldersibling = 0
+        else:
+            sibling = getSibling(eldestchild)
+            eldersibling = eldestchild
+            while sibling != obj:
+                eldersibling = getSibling(eldersibling)
+                sibling = getSibling(eldersibling)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.elder_sibling = eldersibling
+    object_list[obj] = o                
     return eldersibling
 
 def setParent(obj, parent): # sets obj's parent to parent
+    global object_list
     address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 4, parent)
     else:
         zcode.memory.setword(address + 6, parent)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.elder_sibling = False
+    o.parent = parent
+    object_list[obj] = o                
     updateObjectData()
 
 def setSibling(obj, sibling): # sets obj's sibling to sibling
+    global object_list
     address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 5, sibling)
     else:
         zcode.memory.setword(address + 8, sibling)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.elder_sibling = False
+    o.sibling = sibling
+    object_list[obj] = o                
     updateObjectData()
 
 def setChild(obj, child): # sets obj's child to child
+    global object_list
     address = findObject(obj)
     if zcode.header.zversion() < 4:
         zcode.memory.setbyte(address + 6, child)
     else:
         zcode.memory.setword(address + 10, child)
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.child = child
+    object_list[obj] = o                
     updateObjectData()
 
 def getPropertiesAddress(obj): # returns the address of the properties table for the object numbered obj
-    global object_properties_address
+    global object_list
     if object_data == zcode.memory.data[objstart:objstart+object_data_length]:
-        if obj in object_properties_address:
-            return object_properties_address[obj]
+        if obj in object_list and object_list[obj].properties_address:
+            return object_list[obj].properties_address
     else:
          updateObjectData(wipe=True)
     
@@ -149,7 +245,14 @@ def getPropertiesAddress(obj): # returns the address of the properties table for
         address = zcode.memory.getword(address + 7)
     else:
         address = zcode.memory.getword(address + 12)
-    object_properties_address[obj] = address
+    if obj in object_list:
+        o = object_list[obj]
+    else:
+        o = z_object()
+    o.properties_address = address
+    object_list[obj] = o                
+    updateObjectData()
+
     return address
     
 def setAttribute(obj, attr): # sets attribute number attr in object number obj
