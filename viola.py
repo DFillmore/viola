@@ -262,15 +262,18 @@ def rungame(gamedata):
     return 1
 
 gamedata = handle_parameters(sys.argv)
-#import cProfile
-#import pstats
 
-#with cProfile.Profile() as pr:
-#    rungame(gamedata)
+if zcode.profile:
+    import cProfile
+    import pstats
+
+    with cProfile.Profile() as pr:
+        rungame(gamedata)
     
-#stats = pstats.Stats(pr)
-#stats.sort_stats(pstats.SortKey.TIME)
-#stats.dump_stats(filename='viola.prof')
-
-rungame(gamedata)
+    stats = pstats.Stats(pr)
+    print(dir(stats))
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.dump_stats(filename='viola.prof')
+else:
+    rungame(gamedata)
 

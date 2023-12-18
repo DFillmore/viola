@@ -28,3 +28,4 @@ __all__ = ["dictionary",
 from zcode import *
 
 debug = False
+profile = False
