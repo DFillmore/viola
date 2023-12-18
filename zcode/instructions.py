@@ -250,6 +250,7 @@ def branch(condition):
         bdata = branches[inaddress]
         offset = bdata['offset']
         byte1 = bdata['mode']
+        zcode.game.PC = bdata['branchfrom']
     else:
         byte1 = zcode.memory.getbyte(zcode.game.PC)
         zcode.game.PC += 1
@@ -281,7 +282,7 @@ def branch(condition):
             print('rtrue', end=' ')
         else:
             print(hex(zcode.game.PC + offset - 2), end=' ')
-            
+    branchfrom = zcode.game.PC
     if dobranch == 1:
         if zcode.debug:
             print('(success)', end=' ')
@@ -294,6 +295,6 @@ def branch(condition):
     elif zcode.debug:
         print('(fail)', end=' ')
     if inaddress > zcode.header.statmembase():
-        branches[inaddress] = {'offset': offset, 'mode': byte1}
+        branches[inaddress] = {'offset': offset, 'mode': byte1, 'branchfrom': branchfrom}
 
         
