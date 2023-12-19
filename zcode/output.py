@@ -22,6 +22,8 @@ def setup(startstreams=[False, True, False, False, False]):
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
     if startstreams[2]:
         streams[2].filename = startstreams[2]
+    if startstreams[4]:
+        streams[4].filename = startstreams[4]
     for stream, start in enumerate(startstreams):
         if start:
             streams[stream].open()
