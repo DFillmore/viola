@@ -95,19 +95,21 @@ def getgame(filename):
 
 def handle_parameters(argv): # handles command line parameters
     global blorbfiles
-    global height, width, title, transcriptfile, usespec
+    global height, width, title, transcriptfile, usespec, recordfile, playbackfile
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)\n  -R <filename> record input commands to file\n  -P <filename> playback input commands from file')
         sys.exit()
 
     if len(argv) <= 1:
         return None
     
-    args = getopt.getopt(argv[1:], 'dh:w:T:t:', 'zspec=')
+    args = getopt.getopt(argv[1:], 'dh:w:T:t:R:P:', 'zspec=')
     options = args[0]
     args = args[1]
     transcriptfile = False
+    recordfile = False
+    playbackfile = False
     usespec = 3
     for a in options:
         if a[0] == '-d':
@@ -120,6 +122,10 @@ def handle_parameters(argv): # handles command line parameters
             transcriptfile = a[1]
         elif a[0] == '-t':
             io.timer_period = int(a[1])
+        elif a[0] == '-R':
+            recordfile = a[1]
+        elif a[0] == '-P':
+            playbackfile = a[1]
         elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:
@@ -128,6 +134,10 @@ def handle_parameters(argv): # handles command line parameters
                     print(a)
                 sys.exit()
             usespec = specs.index(specversion)
+            
+    if playbackfile and recordfile:
+        print('Cannot record commands and playback commands at the same time (-P and -R).')
+        sys.exit()
     
 
 
@@ -153,8 +163,8 @@ def setupmodules(gamefile):
     zcode.game.setup()
     zcode.routines.setup()
     zcode.screen.setup()
-    zcode.input.setup()
-    zcode.output.setup([False, True, transcriptfile])
+    zcode.input.setup(playbackfile)
+    zcode.output.setup([False, True, transcriptfile, False, recordfile])
 
     zcode.objects.setup()
     
@@ -271,7 +281,6 @@ if zcode.profile:
         rungame(gamedata)
     
     stats = pstats.Stats(pr)
-    print(dir(stats))
     stats.sort_stats(pstats.SortKey.TIME)
     stats.dump_stats(filename='viola.prof')
 else:
