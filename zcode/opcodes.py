@@ -835,6 +835,9 @@ def z_read():
                 zcode.input.instring.append(inchar)
     zcode.screen.currentWindow.hideCursor()
     
+    if zcode.input.stream == 1:
+        zcode.screen.currentWindow.screen.update()
+    
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -880,6 +883,8 @@ def z_read():
 def z_read_char():
     io.stoptimer()
     zcode.screen.currentWindow.flushTextBuffer()
+    if zcode.input.stream == 1:
+        zcode.screen.currentWindow.screen.update()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
         t = zcode.instructions.operands[1]['value']
