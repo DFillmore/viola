@@ -185,11 +185,9 @@ def setglobal(varnum, value):
 
 
 def interrupt_call():
-    global PC   
-    if zcode.routines.quit:
-        return None
-    oldPC = PC
-    if len(interruptstack) > 0 and not returning:# and currentframe.interrupt == False : # if there are calls on the interrupt stack ~~and we're not in an interrupt routine
+    global PC
+    if len(interruptstack) > 0 and not returning and not zcode.routines.quit: # if there are calls on the interrupt stack
+        oldPC = PC
         i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
             PC = zcode.routines.oldpc
