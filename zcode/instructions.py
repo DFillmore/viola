@@ -139,6 +139,14 @@ def decode(address):
 
 def decodeextended(address):
     global operands
+    if address in instructions:
+        operands = instructions[address]['operands']
+        for a in operands:
+            if a['type'] == 2: # variable
+                varnum = a['varnum']
+                a['value'] = zcode.game.getvar(varnum)            
+        return instructions[address]['raddress']
+        
     inaddress = address
     address += 1
     operandtypes = zcode.memory.getbyte(address)
