@@ -168,7 +168,7 @@ def setup():
         opext[0x0] = zcode.opcodes.z_save
         opext[0x1] = zcode.opcodes.z_restore
         opext[0x2] = zcode.opcodes.z_log_shift
-        opext[0x3] = zcode.opcodes.z_log_shift
+        opext[0x3] = zcode.opcodes.z_art_shift
         opext[0x4] = zcode.opcodes.z_set_font
         opext[0x9] = zcode.opcodes.z_save_undo
         opext[0xa] = zcode.opcodes.z_restore_undo
