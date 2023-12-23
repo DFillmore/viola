@@ -263,12 +263,13 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         # then we set up said routine
         PC = zcode.routines.setuproutine(address)
         currentframe.flags += len(currentframe.lvars)
-        while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
-            args.pop()
-
-        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
-            setlocal(lvar, arg)
+        if len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
+            args = args[:len(currentframe.lvars)]
+            
+        args = list(map(zcode.numbers.unsigned, args)) # make sure the numbers are unsigned
         
+        currentframe.lvars[:len(args)] = args[:] # overlay the local variables with the arguments
+      
         if zcode.debug:
             print(' [', end='')
             for a in range(len(currentframe.lvars)):
