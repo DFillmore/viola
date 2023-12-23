@@ -116,7 +116,7 @@ def setword(offset, word):
         # if the transcription bit is being set, start transcription
         if word & 1 and (zcode.output.streams[2].active == False):
             zcode.output.openstream(2)
-        elif word & 1 == 0 and (zcode.output.streams[2].active): # if however it being unset, stop transcription
+        elif word & 1 == 0 and (zcode.output.streams[2].active): # if however it is being unset, stop transcription
             zcode.output.closestream(2)
         if word & 2 and zcode.screen.fixedpitchbit == False:
             zcode.screen.currentWindow.flushTextBuffer()

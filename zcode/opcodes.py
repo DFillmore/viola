@@ -482,10 +482,7 @@ def z_make_menu():
             stringaddress = zcode.memory.getword(address)
             stringlen = zcode.memory.getbyte(stringaddress)
             stringaddress += 1
-            #itemlist = []
             itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in range(stringlen)]
-            #for b in range(stringlen):
-            #    itemlist.append(chr(zcode.memory.getbyte(stringaddress+b)))
             item = ''.join(itemlist)
             items.append(item)
             address += 2
@@ -790,9 +787,8 @@ def z_read():
         parse = 0
 
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 2:
-        t = zcode.instructions.operands[2]
-        r = zcode.instructions.operands[3]
-        zcode.game.timerroutine = r
+        t = zcode.instructions.operands[2]['value']
+        zcode.game.timerroutine = zcode.instructions.operands[3]['value']
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
 
@@ -887,9 +883,8 @@ def z_read_char():
         zcode.screen.currentWindow.screen.update()
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
-        t = zcode.instructions.operands[1]
-        r = zcode.instructions.operands[2]
-        zcode.game.timerroutine = r
+        t = zcode.instructions.operands[1]['value']
+        zcode.game.timerroutine = zcode.instructions.operands[2]['value']
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
     if zcode.screen.cursor:
@@ -953,7 +948,6 @@ def z_restart():
     zcode.routines.restart = 1
 
 def z_restore():
-
     if len(zcode.instructions.operands) > 0:
         table = zcode.instructions.operands[0]
         bytes = zcode.instructions.operands[1]
