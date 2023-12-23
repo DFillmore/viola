@@ -934,11 +934,15 @@ def z_remove_obj():
             zcode.objects.setSibling(eldersibling, sibling)
 
 def z_restart():
+
     zcode.sounds.stopall()
     zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we've restarted
     zcode.screen.eraseWindow(zcode.numbers.unsigned(-1))
-    # should really make sure the transcription bit stays set 
+    # make sure the transcription and fixed bits stay set
+    preflags = zcode.memory.getword(FLAGS2_ADDRESS) & 3
     zcode.memory.data = zcode.memory.originaldata[:] # reset the memory contents
+    postflags = zcode.memory.getword(FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(FLAGS2_ADDRESS, preflags+postflags)
     zcode.game.setup() # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
