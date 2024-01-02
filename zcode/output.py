@@ -246,22 +246,17 @@ def checkident(address):
     else:
         return 0
 
-
-    
-
-
-
 def numopenstreams(stream):
-    if stream == 3: # should probably have a better check to see if this is a list or an instance
-        return len(streams[3])
-    else:
+    try:
+        if streams[stream].active: # should work for most streams (any that aren't lists like stream 3)
+            return 1
+        else:
+            return 0
+    except:
         try:
-            if streams[stream].active:
-                return 1
-            return 0
+            return len(streams[stream]) # should work for any streams that are lists (like stream 3)
         except:
-            return 0
-
+            return 0 # just in case
         
 
 def openstream(stream, location=None, width=None): # area is only used for stream 3, width only for z6 stream 3

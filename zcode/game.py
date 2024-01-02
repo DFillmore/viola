@@ -109,11 +109,14 @@ def restore(filename=None, prompt=1):
     if sd == False:
         interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
         return 0
-
+    preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.setarray(0, sd.memory)
+    postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
     PC = sd.PC
     callstack = copy.deepcopy(sd.callstack)
     currentframe = copy.deepcopy(sd.currentframe)
+    
 
     return 1
 
@@ -123,10 +126,14 @@ def restore_undo():
     if undolist == []:
         return 3
     undodata = undolist.pop()
+    preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.data = undodata.memory[:]
+    postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
     callstack = copy.deepcopy(undodata.callstack)
     currentframe = copy.deepcopy(undodata.currentframe)
     PC = undodata.PC
+    
     return 2
 
 def getvar(varnum, indirect=False):
@@ -205,8 +212,6 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
     global PC
     if len(callstack) > LARGEST_STACK:
         LARGEST_STACK = len(callstack)
-
-
 
     if address == 0:
         if useret == 1:

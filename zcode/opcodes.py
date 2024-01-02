@@ -482,10 +482,7 @@ def z_make_menu():
             stringaddress = zcode.memory.getword(address)
             stringlen = zcode.memory.getbyte(stringaddress)
             stringaddress += 1
-            #itemlist = []
             itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in range(stringlen)]
-            #for b in range(stringlen):
-            #    itemlist.append(chr(zcode.memory.getbyte(stringaddress+b)))
             item = ''.join(itemlist)
             items.append(item)
             address += 2
@@ -791,8 +788,7 @@ def z_read():
 
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 2:
         t = zcode.instructions.operands[2]['value']
-        r = zcode.instructions.operands[3]['value']
-        zcode.game.timerroutine = r
+        zcode.game.timerroutine = zcode.instructions.operands[3]['value']
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
 
@@ -888,8 +884,7 @@ def z_read_char():
     zcode.screen.currentWindow.line_count = 0
     if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
         t = zcode.instructions.operands[1]['value']
-        r = zcode.instructions.operands[2]['value']
-        zcode.game.timerroutine = r
+        zcode.game.timerroutine = zcode.instructions.operands[2]['value']
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
     if zcode.screen.cursor:
@@ -939,11 +934,15 @@ def z_remove_obj():
             zcode.objects.setSibling(eldersibling, sibling)
 
 def z_restart():
+
     zcode.sounds.stopall()
     zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we've restarted
     zcode.screen.eraseWindow(zcode.numbers.unsigned(-1))
-    # should really make sure the transcription bit stays set 
+    # make sure the transcription and fixed bits stay set
+    preflags = zcode.memory.getword(FLAGS2_ADDRESS) & 3
     zcode.memory.data = zcode.memory.originaldata[:] # reset the memory contents
+    postflags = zcode.memory.getword(FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(FLAGS2_ADDRESS, preflags+postflags)
     zcode.game.setup() # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
@@ -953,7 +952,6 @@ def z_restart():
     zcode.routines.restart = 1
 
 def z_restore():
-
     if len(zcode.instructions.operands) > 0:
         table = zcode.instructions.operands[0]['value']
         bytes = zcode.instructions.operands[1]['value']

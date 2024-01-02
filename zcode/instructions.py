@@ -270,8 +270,8 @@ def branch(condition):
             zcode.game.PC += 1
 
         # the offset is a 14-bit signed number, so we have to convert it a bit.
-        if ((offset >> 13) & 1 == 1) and (offset != 0): 
-            offset = offset - 0x4000
+        
+        offset -= ((offset & 0x2000) * 2)
 
     if zcode.debug and (byte1 & 128 != 128):
         print('~', end='')
