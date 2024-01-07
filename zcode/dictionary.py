@@ -34,10 +34,8 @@ def importdict(address):
     return entries
 
 def getseperators(address):
-    seperators = []
     numcodes = zcode.memory.getbyte(address)
-    for a in range(numcodes):
-        seperators.append(chr(zcode.memory.getbyte(address+a+1)))
+    seperators = [chr(a) for a in zcode.memory.getarray(address+1, numcodes)]
     return seperators
 
 

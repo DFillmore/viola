@@ -262,7 +262,7 @@ def branch(condition):
     else:
         byte1 = zcode.memory.getbyte(zcode.game.PC)
         zcode.game.PC += 1
-        if byte1 & 64 == 64: # if bit 6 is set, branch information only occupies 1 byte
+        if byte1 & 64: # if bit 6 is set, branch information only occupies 1 byte
             offset = byte1 & 63
         else: # if bit 6 is clear, branch information occupies 2 bytes
             byte2 = zcode.memory.getbyte(zcode.game.PC)
@@ -273,12 +273,12 @@ def branch(condition):
         
         offset -= ((offset & 0x2000) * 2)
 
-    if zcode.debug and (byte1 & 128 != 128):
+    if zcode.debug and not byte1 & 128:
         print('~', end='')
-        
-    if (byte1 & 128 == 128) and (condition == 1): # if the top bit is set, branch on true
-        dobranch = 1
-    elif (byte1 & 128 != 128) and (condition == 0): # if it isn't set, branch on false
+    
+    # if the top bit is set, branch on true
+    # if it isn't set, branch on false
+    if (byte1 & 128 == condition << 7): 
         dobranch = 1
     else:
         dobranch = 0

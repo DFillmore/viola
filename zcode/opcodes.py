@@ -397,13 +397,12 @@ def z_insert_obj():
         zcode.objects.setChild(newparent, object) # set the new parent's child to object
         zcode.objects.setSibling(object, newsibling) # set the object's sibling to newsibling
 
-def z_je():
-    condition = 0
-    for a in range(1, len(zcode.instructions.operands)):
-        if zcode.instructions.operands[0]['value'] == zcode.instructions.operands[a]['value']:
-            condition = 1
-    zcode.instructions.branch(condition)
-    
+def z_je():   
+    if zcode.instructions.operands[0]['value'] in map(lambda o : o['value'], zcode.instructions.operands[1:]):
+        zcode.instructions.branch(1)
+    else:
+        zcode.instructions.branch(0)
+     
 def z_jg():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
@@ -482,8 +481,7 @@ def z_make_menu():
             stringaddress = zcode.memory.getword(address)
             stringlen = zcode.memory.getbyte(stringaddress)
             stringaddress += 1
-            itemlist = [chr(zcode.memory.getbyte(stringaddress+b)) for b in range(stringlen)]
-            item = ''.join(itemlist)
+            item = ''.join([chr(b) for b in zcode.memory.getarray(stringaddress, stringlen)])
             items.append(item)
             address += 2
         result = io.zApp.makemenu(items[0], items[1:len(items)], number)
@@ -563,7 +561,7 @@ def z_picture_data():
             relnum = a.release
         zcode.memory.setword(array, len(picindex))
         zcode.memory.setword(array+2, relnum)
-        # I'm assuming that if no pictures are available, we don't branch
+
         if len(picindex) > 0:
             zcode.instructions.branch(1)
         else:
@@ -605,8 +603,7 @@ def z_pop_stack():
     else:
         stack = None
     if stack == None:
-        for a in range(items):
-            zcode.game.currentframe.evalstack.pop()
+        zcode.game.currentframe.evalstack = zcode.game.currentframe.evalstack[:len(zcode.game.currentframe.evalstack) - items]
     else:
         zcode.game.popuserstack(stack, items)
 
@@ -681,15 +678,14 @@ def z_print_table():
     c = 0
     
     for a in range(height):
-        t = ''
-        for b in range(width):
-            t += zcode.text.getZSCIIchar(zcode.memory.getbyte(zsciitext + c))
-            c += 1
+        line = zcode.memory.getarray(zsciitext + c, width)
+        c += len(line)
+        c += skip
+        t = ''.join([zcode.text.getZSCIIchar(c) for c in line])
         zcode.output.printtext(t)
                 
-        c += skip
         if a != height - 1:
-            if zcode.header.zversion() != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
+            if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions (standard explicitly doesn't specify what to do here)
                 zcode.output.printtext('\r')
             else:
                 y += zcode.screen.currentWindow.getFont().getHeight()
@@ -765,11 +761,11 @@ def z_quit():
     zcode.routines.quit = 1
 
 def z_random():
-    range = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
-    if range > 0:
-        zcode.instructions.store(zcode.numbers.getrandom(range))
+    rrange = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
+    if rrange > 0:
+        zcode.instructions.store(zcode.numbers.getrandom(rrange))
     else:
-        zcode.numbers.randomize(abs(range))
+        zcode.numbers.randomize(abs(rrange))
         zcode.instructions.store(0)
 
 def z_read():
@@ -1238,7 +1234,6 @@ def z_set_font():
                 result = zcode.screen.window.getFontNumber()
             zcode.instructions.store(result)
 
-
 def z_set_margins():
     left = zcode.instructions.operands[0]['value']
     right = zcode.instructions.operands[1]['value']
@@ -1309,12 +1304,10 @@ def z_set_true_colour(): # a z-spec 1.1 opcode.
 
         window.setRealColours(real_foreground, real_background)
 
-
 def z_set_window():
     zcode.screen.currentWindow.flushTextBuffer()
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
     zcode.screen.currentWindow = window
-
 
 def z_show_status():
     zcode.screen.updatestatusline()

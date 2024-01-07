@@ -167,7 +167,7 @@ def getstack(indirect=False):
 def putstack(value, indirect=False):
     global currentframe
     value = zcode.numbers.unsigned(value)
-    if indirect == True:
+    if indirect:
         currentframe.evalstack[-1] = value
     else:
         currentframe.evalstack.append(value)
@@ -277,13 +277,12 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
       
         if zcode.debug:
             print(' [', end='')
-            for a in range(len(currentframe.lvars)):
-                print(getlocal(a), end='')
-                if a == len(currentframe.lvars) - 1:
-                    print(']', end='')
-                else:
-                    print(', ', end='')
-
+            if currentframe.lvars != []:
+                for a in currentframe.lvars[:-1]:
+                    print(a, end=', ')
+                print(currentframe.lvars[-1], end=']')
+            else:
+                print(']', end='')
 def ret(value):
     global PC
     global retPC
