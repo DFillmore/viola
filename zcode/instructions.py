@@ -138,7 +138,7 @@ def decode(address):
     return address
 
 def decodeextended(address):
-    global operands
+    global operands, instructions
     if address in instructions:
         operands = instructions[address]['operands']
         for a in operands:
@@ -173,12 +173,18 @@ def decodeextended(address):
 inputInstruction = False
     
 def runops(address):
-    global inputInstruction
+    global inputInstruction, instructions
     if address in instructions:
         try:
-            instructions[address]['optable']['opcode']()
+            optable = instructions[address]['optable']
+            opcode = instructions[address]['opcode']
+            if zcode.debug:
+                print(optable[opcode].__name__.replace('z_', '@'), end=' ')
+            optable[opcode]()            
+            return None
         except:
             pass
+    
     optype = zcode.memory.getbyte(address)
     optable = None
     mask = 0x1f
