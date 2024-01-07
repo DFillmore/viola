@@ -60,8 +60,8 @@ def execloop():
         except:
             pass
         
-        
-        zcode.game.interrupt_call()
+        if len(zcode.game.interruptstack) > 0:
+            zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC)
         zcode.instructions.runops(oldpc)             
