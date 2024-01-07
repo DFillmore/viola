@@ -17,6 +17,7 @@ import sys
 import array
 import zcode
 from zcode.constants import *
+import functools
 
 
 data = None
@@ -99,8 +100,13 @@ def setbyte(offset, byte):
     byte = zcode.numbers.unsigned(byte) & 0xFF 
     data[offset] = int(byte)
 
+static_words = {}
+
 def getword(offset):
     global data
+    global static_words
+    if offset in static_words:
+        return static_words[offset]
 
     offset = zcode.numbers.unsigned(offset)
 
@@ -109,8 +115,14 @@ def getword(offset):
 
     if offset >= memory_size:
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
+        
+    value = int.from_bytes(data[offset:offset+WORDSIZE], byteorder='big')
+        
+    if offset > zcode.header.statmembase:
+        static_words[offset] = value
     
-    return int.from_bytes(data[offset:offset+2], byteorder='big')
+    
+    return value
     
 def setword(offset, word):
     global data
@@ -155,11 +167,13 @@ def setarray(offset, newdata):
     data[offset:offset+len(newdata)] = array.array(data.typecode, newdata)
 
 
+@functools.lru_cache(maxsize=128)
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.
     if address*WORDSIZE >= len(data):
         zcode.error.fatal("Tried to access data beyond available memory at " + hex(offset) + ".")
     return address * WORDSIZE
 
+@functools.lru_cache(maxsize=128)
 def unpackaddress(address, type=0):
     if zcode.header.zversion < 4: # zversions 1, 2 and 3
         return address * 2
