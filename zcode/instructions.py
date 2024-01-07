@@ -183,32 +183,24 @@ def runops(address):
     optable = None
     mask = 0x1f
     if optype < 0x80:
-        if zcode.debug:
-            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         optable = zcode.optables.op2
     elif optype < 0xb0:
-        if zcode.debug:
-            print(zcode.optables.op1[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         optable = zcode.optables.op1
         mask = 0xf
     elif optype < 0xc0:
-        if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and zcode.debug:
-            print(zcode.optables.op0[optype & 0xf].__name__.replace('z_', '@'), end=' ')
         optable = zcode.optables.op0
         mask = 0xf
     elif optype < 0xe0:
-        if zcode.debug:
-            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         optable = zcode.optables.op2
     elif optype < 0x100:
-        if zcode.debug:
-            print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         if optype & 0x1f == 0x4 or optype & 0x1f == 0x16:
             inputInstruction = True
         else:
             inputInstruction = False
         optable = zcode.optables.opvar
+    opcode = optype & mask
     if zcode.debug:
+        print(optable[opcode].__name__.replace('z_', '@'), end=' ')
         b = 0
         for op in operands:
             if op['type'] == 2:
@@ -228,8 +220,8 @@ def runops(address):
             
     if address > zcode.header.statmembase:
         instructions[address]['optable'] = optable
-        instructions[address]['opcode'] = optype & mask
-    optable[optype & mask]()
+        instructions[address]['opcode'] = opcode
+    optable[opcode]()
     if zcode.debug:
         print()
 
