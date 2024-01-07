@@ -18,6 +18,7 @@ import os
 import sys
 import babel
 
+forceblorb = False
 
 class rect:
     def __init__(self, data=None):
@@ -110,6 +111,8 @@ class Blorb:
             self.release = (self.data[x] << 8) + self.data[x+1]
 
     def checkgame(self, game):
+        if forceblorb:
+            return True
         x = self.findChunk(b'IFhd')
         if x == 0:
             return True
