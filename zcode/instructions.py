@@ -226,7 +226,7 @@ def runops(address):
                 print('#', end='')
                 print(f"{op['value']:04d}", end=' ')
             
-    if address > zcode.header.statmembase():
+    if address > zcode.header.statmembase:
         instructions[address]['optable'] = optable
         instructions[address]['opcode'] = optype & mask
     optable[optype & mask]()
