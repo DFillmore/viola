@@ -24,16 +24,6 @@ screen_buffer_mode = 0
 
 graphics_mode = 0
 
-basic_colours = { 'black':2,
-                  'red':3,
-                  'green':4,
-                  'yellow':5,
-                  'blue':6,
-                  'magenta':7,
-                  'cyan':8,
-                  'white':9
-                }
-
 cursor = True
 
 DEFFOREGROUND = 2
@@ -53,8 +43,10 @@ def setup(restarted=False):
     global graphics_mode
 
     colours.update(special_colours)
+    
     if zcode.memory.data[0] == 6: # if we're running a Version 6 game
         graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
+        colours.update(v6_colours)
 
     if zcode.use_standard < STANDARD_11:
         spectrum.pop(15)
@@ -362,21 +354,25 @@ styles = { 'roman'   : 0, # Selecting this style unselects all other styles.
 
 # Colour definitions
 
-colours = { 'under_cursor' : -1,
-            'current' : 0,
-            'default' : 1,
-            'black' : 2,
-            'red' : 3,
-            'green' : 4,
+colours = { 'black'  : 2,
+            'red'    : 3,
+            'green'  : 4,
             'yellow' : 5,
-            'blue' : 6,
-            'magenta' : 7,
-            'cyan' : 8,
-            'white' : 9,
-            'light_grey' : 10,
-            'medium_grey' : 11,
-            'dark_grey' : 12
+            'blue'   : 6,
+            'magenta': 7,
+            'cyan'   : 8,
+            'white'  : 9
           }
+          
+special_colours = { 'current'     : 0,
+                    'default'     : 1
+                  }
+v6_colours = { 'under_cursor' : -1, 
+               'light_grey'   : 10,
+               'medium_grey'  : 11,
+               'dark_grey'    : 12, 
+               'transparent'  : 15
+             }
 
 def checkcolours():
     """Returns 1 if colours are available, 0 if unavailable."""
