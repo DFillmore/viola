@@ -25,9 +25,16 @@ def setup():
     quit = 0
     input = 0
     restart = 0
+    
+static_routines = {}
 
 def setuproutine(address): 
     """set up the local variables and returns the address of the first instruction"""
+    global static_routines
+    if address in static_routines:
+        zcode.game.currentframe.lvars = static_routines[address]['vars'][:]
+        return static_routines[address]['address']
+    inaddress = address
     vars = []
     varnum = zcode.memory.getbyte(address)
     address += 1
@@ -42,6 +49,9 @@ def setuproutine(address):
     if zcode.debug:
         print()
         print(varnum, 'local variables', end='')
+    if address > zcode.header.statmembase:
+        routine = {'address':address, 'vars':vars[:]}
+        static_routines[inaddress] = routine
     return address
 
 
