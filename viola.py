@@ -165,13 +165,10 @@ def setupmodules(gamefile):
     zcode.screen.setup()
     zcode.input.setup(playbackfile)
     zcode.output.setup([False, True, transcriptfile, False, recordfile])
-
-    zcode.objects.setup()
-    
-
     zcode.optables.setup()
     zcode.sounds.setup(blorbs)
     zcode.header.setup()
+    zcode.objects.setup()
     zcode.text.setup()
     if terpnum != None:
         zcode.header.setterpnum(int(terpnum))
