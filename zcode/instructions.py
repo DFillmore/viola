@@ -133,7 +133,7 @@ def decode(address):
                 else:
                     pass
         address += 1
-    if address > zcode.header.statmembase():
+    if address > zcode.header.statmembase:
         instructions[inaddress] = {'operands':operands, 'raddress':address}
     return address
 
@@ -166,7 +166,7 @@ def decodeextended(address):
         else:
             pass
     address += 1
-    if address > zcode.header.statmembase():
+    if address > zcode.header.statmembase:
         instructions[inaddress] = {'operands':operands, 'raddress':address}
     return address
 
@@ -302,7 +302,7 @@ def branch(condition):
             zcode.game.PC = zcode.game.PC + offset - 2
     elif zcode.debug:
         print('(fail)', end=' ')
-    if inaddress > zcode.header.statmembase():
+    if inaddress > zcode.header.statmembase:
         branches[inaddress] = {'offset': offset, 'mode': byte1, 'branchfrom': branchfrom}
 
         

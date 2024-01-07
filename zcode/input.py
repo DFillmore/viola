@@ -54,9 +54,9 @@ def setStream(number, filename=None):
             stream = 1
 
 def getTerminatingCharacters():
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         return []
-    location = zcode.header.termcharloc()
+    location = zcode.header.termcharloc
     chars = []
     x = 1
     while x != 0:

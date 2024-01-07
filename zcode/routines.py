@@ -31,7 +31,7 @@ def setuproutine(address):
     vars = []
     varnum = zcode.memory.getbyte(address)
     address += 1
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         for a in range(varnum):
             vars.append(zcode.memory.getword(address))
             address += 2
@@ -72,17 +72,17 @@ def execstart():
     """set up the Z-Machine to start executing instructions"""
     global quit # if set to 1, game ends
     global restart
-    if zcode.header.zversion() != 6:
-        zcode.game.PC = zcode.header.initialPC()
+    if zcode.header.zversion != 6:
+        zcode.game.PC = zcode.header.initialPC
     else:
-        address = zcode.header.mainroutine()
+        address = zcode.header.mainroutine
         zcode.game.call(address, [], 0, 0, 1)
     execloop()
     while restart:
-        if zcode.header.zversion() != 6:
-            zcode.game.PC = zcode.header.initialPC()
+        if zcode.header.zversion != 6:
+            zcode.game.PC = zcode.header.initialPC
         else:
-            address = zcode.header.mainroutine()
+            address = zcode.header.mainroutine
             zcode.game.call(address, [], 0, 0, 1)
         restart = 0
         execloop()

@@ -46,7 +46,7 @@ def setup():
     global PC, evalstack, callstack, lvars, retPC, numargs, interruptroutine, currentframe, timerroutine, timer
     PC = 0
     callstack = []
-    if zcode.header.zversion() != 6:
+    if zcode.memory.data[0] != 6:
         currentframe = frame()
         currentframe.lvars = []
         currentframe.evalstack = []
@@ -177,7 +177,7 @@ def getlocal(varnum):
     return currentframe.lvars[varnum]
 
 def getglobal(varnum):
-    table = zcode.header.globalsloc()
+    table = zcode.header.globalsloc
     return zcode.memory.getword(table + (varnum * 2))
 
 def setlocal(varnum, value):
@@ -187,7 +187,7 @@ def setlocal(varnum, value):
 
 def setglobal(varnum, value):
     value = zcode.numbers.unsigned(value)
-    table = zcode.header.globalsloc()
+    table = zcode.header.globalsloc
     zcode.memory.setword(table + (varnum * 2), value)
 
 

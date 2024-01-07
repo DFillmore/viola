@@ -52,7 +52,8 @@ def setup(restarted=False):
     global DEFBACKGROUND
     global graphics_mode
 
-    if zcode.header.zversion() == 6: # if we're running a Version 6 game
+    colours.update(special_colours)
+    if zcode.memory.data[0] == 6: # if we're running a Version 6 game
         graphics_mode = 1 # set to graphics mode (units == pixels, not units == characters)
 
     if zcode.use_standard < STANDARD_11:
@@ -71,12 +72,12 @@ def setup(restarted=False):
 
     # create all the windows
     zwindow.append(window(ioScreen, fontlist[1])) # lower window (window 0)
-    if zcode.header.zversion() < 4:
+    if zcode.memory.data[0] < 4:
         statusline = window(ioScreen, fontlist[1]) # statusline
         statusline.window_id = "statusline"
-    if zcode.header.zversion() > 2:
+    if zcode.memory.data[0] > 2:
         zwindow.append(window(ioScreen, fontlist[1])) # upper window (window 1)
-    if zcode.header.zversion() == 6:
+    if zcode.memory.data[0] == 6:
         for a in range(6):
             zwindow.append(window(ioScreen, fontlist[1])) # windows 2 to 7
     for count, value in enumerate(zwindow):
@@ -97,32 +98,32 @@ def setup(restarted=False):
 
     # set up fonts
 
-    if zcode.header.zversion() != 6 and zcode.header.zversion() >= 3:
+    if zcode.memory.data[0] != 6 and zcode.memory.data[0] >= 3:
         getWindow(1).fontlist[1] = fontlist[4]
-    if zcode.header.zversion() < 4:
+    if zcode.memory.data[0] < 4:
         statusline.fontlist[1] = fontlist[4]
 
     for a in zwindow:
         a.setFontByNumber(1)
-    if zcode.header.zversion() < 4:
+    if zcode.memory.data[0] < 4:
         statusline.setFontByNumber(1)
 
 
 
     # position and size the windows
 
-    if zcode.header.zversion() == 6: # version 6
+    if zcode.memory.data[0] == 6: # version 6
         for count, value in enumerate(zwindow):
             getWindow(count).setPosition(1, 1)
             getWindow(count).setSize(0,0)
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
         getWindow(1).setSize(ioScreen.getWidth(), 0)
-    elif zcode.header.zversion() < 4: # version 1, 2 and 3
+    elif zcode.memory.data[0] < 4: # version 1, 2 and 3
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - getWindow(0).getFont().getHeight())
         getWindow(0).setPosition(1, getWindow(0).getFont().getHeight() + 1)
         statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
         statusline.setPosition(1, 1)
-        if zcode.header.zversion() == 3: # version 3
+        if zcode.memory.data[0] == 3: # version 3
             getWindow(1).setSize(ioScreen.getWidth(), 0)
             getWindow(1).setPosition(1, getWindow(1).getFont().getHeight() + 1)
     else: # version 4, 5, 7 and 8
@@ -133,24 +134,24 @@ def setup(restarted=False):
 
     # set the cursor in the windows
 
-    if zcode.header.zversion() == 6:
+    if zcode.memory.data[0] == 6:
         for count, value in enumerate(zwindow):
             getWindow(count).setCursor(1,1)
-    elif zcode.header.zversion() < 5:
+    elif zcode.memory.data[0] < 5:
         getWindow(0).setCursor(1, getWindow(0).y_size - getWindow(0).getFont().getHeight() + 1)
     else:
         getWindow(0).setCursor(1, 1)
 
     # set up window attributes
 
-    if zcode.header.zversion() == 6:
+    if zcode.memory.data[0] == 6:
         for count, value in enumerate(zwindow):
             getWindow(count).setattributes(8, 0)
         getWindow(0).setattributes(15, 0)
-    elif zcode.header.zversion() < 4:
+    elif zcode.memory.data[0] < 4:
         getWindow(0).setattributes(15,0)
         statusline.setattributes(0,0)
-        if zcode.header.zversion() == 3:
+        if zcode.memory.data[0] == 3:
             getWindow(1).setattributes(0,0)
     else:
         getWindow(0).setattributes(15,0)
@@ -161,12 +162,12 @@ def setup(restarted=False):
     for count, value in enumerate(zwindow):
         getWindow(count).setRealColours(foreground, background)
         getWindow(count).font_size = (getWindow(count).getFont().getHeight() << 8) + getWindow(count).getFont().getWidth()
-    if zcode.header.zversion() < 4:
+    if zcode.memory.data[0] < 4:
         statusline.setRealColours(background, foreground)
         statusline.font_size = (statusline.getFont().getHeight() << 8) + statusline.getFont().getWidth()
     
     # give the lower window in versions other than 6 a margin
-    if zcode.header.zversion() != 6:
+    if zcode.memory.data[0] != 6:
         getWindow(0).left_margin = 5
         getWindow(0).right_margin = 5
 
@@ -177,11 +178,11 @@ def supportedgraphics(arg): # should really tie this into the io module
     if arg == 1: # true colour
         return 1
     if arg == 2: # transparent background colour
-        if zcode.header.zversion() == 6:
+        if zcode.memory.data[0] == 6:
             return 1
         return 0
     if arg == 3: # picture displaying 
-        if zcode.header.zversion() == 6:
+        if zcode.memory.data[0] == 6:
             return 1
         return 0
     return 0
@@ -263,7 +264,7 @@ def resize():
     if zcode.header.zversion != 6:
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight())
         getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
-    if zcode.header.zversion() < 4:
+    if zcode.memory.data[0] < 4:
         statusline.setSize(ioScreen.getWidth(), statusline.getSize()[1])
 
     # Screen height (lines)
@@ -271,22 +272,22 @@ def resize():
     # Screen width (chars)
     zcode.header.setscreenwidthchars(ioScreen.getWidth() // getWindow(1).getFont().getWidth())
         
-    if zcode.header.zversion() > 4:
+    if zcode.memory.data[0] > 4:
         # Screen width (units)
-        if zcode.header.zversion() == 6:
+        if zcode.memory.data[0] == 6:
             zcode.header.setscreenwidth(ioScreen.getWidth())
         else:
             zcode.header.setscreenwidth(ioScreen.getWidth() // getWindow(1).getFont().getWidth())
         # Screen height (units)
-        if zcode.header.zversion() == 6:
+        if zcode.memory.data[0] == 6:
             zcode.header.setscreenheight(ioScreen.getHeight())
         else:
             zcode.header.setscreenheight(ioScreen.getHeight() // getWindow(1).getFont().getHeight())
 
-    if zcode.header.zversion() < 4: # version 1, 2 and 3
+    if zcode.memory.data[0] < 4: # version 1, 2 and 3
         statusline.setSize(ioScreen.getWidth(), statusline.getFont().getHeight())
         
-        if zcode.header.zversion() == 3: # version 3
+        if zcode.memory.data[0] == 3: # version 3
             getWindow(1).setSize(ioScreen.getWidth(), getWindow(1).getSize()[1])
             getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight() - (statusline.getSize()[1] + getWindow(1).getSize()[1]))
         else: # versions 1 and 2
@@ -296,7 +297,7 @@ def resize():
         getWindow(0).setSize(ioScreen.getWidth(), ioScreen.getHeight()-getWindow(1).getSize()[1])
 
             
-    if zcode.header.zversion() == 6:
+    if zcode.memory.data[0] == 6:
         zcode.header.setflag(2, 2, 1)
 
     
@@ -312,7 +313,7 @@ def updatestatusline(): # updates the status line for z-machine versions 1 to 3
     prevWindow = currentWindow
     currentWindow = statusline
     statusline.erase()
-    if zcode.header.getflag(1,1) == 1 and zcode.header.zversion() == 3:
+    if zcode.header.getflag(1,1) == 1 and zcode.memory.data[0] == 3:
         type = 1
     else:
         type = 0
@@ -861,7 +862,7 @@ def eraseWindow(winnum):
         ioScreen.erase(currentWindow.getColours()[1])
     elif getWindow(winnum).getColours()[1][3] != 0:
         getWindow(winnum).erase()
-        if zcode.header.zversion() < 5 and winnum == 0:
+        if zcode.memory.data[0] < 5 and winnum == 0:
             getWindow(0).setCursor(getWindow(0).getCursor()[0], getWindow(0).getSize()[1] - getWindow(0).getFont().getHeight())
 
 def split(size): 
@@ -875,7 +876,7 @@ def split(size):
 
 
 
-    if zcode.header.zversion() == 3:
+    if zcode.memory.data[0] == 3:
         eraseWindow(1)
 
     # move the window's cursor to the same absolute position it was in before the split

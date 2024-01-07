@@ -39,8 +39,8 @@ class z_object():
 def setup():
     global propdef
     global objstart
-    propdef = zcode.header.objtableloc()
-    if zcode.header.zversion() < 4:
+    propdef = zcode.header.objtableloc
+    if zcode.header.zversion < 4:
         objstart = propdef + 62
     else:
         objstart = propdef + 126
@@ -53,7 +53,7 @@ def updateObjectData(wipe=False):
     global object_data
     global object_data_length
 
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         object_data_length = (9*largest_object_number) - 9
     else:
         object_data_length = (12*largest_object_number) - 12
@@ -78,7 +78,7 @@ def findObject(obj):
             return object_list[obj].location
     else:
         updateObjectData(wipe=True)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         address = objstart + (9 * obj) - 9
     else:
         address = objstart + (14 * obj) - 14
@@ -99,7 +99,7 @@ def getParent(obj):
     else:
         updateObjectData(wipe=True)
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         parent = zcode.memory.getbyte(address + 4)
     else:
         parent = zcode.memory.getword(address + 6)
@@ -121,7 +121,7 @@ def getSibling(obj):
     else:
         updateObjectData(wipe=True)
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         sibling = zcode.memory.getbyte(address + 5)
     else:
         sibling = zcode.memory.getword(address + 8)
@@ -142,7 +142,7 @@ def getChild(obj):
     else:
         updateObjectData(wipe=True)
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         child = zcode.memory.getbyte(address + 6)
     else:
         child = zcode.memory.getword(address + 10)
@@ -187,7 +187,7 @@ def getElderSibling(obj):
 def setParent(obj, parent): # sets obj's parent to parent
     global object_list
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         zcode.memory.setbyte(address + 4, parent)
     else:
         zcode.memory.setword(address + 6, parent)
@@ -203,7 +203,7 @@ def setParent(obj, parent): # sets obj's parent to parent
 def setSibling(obj, sibling): # sets obj's sibling to sibling
     global object_list
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         zcode.memory.setbyte(address + 5, sibling)
     else:
         zcode.memory.setword(address + 8, sibling)
@@ -219,7 +219,7 @@ def setSibling(obj, sibling): # sets obj's sibling to sibling
 def setChild(obj, child): # sets obj's child to child
     global object_list
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         zcode.memory.setbyte(address + 6, child)
     else:
         zcode.memory.setword(address + 10, child)
@@ -241,7 +241,7 @@ def getPropertiesAddress(obj): # returns the address of the properties table for
     
 
     address = findObject(obj)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         address = zcode.memory.getword(address + 7)
     else:
         address = zcode.memory.getword(address + 12)
@@ -263,7 +263,7 @@ def setAttribute(obj, attr): # sets attribute number attr in object number obj
     elif attr < 32:
         flags = zcode.memory.getword(address+2)
         shift = attr - 16
-    elif attr < 48 and zcode.header.zversion() > 3:
+    elif attr < 48 and zcode.header.zversion > 3:
         flags = zcode.memory.getword(address+4)
         shift = attr - 32
     else: # this is an error condition
@@ -288,7 +288,7 @@ def clearAttribute(obj, attr): # clears attribute number attr in object number o
     elif attr < 32:
         flags = zcode.memory.getword(address+2)
         shift = attr - 16
-    elif attr < 48 and zcode.header.zversion() > 3:
+    elif attr < 48 and zcode.header.zversion > 3:
         flags = zcode.memory.getword(address+4)
         shift = attr - 32
     else: # this is an error condition
@@ -317,7 +317,7 @@ def testAttribute(obj, attr): # tests if attribute number attr is on in object n
     elif attr < 32:
         flags = zcode.memory.getword(address + 2)
         shift = attr - 16
-    elif zcode.header.zversion() > 3 and attr < 48:
+    elif zcode.header.zversion > 3 and attr < 48:
         flags = zcode.memory.getword(address + 4)
         shift = attr - 32
     else:
@@ -341,7 +341,7 @@ def getShortName(obj): # returns the decoded short name of the object
 
 
 def getPropertySize(address): # given the address of the size byte of a property, returns the size
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         size = (zcode.memory.getbyte(address) >> 5) + 1
     else:
         if (zcode.memory.getbyte(address) >> 7) & 1 == 1:
@@ -359,14 +359,14 @@ def getPropertySize(address): # given the address of the size byte of a property
     return size
 
 def getPropertyNumber(address): # given the address of the size byte of a property, returns the property number
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         size = zcode.memory.getbyte(address) & 0x1F
     else:
         size = zcode.memory.getbyte(address) & 0x3f
     return size
 
 def getNextProperty(address):
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         sizelen = 1 # for z3 and earlier games, there is only one size byte
     else: #  in later versions of the z-machine there may be either one or two bytes
         if zcode.memory.getbyte(address) & 128 == 128: # if the top bit of the first size byte is set, there are two size bytes
@@ -417,7 +417,7 @@ def getPropertyDataAddress(obj, prop): # returns the address of the first byte o
     
     sizeaddr = getPropertyAddress(obj, prop)
     if sizeaddr != 0:
-        if zcode.header.zversion() < 4:
+        if zcode.header.zversion < 4:
             sizeaddr += 1
         elif (zcode.memory.getbyte(sizeaddr) >> 7) & 1 == 1:
             sizeaddr += 2

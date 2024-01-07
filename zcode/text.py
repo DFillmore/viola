@@ -125,7 +125,7 @@ inputvalues.extend(list(range(252, 255)))
 def setupunitable():
     global unitable
     if zcode.use_standard >= STANDARD_10:
-        if zcode.header.zversion() > 4:
+        if zcode.header.zversion > 4:
             loc = zcode.header.unicodetableloc()
             if loc != 0:
                 size = zcode.memory.getbyte(loc)
@@ -155,11 +155,11 @@ def setupreverseunitable():
 
 def setupalphatable():
     global A0, A1, A2
-    if zcode.header.zversion() == 1:
+    if zcode.header.zversion == 1:
         A2 = '       0123456789.,!?_#\'"/\\<-:()'
-    if (zcode.header.zversion() >= 5) and (zcode.header.alphatableloc() != 0):
+    if (zcode.header.zversion >= 5) and (zcode.header.alphatableloc != 0):
         temp = []
-        loc = zcode.header.alphatableloc()
+        loc = zcode.header.alphatableloc
         for x in range(6):
             temp.append(' ')
         for x in range(26):
@@ -220,11 +220,11 @@ def getZSCIIchar(code):
         
     if code == 0:
         return ''
-    if code == 1 and zcode.header.zversion() == 1:
+    if code == 1 and zcode.header.zversion == 1:
         return '\r'
     elif code == 9:
         return '\t'
-    elif code == 11 and zcode.header.zversion() == 6: # sentence space. (needs to be smaller when using fixed pitch)
+    elif code == 11 and zcode.header.zversion == 6: # sentence space. (needs to be smaller when using fixed pitch)
         return '  '
     elif code == 13:
         return '\r'
@@ -244,7 +244,7 @@ def getZSCIIchar(code):
         return ''
     
 def printabbrev(table, code):
-    address = zcode.header.abbrevtableloc()
+    address = zcode.header.abbrevtableloc
     loc = 32 * (table-1) + code
     infoaddress = address + (loc * 2)
     wordaddress = zcode.memory.getword(infoaddress)
@@ -292,19 +292,19 @@ def zcharstozscii(address):
         elif twocode == 2: # last 5 bits of a 10-byte zscii code
             ZSCII[-1] = chr(ZSCII[-1] + a)
             twocode = 0
-        elif a < 4 and a > 0 and zcode.header.zversion() >= 3:
+        elif a < 4 and a > 0 and zcode.header.zversion >= 3:
             abbrev = a
-        elif a == 1 and zcode.header.zversion() == 2:
+        elif a == 1 and zcode.header.zversion == 2:
             abbrev = a
-        elif a == 4 and zcode.header.zversion() >= 3:
+        elif a == 4 and zcode.header.zversion >= 3:
             previousalpha = currentalpha
             currentalpha = A1
             temporary = True
-        elif a == 5 and zcode.header.zversion() >= 3:
+        elif a == 5 and zcode.header.zversion >= 3:
             previousalpha = currentalpha
             currentalpha = A2
             temporary = True
-        elif (a == 2 or a == 4) and zcode.header.zversion() < 3:
+        elif (a == 2 or a == 4) and zcode.header.zversion < 3:
             previousalpha = currentalpha
             if currentalpha == A0:
                 currentalpha = A1
@@ -314,7 +314,7 @@ def zcharstozscii(address):
                 currentalpha = A0
             if a == 2:
                 temporary = True
-        elif (a == 3 or a == 5) and zcode.header.zversion() < 3:
+        elif (a == 3 or a == 5) and zcode.header.zversion < 3:
             previousalpha = currentalpha
             if currentalpha == A0:
                 currentalpha = A2
@@ -330,7 +330,7 @@ def zcharstozscii(address):
             if temporary == True:
                 currentalpha = previousalpha
                 temporary = False
-        elif a == 1 and zcode.header.zversion() == 1:
+        elif a == 1 and zcode.header.zversion == 1:
             ZSCII.append('\r')
         else:
             ZSCII.append(currentalpha[a])
@@ -397,7 +397,7 @@ def zsciitozchars(text, maxlen=-1):
     words = []
     words.append((encoded[0] << 10) + (encoded[1] << 5) + encoded[2])
     words.append((encoded[3] << 10) + (encoded[4] << 5) + encoded[5])
-    if zcode.header.zversion() > 3:
+    if zcode.header.zversion > 3:
         words.append((encoded[6] << 10) + (encoded[7] << 5) + encoded[8])
     words[-1] = words[-1] | 0x8000
     chars = []
@@ -409,7 +409,7 @@ def zsciitozchars(text, maxlen=-1):
 
 def encodetext(word): # encodes words for matching against the dictionary
     word = unicodetozscii(word)
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         maxlen = 6
     else:
         maxlen = 9

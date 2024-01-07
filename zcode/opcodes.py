@@ -50,7 +50,7 @@ def z_art_shift():
 
 def z_buffer_mode():
     flag = zcode.instructions.operands[0]['value']
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         window = zcode.screen.getWindow(0)
     else:
         window = zcode.screen.currentWindow
@@ -204,7 +204,7 @@ def z_erase_line():
     if zcode.screen.currentWindow.getColours()[1][3] != 0:
         if value == 1:
             zcode.screen.currentWindow.eraseline(zcode.screen.currentWindow.getSize()[0])
-        elif zcode.header.zversion() != 6:
+        elif zcode.header.zversion != 6:
             pass
         else:
             zcode.screen.currentWindow.eraseline(value)
@@ -259,7 +259,7 @@ def z_get_child():
 def z_get_cursor():
     zcode.screen.currentWindow.flushTextBuffer()
     array = zcode.instructions.operands[0]['value']
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         window = zcode.screen.getWindow(1)
     else:
         window = zcode.screen.currentWindow
@@ -328,7 +328,7 @@ def z_get_prop_len():
     propaddr = zcode.instructions.operands[0]['value']
     if propaddr == 0:
         result = 0
-    elif zcode.header.zversion() > 3 and (zcode.memory.getbyte(zcode.instructions.operands[0]['value']-1) >> 7) & 1 == 1:
+    elif zcode.header.zversion > 3 and (zcode.memory.getbyte(zcode.instructions.operands[0]['value']-1) >> 7) & 1 == 1:
         result = zcode.objects.getPropertySize(propaddr - 2)
     else:
         result = zcode.objects.getPropertySize(propaddr - 1)
@@ -532,7 +532,7 @@ def z_output_stream(): # unfinished (need to fix the width stuff)
     stream = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     if stream == 3:
         table = zcode.instructions.operands[1]['value']
-        if zcode.header.zversion() == 6 and len(zcode.instructions.operands) > 2:
+        if zcode.header.zversion == 6 and len(zcode.instructions.operands) > 2:
             width = zcode.numbers.signed(zcode.instructions.operands[2]['value'])
             if width >= 0:
                 width = zcode.screen.getWindow(width).getSize()[0]
@@ -708,7 +708,7 @@ def z_print_unicode():
 
 
 def z_pull():
-    if zcode.header.zversion() == 6:
+    if zcode.header.zversion == 6:
         if len(zcode.instructions.operands) > 0:
             address = zcode.instructions.operands[0]['value']
             zcode.instructions.store(zcode.game.pulluserstack(address))
@@ -775,7 +775,7 @@ def z_random():
 def z_read():
     io.stoptimer()
     zcode.screen.currentWindow.line_count = 0
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         zcode.screen.updatestatusline()
 
     zcode.screen.currentWindow.flushTextBuffer()
@@ -786,20 +786,20 @@ def z_read():
     else:
         parse = 0
 
-    if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 2:
+    if zcode.header.zversion >= 4 and len(zcode.instructions.operands) > 2:
         t = zcode.instructions.operands[2]['value']
         zcode.game.timerroutine = zcode.instructions.operands[3]['value']
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
 
 
-    if zcode.header.zversion() >= 5:
+    if zcode.header.zversion >= 5:
         leftover = zcode.memory.getbyte(text+1)
     else:
         leftover = 0
     
     maxinput = zcode.memory.getbyte(text)
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         maxinput -= 1 # leave one space for the zero terminator
         start = 1
     else:
@@ -865,15 +865,15 @@ def z_read():
     for count, value in enumerate(inp):
         zcode.memory.setbyte(text + start + count, ord(value))
 
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         zcode.memory.setbyte(text+1+len(inp), 0)
     else:
         zcode.memory.setbyte(text+1, len(inp))
 
-    if zcode.header.zversion() < 5 or parse != 0:
+    if zcode.header.zversion < 5 or parse != 0:
         zcode.dictionary.tokenise(inp, parse)
 
-    if zcode.header.zversion() >= 5:
+    if zcode.header.zversion >= 5:
         zcode.instructions.store(termchar)
     
 def z_read_char():
@@ -882,7 +882,7 @@ def z_read_char():
     if zcode.input.stream == 1:
         zcode.screen.currentWindow.screen.update()
     zcode.screen.currentWindow.line_count = 0
-    if zcode.header.zversion() >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
+    if zcode.header.zversion >= 4 and len(zcode.instructions.operands) > 1 and zcode.game.timervalue == False:
         t = zcode.instructions.operands[1]['value']
         zcode.game.timerroutine = zcode.instructions.operands[2]['value']
         zcode.game.timerreturned = 1
@@ -989,7 +989,7 @@ def z_restore():
     else:       
         result = zcode.game.restore()
         if result == 0:
-            if zcode.header.zversion() < 4:
+            if zcode.header.zversion < 4:
                 zcode.instructions.branch(0)
             else:
                 zcode.instructions.store(0)
@@ -997,7 +997,7 @@ def z_restore():
             # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
             #zcode.screen.erasewindow(zcode.numbers.unsigned(-1))
             zcode.header.setup()
-            if zcode.header.zversion() < 4:
+            if zcode.header.zversion < 4:
                 zcode.instructions.branch(1)
             else:
                 zcode.instructions.store(2)
@@ -1021,10 +1021,10 @@ def z_rtrue():
     zcode.game.ret(1)
 
 def z_save(): 
-    if zcode.header.zversion() < 4:
+    if zcode.header.zversion < 4:
         result = zcode.game.save()
         zcode.instructions.branch(result)
-    elif zcode.header.zversion() > 4:
+    elif zcode.header.zversion > 4:
         if len(zcode.instructions.operands) > 0:
             table = zcode.instructions.operands[0]['value']
             bytes = zcode.instructions.operands[1]['value']
@@ -1056,7 +1056,7 @@ def z_save():
                 result = 0
         else:
             result = zcode.game.save()
-    if zcode.header.zversion() > 3:
+    if zcode.header.zversion > 3:
         zcode.instructions.store(result) 
 
 def z_save_undo():
@@ -1115,7 +1115,7 @@ def z_set_colour():
     real_foreground = None
     real_background = None
 
-    if zcode.header.zversion() == 6:
+    if zcode.header.zversion == 6:
         if len(zcode.instructions.operands) > 2:
             window = zcode.screen.getWindow(zcode.instructions.operands[2]['value'])
         else:
@@ -1146,7 +1146,7 @@ def z_set_colour():
 
 
 
-    if background == 15 and zcode.header.zversion() != 6 and zcode.use_standard >= STANDARD_11:
+    if background == 15 and zcode.header.zversion != 6 and zcode.use_standard >= STANDARD_11:
         zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
         background = 0
     elif background == 1:
@@ -1156,7 +1156,7 @@ def z_set_colour():
         background = 0
 
 
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         if foreground == 0:
             foreground = zcode.screen.getWindow(0).getBasicColours()[0]
         if background == 0:
@@ -1186,7 +1186,7 @@ def z_set_cursor():
         x = zcode.instructions.operands[1]['value']
     else:
         x = None
-    if zcode.header.zversion() == 6:
+    if zcode.header.zversion == 6:
         if len(zcode.instructions.operands) > 2:
             window = zcode.screen.getWindow(zcode.instructions.operands[2]['value'])
         else:
@@ -1197,7 +1197,7 @@ def z_set_cursor():
     
     
     
-    if zcode.header.zversion() == 6 and y < 0:
+    if zcode.header.zversion == 6 and y < 0:
         if y == -1:
             zcode.screen.cursor = False
         elif y == -2:
@@ -1208,14 +1208,14 @@ def z_set_cursor():
         yplus = y + window.getFont().getHeight()
         window.setCursor(x, y)
         window.setCursorToMargin()
-        if zcode.header.zversion() != 6 and yplus > window.y_size:
+        if zcode.header.zversion != 6 and yplus > window.y_size:
             zcode.error.strictz('cursor moved to position outside window 1 (window automatically resized)')
             zcode.screen.split(yplus)
 
 def z_set_font():
     font = zcode.instructions.operands[0]['value']
 
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         if font == 0:
             zcode.instructions.store(zcode.screen.getWindow(0).getFontNumber())
         else:
@@ -1251,7 +1251,7 @@ def z_set_margins():
 
 def z_set_text_style():
     style = zcode.instructions.operands[0]['value']
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         zcode.screen.zwindow[0].setStyle(style)
         zcode.screen.zwindow[1].setStyle(style)
     else:
@@ -1265,7 +1265,7 @@ def z_set_true_colour(): # a z-spec 1.1 opcode.
     real_foreground = None
     real_background = None
 
-    if zcode.header.zversion() == 6:
+    if zcode.header.zversion == 6:
         if len(zcode.instructions.operands) > 2:
             window = zcode.screen.getWindow(zcode.instructions.operands[2]['value'])
         else:
@@ -1280,13 +1280,13 @@ def z_set_true_colour(): # a z-spec 1.1 opcode.
     if foreground == -1:
         foreground = zcode.header.gettruedefaultforeground()
 
-    if background == -4 and zcode.header.zversion() != 6:
+    if background == -4 and zcode.header.zversion != 6:
         zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
         background = -2
     elif background == -1:
         background = zcode.header.gettruedefaultbackground()
 
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         if foreground == -2:
             foreground = zcode.screen.getWindow(0).getTrueColours()[0]
         if background == -2:
@@ -1333,7 +1333,7 @@ def z_sound_effect():
             repeats = 1
         if repeats == 0:
             repeats = 1
-        if zcode.header.zversion() < 5:
+        if zcode.header.zversion < 5:
             for a in io.blorbs:
                 repeats = a.getRepeats(number)
             if repeats == 0:
@@ -1348,7 +1348,7 @@ def z_sound_effect():
         zcode.sounds.playsound(number, effect, volume, repeats, routine)
 
 def z_split_window():
-    if zcode.header.zversion() != 6:
+    if zcode.header.zversion != 6:
         lines = zcode.instructions.operands[0]['value']
         size = lines * zcode.screen.getWindow(1).getFont().getHeight()
     else:
@@ -1417,7 +1417,7 @@ def z_tokenise():
         flag = zcode.instructions.operands[3]['value']
     else:
         flag = 0
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         address = text
         byte = 1
         while byte != 0:
