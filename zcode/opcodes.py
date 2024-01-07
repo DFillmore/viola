@@ -453,7 +453,7 @@ def z_loadb():
 def z_loadw():
     array = zcode.instructions.operands[0]['value']
     wordindex = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
-    zcode.instructions.store(zcode.memory.getword(array + (2 * wordindex)))
+    zcode.instructions.store(zcode.memory.getword(array + (zcode.memory.WORDSIZE * wordindex)))
 
 def z_log_shift():
     number = zcode.instructions.operands[0]['value']

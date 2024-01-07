@@ -178,7 +178,7 @@ def getlocal(varnum):
 
 def getglobal(varnum):
     table = zcode.header.globalsloc
-    return zcode.memory.getword(table + (varnum * 2))
+    return zcode.memory.getword(table + (varnum * zcode.memory.WORDSIZE))
 
 def setlocal(varnum, value):
     global currentframe
@@ -188,7 +188,7 @@ def setlocal(varnum, value):
 def setglobal(varnum, value):
     value = zcode.numbers.unsigned(value)
     table = zcode.header.globalsloc
-    zcode.memory.setword(table + (varnum * 2), value)
+    zcode.memory.setword(table + (varnum * zcode.memory.WORDSIZE), value)
 
 
 def interrupt_call():
@@ -333,14 +333,14 @@ def pushuserstack(address, value):
     if slots == 0:
         return 0
     else:
-        zcode.memory.setword(address + (slots*2), value)
+        zcode.memory.setword(address + (slots*zcode.memory.WORDSIZE), value)
         zcode.memory.setword(address, slots - 1)
         return 1
 
 def pulluserstack(address):
     slots = zcode.memory.getword(address)
     topvalue = slots + 1
-    value = zcode.memory.getword(address + (topvalue * 2))
+    value = zcode.memory.getword(address + (topvalue * zcode.memory.WORDSIZE))
     slots += 1
     zcode.memory.setword(address, slots)
     return value
