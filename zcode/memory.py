@@ -140,6 +140,12 @@ def setword(offset, word):
 def getarray(offset, length):
     offset = zcode.numbers.unsigned(offset)
     return data[offset:offset+length]
+    
+def getwordarray(offset, length):
+    offset = zcode.numbers.unsigned(offset)
+    return [int.from_bytes(a, byteorder='big') for a in zip(*(iter(getarray(offset, length*WORDSIZE)),) * WORDSIZE)]
+
+    
 
 def setarray(offset, newdata):
     global data
