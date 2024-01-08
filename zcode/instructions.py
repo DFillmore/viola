@@ -171,16 +171,39 @@ def decodeextended(address):
     return address
 
 inputInstruction = False
+
+def printoperands():
+    for op in operands:
+        if op['type'] == 2:
+            if op['varnum'] == 0:
+                print('stack(', end='')
+            elif op['varnum'] < 0x10:
+                print('l' + str(op['varnum']-1), end='(')
+            else:
+                print('g' + str(op['varnum']-0x10), end='(')
+            print(op['value'], end=') ')
+        elif op['type'] == 1:
+            print('#', end='')
+            print(f"{op['value']:02d}", end=' ')
+        elif op['type'] == 0:
+            print('#', end='')
+            print(f"{op['value']:04d}", end=' ')
+
     
 def runops(address):
     global inputInstruction, instructions
     if address in instructions:
         try:
             optable = instructions[address]['optable']
-            opcode = instructions[address]['opcode']
+            opcode_num = instructions[address]['opcode']
+            opcode = optable[opcode_num]
             if zcode.debug:
-                print(optable[opcode].__name__.replace('z_', '@'), end=' ')
-            optable[opcode]()            
+                if not opcode == zcode.opcodes.z_extended:
+                    print(opcode.__name__.replace('z_', '@'), end=' ')
+                    printoperands()
+            opcode()
+            if zcode.debug:                
+                print()           
             return None
         except:
             pass
@@ -204,30 +227,18 @@ def runops(address):
         else:
             inputInstruction = False
         optable = zcode.optables.opvar
-    opcode = optype & mask
+    opcode_num = optype & mask
+    opcode = optable[opcode_num]
     if zcode.debug:
-        print(optable[opcode].__name__.replace('z_', '@'), end=' ')
-        b = 0
-        for op in operands:
-            if op['type'] == 2:
-                if op['varnum'] == 0:
-                    print('stack(', end='')
-                elif op['varnum'] < 0x10:
-                    print('l' + str(op['varnum']-1), end='(')
-                else:
-                    print('g' + str(op['varnum']-0x10), end='(')
-                print(op['value'], end=') ')
-            elif op['type'] == 1:
-                print('#', end='')
-                print(f"{op['value']:02d}", end=' ')
-            elif op['type'] == 0:
-                print('#', end='')
-                print(f"{op['value']:04d}", end=' ')
+        if not opcode == zcode.opcodes.z_extended:
+            print(opcode.__name__.replace('z_', '@'), end=' ')
+            printoperands()
             
     if address > zcode.header.statmembase:
         instructions[address]['optable'] = optable
-        instructions[address]['opcode'] = opcode
-    optable[opcode]()
+        instructions[address]['opcode'] = opcode_num
+    
+    opcode()
     if zcode.debug:
         print()
 

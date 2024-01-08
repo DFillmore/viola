@@ -231,7 +231,8 @@ def z_extended(debug=False): # This isn't really an opcode, but it's easier to t
     zcode.game.PC = zcode.instructions.decodeextended(zcode.game.PC)
     opcode = zcode.memory.getbyte(oldPC)
     if zcode.debug:
-        print(zcode.optables.opext[opcode].__name__)
+        print(zcode.optables.opext[opcode].__name__.replace('z_', '@'), end=' ')
+        zcode.instructions.printoperands()
     zcode.optables.opext[opcode]()
 
 def z_get_child():
