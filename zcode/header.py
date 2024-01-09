@@ -55,6 +55,7 @@ HEADEREXT_ADDRESS = 0x36
 def setup(): # set all the relevant bits and bytes and words in the header
     global zversion, release, highmembase, initialPC, mainroutine, dictionaryloc, objtableloc, globalsloc, statmembase, serial, abbrevtableloc 
     global checksum, roffset, soffset, termcharloc, alphatableloc, headerextloc
+    global FWIDTH_ADDRESS, FHEIGHT_ADDRESS
 
     statmembase = int.from_bytes(zcode.memory.data[STATICMEM_ADDRESS:STATICMEM_ADDRESS+zcode.memory.WORDSIZE], byteorder='big')
     
