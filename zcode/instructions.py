@@ -287,10 +287,7 @@ def branch(condition):
     
     # if the top bit is set, branch on true
     # if it isn't set, branch on false
-    if (byte1 & 128 == condition << 7): 
-        dobranch = 1
-    else:
-        dobranch = 0
+    dobranch = (byte1 & 128 == condition << 7)
         
     if zcode.debug:
         if offset == 0:
@@ -300,7 +297,7 @@ def branch(condition):
         else:
             print(hex(zcode.game.PC + offset - 2), end=' ')
     branchfrom = zcode.game.PC
-    if dobranch == 1:
+    if dobranch:
         if zcode.debug:
             print('(success)', end=' ')
         if offset == 0:
