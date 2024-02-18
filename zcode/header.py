@@ -53,7 +53,7 @@ HEADEREXT_ADDRESS = 0x36
 
 
 def setup(): # set all the relevant bits and bytes and words in the header
-    global zversion, release, highmembase, initialPC, mainroutine, dictionaryloc, objtableloc, globalsloc, statmembase, serial, abbrevtableloc 
+    global zversion, release, highmembase, startat, dictionaryloc, objtableloc, globalsloc, statmembase, serial, abbrevtableloc 
     global checksum, roffset, soffset, termcharloc, alphatableloc, headerextloc
     global FWIDTH_ADDRESS, FHEIGHT_ADDRESS
 
@@ -62,10 +62,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
     zversion = zcode.memory.getbyte(0)
     release = zcode.memory.getword(RELEASE_ADDRESS)    
     highmembase = zcode.memory.getword(HIGHMEM_ADDRESS)
-    if zversion != 6:
-        initialPC = zcode.memory.getword(INITIALPC_ADDRESS)
-    else:
-        mainroutine = zcode.memory.getword(INITIALPC_ADDRESS)
+    startat = zcode.memory.getword(INITIALPC_ADDRESS)
     dictionaryloc = zcode.memory.getword(DICTIONARY_ADDRESS)
     objtableloc = zcode.memory.getword(OBJECTS_ADDRESS)
     globalsloc = zcode.memory.getword(GLOBALS_ADDRESS)
