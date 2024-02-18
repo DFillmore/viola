@@ -941,22 +941,12 @@ def z_restart():
     zcode.routines.restart = 1
 
 def z_restore():
-    if len(zcode.instructions.operands) > 0:
+    if zcode.header.zversion > 4 and len(zcode.instructions.operands) > 0:
         table = zcode.instructions.operands[0]['value']
         bytes = zcode.instructions.operands[1]['value']
-        try:
-            nameloc = zcode.instructions.operands[2]['value']
-            namelen = zcode.memory.getbyte(nameloc)
-            name = list(zcode.memory.getarray(nameloc+1, namelen))
-            filename = []
-            for a in name:
-                filename.append(chr(a))
-        except:
-            filename = []
-        if len(filename) > 0:
-            filename = ''.join(filename)
-        else:
-            filename = None
+        nameloc = zcode.instructions.operands[2]['value']
+        filename = zcode.output.savefilename(nameloc)
+            
         if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
             prompt = 1
         else:
@@ -977,19 +967,15 @@ def z_restore():
                  
     else:       
         result = zcode.game.restore()
-        if result == 0:
-            if zcode.header.zversion < 4:
-                zcode.instructions.branch(0)
-            else:
-                zcode.instructions.store(0)
-        else:
-            # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
-            #zcode.screen.erasewindow(zcode.numbers.unsigned(-1))
+        if zcode.header.zversion >= 4:
+            result += result # add 1 if 1, add 0 if 0
+            
+        if result: # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
             zcode.header.setup()
-            if zcode.header.zversion < 4:
-                zcode.instructions.branch(1)
-            else:
-                zcode.instructions.store(2)
+        if zcode.header.zversion < 4:
+            zcode.instructions.branch(result)
+        else:
+            zcode.instructions.store(result)           
         
 
 def z_restore_undo():
@@ -1009,44 +995,34 @@ def z_rfalse():
 def z_rtrue():
     zcode.game.ret(1)
 
-def z_save(): 
+def z_save():
     if zcode.header.zversion < 4:
-        result = zcode.game.save()
-        zcode.instructions.branch(result)
-    elif zcode.header.zversion > 4:
-        if len(zcode.instructions.operands) > 0:
-            table = zcode.instructions.operands[0]['value']
-            bytes = zcode.instructions.operands[1]['value']
-            data = zcode.memory.getarray(table, bytes)
-            try:
-                nameloc = zcode.instructions.operands[2]['value']
-                namelen = zcode.memory.getbyte(nameloc)
-                name = list(zcode.memory.getarray(nameloc+1, namelen))
-                filename = []
-                for a in name:
-                    filename.append(chr(a))
-            except:
-                filename = []
-            if len(filename) > 0:
-                filename = ''.join(filename)
-            else:
-                filename = None
-            if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
-                prompt = 1
-            else:
-                try:
-                    prompt = zcode.instructions.operands[3]['value']
-                except:
-                    prompt = 1
-            try:
-                zcode.output.writefile(data, filename, prompt, False)
-                result = 1
-            except:
-                result = 0
+        zcode.instructions.branch(zcode.game.save())
+        return None
+            
+    if zcode.header.zversion > 4 and len(zcode.instructions.operands) > 0:
+        table = zcode.instructions.operands[0]['value']
+        bytes = zcode.instructions.operands[1]['value']
+        data = zcode.memory.getarray(table, bytes)
+        nameloc = zcode.instructions.operands[2]['value']
+        filename = zcode.output.savefilename(nameloc)
+        if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
+            prompt = 1
         else:
-            result = zcode.game.save()
-    if zcode.header.zversion > 3:
-        zcode.instructions.store(result) 
+            try:
+                prompt = zcode.instructions.operands[3]['value']
+            except:
+                prompt = 1
+        try:
+            zcode.output.writefile(data, filename, prompt, False)
+            result = 1
+        except:
+            result = 0
+        zcode.instructions.store(result)
+    else:
+        zcode.instructions.store(zcode.game.save())
+
+       
 
 def z_save_undo():
     zcode.instructions.store(zcode.game.save_undo())

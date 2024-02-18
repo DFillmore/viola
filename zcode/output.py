@@ -30,7 +30,22 @@ def setup(startstreams=[False, True, False, False, False]):
 
 
 
+def savefilename(location):
+    alphanumeric = string.digits + string.ascii_letters
+    try:
+        nameloc = zcode.instructions.operands[2]['value']
+        namelen = zcode.memory.getbyte(nameloc)
+        name = bytearray(zcode.memory.getarray(nameloc+1, namelen)).decode('latin-1')
+        ext = name.find('.')
+        if ext >= 0:
+            name = name[:ext]
+        filename = ''.join([i for i in name if i in alphanumeric])
+    except:
+        filename = 'NULL'
+    if filename == '':
+        filename = 'NULL'
 
+    return filename
 
 class outputstream:
     active = False
