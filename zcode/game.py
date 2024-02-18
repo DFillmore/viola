@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -37,7 +37,7 @@ def setup():
     global PC, evalstack, callstack, lvars, retPC, numargs, interruptroutine, currentframe, timerroutine, timer
     PC = 0
     callstack = []
-    if zcode.header.zversion() != 6:
+    if zcode.memory.data[0] != 6:
         currentframe = frame()
         currentframe.lvars = []
         currentframe.evalstack = []
@@ -100,11 +100,14 @@ def restore(filename=None, prompt=1):
     if sd == False:
         io.interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
         return 0
-
+    preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.setarray(0, sd.memory)
+    postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
     PC = sd.PC
     callstack = copy.deepcopy(sd.callstack)
     currentframe = copy.deepcopy(sd.currentframe)
+    
 
     return 1
 
@@ -114,10 +117,14 @@ def restore_undo():
     if undolist == []:
         return 3
     undodata = undolist.pop()
+    preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.data = undodata.memory[:]
+    postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
     callstack = copy.deepcopy(undodata.callstack)
     currentframe = copy.deepcopy(undodata.currentframe)
     PC = undodata.PC
+    
     return 2
 
 def getvar(varnum, indirect=False):
@@ -128,7 +135,7 @@ def getvar(varnum, indirect=False):
     else:
         return getglobal(varnum - 0x10)
 
-def setvar(varnum, value, indirect=False):   
+def setvar(varnum, value, indirect=False): 
     if varnum == 0:
         putstack(value, indirect)
     elif varnum < 0x10:
@@ -151,7 +158,7 @@ def getstack(indirect=False):
 def putstack(value, indirect=False):
     global currentframe
     value = zcode.numbers.unsigned(value)
-    if indirect == True:
+    if indirect:
         currentframe.evalstack[-1] = value
     else:
         currentframe.evalstack.append(value)
@@ -161,8 +168,8 @@ def getlocal(varnum):
     return currentframe.lvars[varnum]
 
 def getglobal(varnum):
-    table = zcode.header.globalsloc()
-    return zcode.memory.getword(table + (varnum * 2))
+    table = zcode.header.globalsloc
+    return zcode.memory.getword(table + (varnum * zcode.memory.WORDSIZE))
 
 def setlocal(varnum, value):
     global currentframe
@@ -171,17 +178,15 @@ def setlocal(varnum, value):
 
 def setglobal(varnum, value):
     value = zcode.numbers.unsigned(value)
-    table = zcode.header.globalsloc()
-    zcode.memory.setword(table + (varnum * 2), value)
+    table = zcode.header.globalsloc
+    zcode.memory.setword(table + (varnum * zcode.memory.WORDSIZE), value)
 
 
 def interrupt_call():
-    global PC   
-    if zcode.routines.quit:
-        return None
-    oldPC = PC
-    if len(io.interruptstack) > 0 and not returning:
-        i = io.interruptstack.pop()
+    global PC
+    if len(interruptstack) > 0 and not returning and not zcode.routines.quit: # if there are calls on the interrupt stack
+        oldPC = PC
+        i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
             PC = zcode.routines.oldpc
         address = i.routine
@@ -198,8 +203,6 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
     global PC
     if len(callstack) > LARGEST_STACK:
         LARGEST_STACK = len(callstack)
-
-
 
     if address == 0:
         if useret == 1:
@@ -256,11 +259,21 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         # then we set up said routine
         PC = zcode.routines.setuproutine(address)
         currentframe.flags += len(currentframe.lvars)
-        while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
-            args.pop()
-        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
-            setlocal(lvar, arg)
-
+        if len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
+            args = args[:len(currentframe.lvars)]
+            
+        args = list(map(zcode.numbers.unsigned, args)) # make sure the numbers are unsigned
+        
+        currentframe.lvars[:len(args)] = args[:] # overlay the local variables with the arguments
+      
+        if zcode.debug:
+            print(' [', end='')
+            if currentframe.lvars != []:
+                for a in currentframe.lvars[:-1]:
+                    print(a, end=', ')
+                print(currentframe.lvars[-1], end=']')
+            else:
+                print(']', end='')
 def ret(value):
     global PC
     global retPC
@@ -311,14 +324,14 @@ def pushuserstack(address, value):
     if slots == 0:
         return 0
     else:
-        zcode.memory.setword(address + (slots*2), value)
+        zcode.memory.setword(address + (slots*zcode.memory.WORDSIZE), value)
         zcode.memory.setword(address, slots - 1)
         return 1
 
 def pulluserstack(address):
     slots = zcode.memory.getword(address)
     topvalue = slots + 1
-    value = zcode.memory.getword(address + (topvalue * 2))
+    value = zcode.memory.getword(address + (topvalue * zcode.memory.WORDSIZE))
     slots += 1
     zcode.memory.setword(address, slots)
     return value

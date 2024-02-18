@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -63,13 +63,11 @@ sequence = 1
 
 # since the z-machine uses 16-bit numbers and python uses 32-bit numbers,
 # we have to convert back and forth a bit. If we want to do signed maths with
-# numbers from memory, we have to convert them using neg. If we want to store
-# the result of a calculation in memory, we have to convert it using unsigned.
+# numbers from memory, we have to convert them using signed(). If we want to store
+# the result of a calculation in memory, we have to convert it using unsigned().
 
-def signed(negnum): 
-    if (negnum & 32768 == 32768) and (negnum != 0): 
-        negnum -= 0x10000
-    return negnum
+def signed(negnum):
+    return negnum - ((negnum & 0x8000) * 2)
 
 def unsigned(negnum):
     if (negnum < 0):

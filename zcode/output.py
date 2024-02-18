@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -22,13 +22,30 @@ def setup(startstreams=[False, True, False, False, False]):
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
     if startstreams[2]:
         streams[2].filename = startstreams[2]
+    if startstreams[4]:
+        streams[4].filename = startstreams[4]
     for stream, start in enumerate(startstreams):
         if start:
             streams[stream].open()
 
 
 
+def savefilename(location):
+    alphanumeric = string.digits + string.ascii_letters
+    try:
+        nameloc = zcode.instructions.operands[2]['value']
+        namelen = zcode.memory.getbyte(nameloc)
+        name = bytearray(zcode.memory.getarray(nameloc+1, namelen)).decode('latin-1')
+        ext = name.find('.')
+        if ext >= 0:
+            name = name[:ext]
+        filename = ''.join([i for i in name if i in alphanumeric])
+    except:
+        filename = 'NULL'
+    if filename == '':
+        filename = 'NULL'
 
+    return filename
 
 class outputstream:
     active = False
@@ -47,6 +64,10 @@ class screenstream(outputstream):
     active = True
     interruptprinted = False
     def output(self, data):
+        if zcode.debug:
+            print('"', end='')
+            print(data.replace('\r', '\n'), end='')
+            print('"', end=' ')
         if zcode.game.currentframe.interrupt:
             self.interruptprinted = True
         zcode.screen.printtext(data)
@@ -89,9 +110,6 @@ class memorystream(outputstream):
     def close(self):
         global stream
         self.active = False
-        streams[1].quiet = False
-        streams[2].quiet = False
-        streams[4].quiet = False
         if self.width == None:
             zcode.memory.setword(self.location, len(self.data))
             OFFSET = 2
@@ -107,7 +125,7 @@ class memorystream(outputstream):
                 line = (len(text[:x]), text[:x])
                 lines.append(line)
                 text = text[line[0]:]
-        if zcode.header.zversion() == 6:
+        if zcode.header.zversion == 6:
             zcode.header.settextwidth(zcode.screen.currentWindow.getFont().getStringLength(''.join(self.data)))
 
         c = 0
@@ -243,22 +261,17 @@ def checkident(address):
     else:
         return 0
 
-
-    
-
-
-
 def numopenstreams(stream):
-    if stream == 3: # should probably have a better check to see if this is a list or an instance
-        return len(streams[3])
-    else:
+    try:
+        if streams[stream].active: # should work for most streams (any that aren't lists like stream 3)
+            return 1
+        else:
+            return 0
+    except:
         try:
-            if streams[stream].active:
-                return 1
-            return 0
+            return len(streams[stream]) # should work for any streams that are lists (like stream 3)
         except:
-            return 0
-
+            return 0 # just in case
         
 
 def openstream(stream, location=None, width=None): # area is only used for stream 3, width only for z6 stream 3
@@ -300,6 +313,10 @@ def closestream(stream):
         else:
             m = streams[3].pop()
             m.close()
+            if len(streams[3]) == 0:
+                streams[1].quiet = False
+                streams[2].quiet = False
+                streams[4].quiet = False
         
 def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)

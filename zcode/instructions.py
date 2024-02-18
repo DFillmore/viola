@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -14,167 +14,232 @@
 
 operands = []
 
+instructions = {}
+branches = {}
+
 import zcode
 
 
-def decode(address, debug=False):
+def decode(address):
     global operands
-    if debug == True:
+    global instructions
+    inaddress = address
+    if zcode.debug:
         print(hex(address), end=' ')
     operands = []
+    
+    if address in instructions:
+        operands = instructions[address]['operands']
+        for a in operands:
+            if a['type'] == 2: # variable
+                varnum = a['varnum']
+                a['value'] = zcode.game.getvar(varnum)
+            
+        return instructions[address]['raddress']
     optype = zcode.memory.getbyte(address)
     if optype < 0x20: # long 2OP, small constant, small constant
-        operands.append(zcode.memory.getbyte(address + 1))
-        operands.append(zcode.memory.getbyte(address + 2))
+        op1 = {'type':1, 'varnum':None, 'value':zcode.memory.getbyte(address + 1)}
+        op2 = {'type':1, 'varnum':None, 'value':zcode.memory.getbyte(address + 2)}
+        operands.extend([op1, op2])
         address += 3
     elif optype < 0x40: # long 2OP, small constant, variable
-        operands.append(zcode.memory.getbyte(address + 1))
-        operands.append(zcode.game.getvar(zcode.memory.getbyte(address+2)))
+        op1 = {'type':1, 'varnum':None, 'value': zcode.memory.getbyte(address + 1)}
+        varnum = zcode.memory.getbyte(address+2)
+        op2 = {'type':2, 'varnum':varnum, 'value': zcode.game.getvar(varnum)}
+        operands.extend([op1,op2])
         address += 3
     elif optype < 0x60: # long 2OP, variable, small constant
-        operands.append(zcode.game.getvar(zcode.memory.getbyte(address+1)))
-        operands.append(zcode.memory.data[address + 2])
+        varnum = zcode.memory.getbyte(address+1)
+        op1 = {'type':2, 'varnum':varnum, 'value': zcode.game.getvar(varnum)}
+        op2 = {'type':1, 'varnum':None, 'value': zcode.memory.getbyte(address + 2)}
+        operands.extend([op1, op2])
         address += 3
     elif optype < 0x80: # long 2OP, variable, variable
-        operands.append(zcode.game.getvar(zcode.memory.getbyte(address+1)))
-        operands.append(zcode.game.getvar(zcode.memory.getbyte(address+2)))
+        varnum1 = zcode.memory.getbyte(address+1)
+        varnum2 = zcode.memory.getbyte(address+2)
+        op1 = {'type':2, 'varnum':varnum1, 'value': zcode.game.getvar(varnum1)}
+        op2 = {'type':2, 'varnum':varnum2, 'value': zcode.game.getvar(varnum2)}
+        operands.extend([op1, op2])
         address += 3
     elif optype < 0x90: # short 1OP, large constant
-        operands.append(zcode.memory.getword(address + 1))
+        op1 = {'type':0, 'varnum':None, 'value': zcode.memory.getword(address + 1)}
+        operands.append(op1)
         address += 3
     elif optype < 0xA0: # short 1OP, small constant
-        operands.append(zcode.memory.getbyte(address + 1))
+        op1 = {'type':1, 'varnum':None, 'value': zcode.memory.getbyte(address + 1)}
+        operands.append(op1)
         address += 2
     elif optype < 0xB0: # short 1OP, variable
-        operands.append(zcode.game.getvar(zcode.memory.getbyte(address+1)))
+        varnum = zcode.memory.getbyte(address+1)
+        op1 = {'type':2, 'varnum':varnum, 'value': zcode.game.getvar(varnum)}
+        operands.append(op1)
         address += 2
     elif optype < 0xC0: # short 0OP
         address += 1
     elif optype < 0xE0: # variable 2OP
         address += 1
-        operandtype = zcode.memory.getbyte(address)
+        operandtypes = zcode.memory.getbyte(address)
         for x in range(6,-2,-2):
-            if ((operandtype >> x) & 3) == 0:
+            otype = (operandtypes >> x) & 3
+            if otype == 0: # large constant
                 address += 1
-                operands.append(zcode.memory.getword(address))
+                operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getword(address)})
                 address += 1
-            elif ((operandtype >> x) & 3) == 1:
+            elif otype == 1: # small constant
                 address += 1
-                operands.append(zcode.memory.getbyte(address))
-            elif ((operandtype >> x) & 3) == 2:
+                operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getbyte(address)})
+            elif otype == 2: # variable
                 address += 1
-                operands.append(zcode.game.getvar(zcode.memory.getbyte(address)))
+                varnum = zcode.memory.getbyte(address)
+                operands.append({'type':otype, 'varnum':varnum, 'value':zcode.game.getvar(varnum)})
             else:
                 pass
         address += 1
-    elif optype < 0x100: # variable VAR
-        address += 1
-        operandtype = zcode.memory.getbyte(address)
-        operandtype2 = zcode.memory.getbyte(address+1)
+    elif optype < 0x100: # variable VAR  
+        address += 1  
         if (optype & 0x1f == 12) or (optype & 0x1f == 26): # if the opcode is call_vs2 or call_vn2, there can be up to 8 operands
+            operandtypes = zcode.memory.getword(address) 
             address += 1
-            for x in range(6,-2,-2):
-                if ((operandtype >> x) & 3) == 0:
+            for x in range(14,-2,-2):
+                otype = (operandtypes >> x) & 3
+                if otype == 0: # large constant
                     address += 1
-                    operands.append(zcode.memory.getword(address))
-                    address += 1        
-                elif ((operandtype >> x) & 3) == 1:
+                    operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getword(address)})
                     address += 1
-                    operands.append(zcode.memory.getbyte(address))
-                elif ((operandtype >> x) & 3) == 2:
+                elif otype == 1: # small constant
                     address += 1
-                    operands.append(zcode.game.getvar(zcode.memory.getbyte(address)))
-                else:
-                    pass
-            for x in range(6,-2,-2):
-                if ((operandtype2 >> x) & 3) == 0:
+                    operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getbyte(address)})
+                elif otype == 2: # variable
                     address += 1
-                    operands.append(zcode.memory.getword(address))
-                    address += 1
-                elif ((operandtype2 >> x) & 3) == 1:
-                    address += 1
-                    operands.append(zcode.memory.getbyte(address))
-                elif ((operandtype2 >> x) & 3) == 2:
-                    address += 1
-                    operands.append(zcode.game.getvar(zcode.memory.getbyte(address)))
+                    varnum = zcode.memory.getbyte(address)
+                    operands.append({'type':otype, 'varnum':varnum, 'value':zcode.game.getvar(varnum)})
                 else:
                     pass
         else:
+            operandtypes = zcode.memory.getbyte(address)
             for x in range(6,-2,-2):
-                if ((operandtype >> x) & 3) == 0:
+                otype = (operandtypes >> x) & 3
+                if otype == 0: # large constant
                     address += 1
-                    operands.append(zcode.memory.getword(address))
+                    operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getword(address)})
                     address += 1
-                elif ((operandtype >> x) & 3) == 1:
+                elif otype == 1: # small constant
                     address += 1
-                    operands.append(zcode.memory.getbyte(address))
-                elif ((operandtype >> x) & 3) == 2:
+                    operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getbyte(address)})
+                elif otype == 2: # variable
                     address += 1
-                    operands.append(zcode.game.getvar(zcode.memory.getbyte(address)))
+                    varnum = zcode.memory.getbyte(address)
+                    operands.append({'type':otype, 'varnum':varnum, 'value':zcode.game.getvar(varnum)})
                 else:
                     pass
         address += 1
-    return address                   
+    if address > zcode.header.statmembase:
+        instructions[inaddress] = {'operands':operands, 'raddress':address}
+    return address
 
 def decodeextended(address):
-    global operands
+    global operands, instructions
+    if address in instructions:
+        operands = instructions[address]['operands']
+        for a in operands:
+            if a['type'] == 2: # variable
+                varnum = a['varnum']
+                a['value'] = zcode.game.getvar(varnum)            
+        return instructions[address]['raddress']
+        
+    inaddress = address
     address += 1
-    operandtype = zcode.memory.getbyte(address)
-    y = 8
-    for x in range(1,5):
-        y = y - 2
-        if ((operandtype >> y) & 3) == 0:
+    operandtypes = zcode.memory.getbyte(address)
+    for x in range(6,-2,-2):
+        otype = (operandtypes >> x) & 3
+        if otype == 0: # large constant
             address += 1
-            operands.append(zcode.memory.getword(address))
+            operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getword(address)})
             address += 1
-        elif ((operandtype >> y) & 3) == 1:
+        elif otype == 1: # small constant
             address += 1
-            operands.append(zcode.memory.getbyte(address))
-        elif ((operandtype >> y) & 3) == 2:
+            operands.append({'type':otype, 'varnum':None, 'value':zcode.memory.getbyte(address)})
+        elif otype == 2: # variable
             address += 1
-            operands.append(zcode.game.getvar(zcode.memory.getbyte(address)))
+            varnum = zcode.memory.getbyte(address)
+            operands.append({'type':otype, 'varnum':varnum, 'value':zcode.game.getvar(varnum)})
         else:
             pass
     address += 1
+    if address > zcode.header.statmembase:
+        instructions[inaddress] = {'operands':operands, 'raddress':address}
     return address
 
 inputInstruction = False
+
+def printoperands():
+    for op in operands:
+        if op['type'] == 2:
+            if op['varnum'] == 0:
+                print('stack(', end='')
+            elif op['varnum'] < 0x10:
+                print('l' + str(op['varnum']-1), end='(')
+            else:
+                print('g' + str(op['varnum']-0x10), end='(')
+            print(op['value'], end=') ')
+        elif op['type'] == 1:
+            print('#', end='')
+            print(f"{op['value']:02d}", end=' ')
+        elif op['type'] == 0:
+            print('#', end='')
+            print(f"{op['value']:04d}", end=' ')
+
     
-def runops(address, debug=False):
-    global inputInstruction
+def runops(address):
+    global inputInstruction, instructions
+    if address in instructions:
+        try:
+            optable = instructions[address]['optable']
+            opcode_num = instructions[address]['opcode']
+            opcode = optable[opcode_num]
+            if zcode.debug:
+                if not opcode == zcode.opcodes.z_extended:
+                    print(opcode.__name__.replace('z_', '@'), end=' ')
+                    printoperands()
+            opcode()
+            if zcode.debug:                
+                print()           
+            return None
+        except:
+            pass
+    
     optype = zcode.memory.getbyte(address)
-    inputInstruction = False    
+    optable = None
+    mask = 0x1f
     if optype < 0x80:
-        if debug == True:
-            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op2[optype & 0x1f]()
+        optable = zcode.optables.op2
     elif optype < 0xb0:
-        if debug == True:
-            print(zcode.optables.op1[optype & 0xf].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op1[optype & 0xf]()
+        optable = zcode.optables.op1
+        mask = 0xf
     elif optype < 0xc0:
-        if zcode.optables.op0[optype & 0xf].__name__ != 'z_extended' and debug:
-            print(zcode.optables.op0[optype & 0xf].__name__.replace('z_', '@'), end=' ')
-        if zcode.optables.op0[optype & 0xf].__name__ == 'z_extended':
-            zcode.optables.op0[optype & 0xf](debug)
-        else:
-            zcode.optables.op0[optype & 0xf]()
+        optable = zcode.optables.op0
+        mask = 0xf
     elif optype < 0xe0:
-        if debug:
-            print(zcode.optables.op2[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
-        zcode.optables.op2[optype & 0x1f]()
+        optable = zcode.optables.op2
     elif optype < 0x100:
-        if debug:
-            print(zcode.optables.opvar[optype & 0x1f].__name__.replace('z_', '@'), end=' ')
         if optype & 0x1f == 0x4 or optype & 0x1f == 0x16:
             inputInstruction = True
-        
+        else:
+            inputInstruction = False
+        optable = zcode.optables.opvar
+    opcode_num = optype & mask
+    opcode = optable[opcode_num]
+    if zcode.debug:
+        if not opcode == zcode.opcodes.z_extended:
+            print(opcode.__name__.replace('z_', '@'), end=' ')
+            printoperands()
             
-
-        zcode.optables.opvar[optype & 0x1f]()
-    if debug:
-        for a in operands:
-            print(a, end=' ')
+    if address > zcode.header.statmembase:
+        instructions[address]['optable'] = optable
+        instructions[address]['opcode'] = opcode_num
+    
+    opcode()
+    if zcode.debug:
         print()
 
 def store(value):
@@ -182,33 +247,68 @@ def store(value):
     var = zcode.memory.getbyte(zcode.game.PC)
     zcode.game.PC += 1
     zcode.game.setvar(var, value)
+    if zcode.debug:
+        if var == 0:
+            print('-> stack =', zcode.game.currentframe.evalstack, end=' ')
+        else:
+            if var < 0x10:
+                varname = 'local' + str(var-1)
+            else:
+                varname = 'global' + str(var-0x10) 
+            print('->', varname, '=', value, end=' ')
+
 
 def branch(condition):
-    byte1 = zcode.memory.getbyte(zcode.game.PC)
-    zcode.game.PC += 1
-    if byte1 & 64 == 64: # if bit 6 is set, branch information only occupies 1 byte
-        offset = byte1 & 63
-    else: # if bit 6 is clear, branch information occupies 2 bytes
-        byte2 = zcode.memory.getbyte(zcode.game.PC)
-        offset = ((byte1 & 63) << 8) + byte2
-        zcode.game.PC += 1
-
-    # the offset is a 14-bit signed number, so we have to convert it a bit.
-    if ((offset >> 13) & 1 == 1) and (offset != 0): 
-        offset = offset - 0x4000
-        
-    if (byte1 & 128 == 128) and (condition == 1): # if the top bit is set, branch on true
-        dobranch = 1
-    elif (byte1 & 128 != 128) and (condition == 0): # if it isn't set, branch on false
-        dobranch = 1
+    global branches
+    if zcode.debug:
+        print('?', end='')
+    inaddress = zcode.game.PC
+    if inaddress in branches:
+        bdata = branches[inaddress]
+        offset = bdata['offset']
+        byte1 = bdata['mode']
+        zcode.game.PC = bdata['branchfrom']
     else:
-        dobranch = 0
-    if dobranch == 1:
+        byte1 = zcode.memory.getbyte(zcode.game.PC)
+        zcode.game.PC += 1
+        if byte1 & 64: # if bit 6 is set, branch information only occupies 1 byte
+            offset = byte1 & 63
+        else: # if bit 6 is clear, branch information occupies 2 bytes
+            byte2 = zcode.memory.getbyte(zcode.game.PC)
+            offset = ((byte1 & 63) << 8) + byte2
+            zcode.game.PC += 1
+
+        # the offset is a 14-bit signed number, so we have to convert it a bit.
+        
+        offset -= ((offset & 0x2000) * 2)
+
+    if zcode.debug and not byte1 & 128:
+        print('~', end='')
+    
+    # if the top bit is set, branch on true
+    # if it isn't set, branch on false
+    dobranch = (byte1 & 128 == condition << 7)
+        
+    if zcode.debug:
+        if offset == 0:
+            print('rfalse', end=' ')
+        elif offset == 1:
+            print('rtrue', end=' ')
+        else:
+            print(hex(zcode.game.PC + offset - 2), end=' ')
+    branchfrom = zcode.game.PC
+    if dobranch:
+        if zcode.debug:
+            print('(success)', end=' ')
         if offset == 0:
             zcode.game.ret(0)
         elif offset == 1:
             zcode.game.ret(1)
         else:
             zcode.game.PC = zcode.game.PC + offset - 2
+    elif zcode.debug:
+        print('(fail)', end=' ')
+    if inaddress > zcode.header.statmembase:
+        branches[inaddress] = {'offset': offset, 'mode': byte1, 'branchfrom': branchfrom}
 
         
