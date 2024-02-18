@@ -17,6 +17,7 @@ import sys
 import array
 import zcode
 from zcode.constants import *
+import functools
 
 
 data = None
@@ -41,18 +42,23 @@ def setup(gamedata):
     if version < 1 or version > 8:
         return False
 
-    filelen = int.from_bytes(data[0x1a:0x1c], byteorder='big')
-    if filelen == 0:
+    l = int.from_bytes(data[0x1a:0x1c], byteorder='big')
+    # in the header, the file lenth may be 0, in which case it is figured it out manually.
+    if l == 0:
         filelen = len(data)
-    else:
-        filelen = zcode.header.filelen()
+    elif data[0] < 4: # versions 1 to 3
+        filelen = l * 2
+    elif data[0] < 6: # versions 4 and 5
+        filelen = l * 4
+    else: # versions 6, 7 and 8
+        filelen = l * 8
     data = array.array('B', data)
     originaldata = data[:]
     return True
     
 def verify():
     global originaldata
-    checksum = sum(originaldata[0x40:zcode.header.filelen()]) % 0x10000 
+    checksum = sum(originaldata[0x40:zcode.header.filelen]) % 0x10000 
     if checksum == zcode.header.getchecksum():
         return True      
     return False
@@ -88,14 +94,19 @@ def setbyte(offset, byte):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset >= zcode.header.statmembase():
+    if offset >= zcode.header.statmembase:
         zcode.error.fatal("Tried to write a byte beyond dynamic memory at " + hex(offset) + ".")
 
     byte = zcode.numbers.unsigned(byte) & 0xFF 
     data[offset] = int(byte)
 
+static_words = {}
+
 def getword(offset):
     global data
+    global static_words
+    if offset in static_words:
+        return static_words[offset]
 
     offset = zcode.numbers.unsigned(offset)
 
@@ -104,8 +115,14 @@ def getword(offset):
 
     if offset >= memory_size:
         zcode.error.fatal("Tried to read a word beyond available memory at " + hex(offset) + ".")
+        
+    value = int.from_bytes(data[offset:offset+WORDSIZE], byteorder='big')
+        
+    if offset > zcode.header.statmembase:
+        static_words[offset] = value
     
-    return int.from_bytes(data[offset:offset+2], byteorder='big')
+    
+    return value
     
 def setword(offset, word):
     global data
@@ -125,7 +142,7 @@ def setword(offset, word):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = False
 
-    if offset >= zcode.header.statmembase():
+    if offset >= zcode.header.statmembase:
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
 
     word = zcode.numbers.unsigned(word)
@@ -135,31 +152,39 @@ def setword(offset, word):
 def getarray(offset, length):
     offset = zcode.numbers.unsigned(offset)
     return data[offset:offset+length]
+    
+def getwordarray(offset, length):
+    offset = zcode.numbers.unsigned(offset)
+    return [int.from_bytes(a, byteorder='big') for a in zip(*(iter(getarray(offset, length*WORDSIZE)),) * WORDSIZE)]
+
+    
 
 def setarray(offset, newdata):
     global data
     offset = zcode.numbers.unsigned(offset)
-    if len(newdata) + offset > zcode.header.statmembase():
+    if len(newdata) + offset > zcode.header.statmembase:
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset+len(newdata)) + ".")
     data[offset:offset+len(newdata)] = array.array(data.typecode, newdata)
 
 
+@functools.lru_cache(maxsize=128)
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.
     if address*WORDSIZE >= len(data):
         zcode.error.fatal("Tried to access data beyond available memory at " + hex(offset) + ".")
     return address * WORDSIZE
 
+@functools.lru_cache(maxsize=128)
 def unpackaddress(address, type=0):
-    if zcode.header.zversion() < 4: # zversions 1, 2 and 3
+    if zcode.header.zversion < 4: # zversions 1, 2 and 3
         return address * 2
-    elif zcode.header.zversion() < 6: # zversion 4 and 5
+    elif zcode.header.zversion < 6: # zversion 4 and 5
         return address * 4
-    elif zcode.header.zversion() < 8: # zversions 6 and 7
+    elif zcode.header.zversion < 8: # zversions 6 and 7
         if type == 1: # routine calls
-            return (address * 4) + zcode.header.routineoffset()
+            return (address * 4) + zcode.header.roffset
         elif type == 2: # print_paddr
-            return (address * 4) + zcode.header.stringoffset()
-    elif zcode.header.zversion() == 8: # zversion 8
+            return (address * 4) + zcode.header.soffset
+    elif zcode.header.zversion == 8: # zversion 8
         return address * 8
 
     

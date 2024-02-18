@@ -46,7 +46,7 @@ def setup():
     global PC, evalstack, callstack, lvars, retPC, numargs, interruptroutine, currentframe, timerroutine, timer
     PC = 0
     callstack = []
-    if zcode.header.zversion() != 6:
+    if zcode.memory.data[0] != 6:
         currentframe = frame()
         currentframe.lvars = []
         currentframe.evalstack = []
@@ -167,7 +167,7 @@ def getstack(indirect=False):
 def putstack(value, indirect=False):
     global currentframe
     value = zcode.numbers.unsigned(value)
-    if indirect == True:
+    if indirect:
         currentframe.evalstack[-1] = value
     else:
         currentframe.evalstack.append(value)
@@ -177,8 +177,8 @@ def getlocal(varnum):
     return currentframe.lvars[varnum]
 
 def getglobal(varnum):
-    table = zcode.header.globalsloc()
-    return zcode.memory.getword(table + (varnum * 2))
+    table = zcode.header.globalsloc
+    return zcode.memory.getword(table + (varnum * zcode.memory.WORDSIZE))
 
 def setlocal(varnum, value):
     global currentframe
@@ -187,16 +187,14 @@ def setlocal(varnum, value):
 
 def setglobal(varnum, value):
     value = zcode.numbers.unsigned(value)
-    table = zcode.header.globalsloc()
-    zcode.memory.setword(table + (varnum * 2), value)
+    table = zcode.header.globalsloc
+    zcode.memory.setword(table + (varnum * zcode.memory.WORDSIZE), value)
 
 
 def interrupt_call():
-    global PC   
-    if zcode.routines.quit:
-        return None
-    oldPC = PC
-    if len(interruptstack) > 0 and not returning:# and currentframe.interrupt == False : # if there are calls on the interrupt stack ~~and we're not in an interrupt routine
+    global PC
+    if len(interruptstack) > 0 and not returning and not zcode.routines.quit: # if there are calls on the interrupt stack
+        oldPC = PC
         i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
             PC = zcode.routines.oldpc
@@ -270,21 +268,21 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         # then we set up said routine
         PC = zcode.routines.setuproutine(address)
         currentframe.flags += len(currentframe.lvars)
-        while len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
-            args.pop()
-
-        for lvar, arg in enumerate(args): # overlay the local variables with the arguments
-            setlocal(lvar, arg)
+        if len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
+            args = args[:len(currentframe.lvars)]
+            
+        args = list(map(zcode.numbers.unsigned, args)) # make sure the numbers are unsigned
         
+        currentframe.lvars[:len(args)] = args[:] # overlay the local variables with the arguments
+      
         if zcode.debug:
             print(' [', end='')
-            for a in range(len(currentframe.lvars)):
-                print(getlocal(a), end='')
-                if a == len(currentframe.lvars) - 1:
-                    print(']', end='')
-                else:
-                    print(', ', end='')
-
+            if currentframe.lvars != []:
+                for a in currentframe.lvars[:-1]:
+                    print(a, end=', ')
+                print(currentframe.lvars[-1], end=']')
+            else:
+                print(']', end='')
 def ret(value):
     global PC
     global retPC
@@ -335,14 +333,14 @@ def pushuserstack(address, value):
     if slots == 0:
         return 0
     else:
-        zcode.memory.setword(address + (slots*2), value)
+        zcode.memory.setword(address + (slots*zcode.memory.WORDSIZE), value)
         zcode.memory.setword(address, slots - 1)
         return 1
 
 def pulluserstack(address):
     slots = zcode.memory.getword(address)
     topvalue = slots + 1
-    value = zcode.memory.getword(address + (topvalue * 2))
+    value = zcode.memory.getword(address + (topvalue * zcode.memory.WORDSIZE))
     slots += 1
     zcode.memory.setword(address, slots)
     return value

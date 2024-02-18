@@ -124,7 +124,7 @@ opext = [zcode.opcodes.z_badop]*256
 def setup():
     global op2, op1, op0, opvar, opext
     
-    if zcode.header.zversion() >= 3:
+    if zcode.memory.data[0] >= 3:
         op0[0xc] = zcode.opcodes.z_show_status
         op0[0xd] = zcode.opcodes.z_verify
         opvar[0xa] = zcode.opcodes.z_split_window
@@ -133,7 +133,7 @@ def setup():
         opvar[0x14] = zcode.opcodes.z_input_stream
         opvar[0x15] = zcode.opcodes.z_sound_effect
         
-    if zcode.header.zversion() >= 4:
+    if zcode.memory.data[0] >= 4:
         op2[0x19] = zcode.opcodes.z_call_2s
         op1[0x8] = zcode.opcodes.z_call_1s
         op0[0xc] = zcode.opcodes.z_badop
@@ -147,7 +147,7 @@ def setup():
         opvar[0x16] = zcode.opcodes.z_read_char
         opvar[0x17] = zcode.opcodes.z_scan_table
         
-    if zcode.header.zversion() >= 5:
+    if zcode.memory.data[0] >= 5:
         op2[0x1a] = zcode.opcodes.z_call_2n
         op2[0x1b] = zcode.opcodes.z_set_colour
         op2[0x1c] = zcode.opcodes.z_throw
@@ -178,7 +178,7 @@ def setup():
         if zcode.use_standard >= STANDARD_11: # Standard 1.1 or later
             opext[0xd] = zcode.opcodes.z_set_true_colour
             
-    if zcode.header.zversion() == 6:
+    if zcode.memory.data[0] == 6:
         opext[0x5] = zcode.opcodes.z_draw_picture
         opext[0x6] = zcode.opcodes.z_picture_data
         opext[0x7] = zcode.opcodes.z_erase_picture

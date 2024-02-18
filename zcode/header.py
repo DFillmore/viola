@@ -53,24 +53,56 @@ HEADEREXT_ADDRESS = 0x36
 
 
 def setup(): # set all the relevant bits and bytes and words in the header
-    if zversion() == 6:
+    global zversion, release, highmembase, initialPC, mainroutine, dictionaryloc, objtableloc, globalsloc, statmembase, serial, abbrevtableloc 
+    global checksum, roffset, soffset, termcharloc, alphatableloc, headerextloc
+    global FWIDTH_ADDRESS, FHEIGHT_ADDRESS
+
+    statmembase = int.from_bytes(zcode.memory.data[STATICMEM_ADDRESS:STATICMEM_ADDRESS+zcode.memory.WORDSIZE], byteorder='big')
+    
+    zversion = zcode.memory.getbyte(0)
+    release = zcode.memory.getword(RELEASE_ADDRESS)    
+    highmembase = zcode.memory.getword(HIGHMEM_ADDRESS)
+    if zversion != 6:
+        initialPC = zcode.memory.getword(INITIALPC_ADDRESS)
+    else:
+        mainroutine = zcode.memory.getword(INITIALPC_ADDRESS)
+    dictionaryloc = zcode.memory.getword(DICTIONARY_ADDRESS)
+    objtableloc = zcode.memory.getword(OBJECTS_ADDRESS)
+    globalsloc = zcode.memory.getword(GLOBALS_ADDRESS)
+    
+    serial = ''.join([chr(c) for c in zcode.memory.getarray(SERIAL_ADDRESS,6)])
+    abbrevtableloc = zcode.memory.getword(ABBREVS_ADDRESS)    
+
+    # filelen is set and used in the memory module
+
+    checksum = zcode.memory.getword(CHECKSUM_ADDRESS)
+    
+    if zversion == 6:
+        roffset = zcode.memory.getword(ROFFSET_ADDRESS) * 8
+        soffset = zcode.memory.getword(SOFFSET_ADDRESS) * 8
+    
+    termcharloc = zcode.memory.getword(TERMCHARS_ADDRESS)
+    alphatableloc = zcode.memory.getword(ALPHATABLE_ADDRESS)
+    headerextloc = zcode.memory.getword(HEADEREXT_ADDRESS)
+
+    if zversion == 6:
         FWIDTH_ADDRESS = 0x27
         FHEIGHT_ADDRESS = 0x26
     
     # Flags 1
-    if zversion() == 3:
+    if zversion == 3:
         setflag(1, 4, 0) # status line is available
         setflag(1, 5, 1) # screen splitting is available
         setflag(1, 6, 0) # The default font is not fixed-pitch
-    elif zversion() < 9:
+    elif zversion < 9:
         setflag(1, 2, zcode.screen.supportedstyles(2)) # Boldface
         setflag(1, 3, zcode.screen.supportedstyles(4)) # Italic
         setflag(1, 4, zcode.screen.supportedstyles(8)) # Fixed-pitch style
         if zcode.use_standard >= STANDARD_02: # from 0.2 onward
             setflag(1, 7, 1) # Timed input
-        if zversion() > 4:
+        if zversion > 4:
             setflag(1, 0, zcode.screen.supportedgraphics(0)) # Colours
-        if zversion() == 6:
+        if zversion == 6:
             setflag(1, 1, zcode.screen.supportedgraphics(3)) # Picture displaying
         if zcode.sounds.availablechannels(0) + zcode.sounds.availablechannels(1) > 0: # if any effect or music channels are available, sound effects are available
             setflag(1, 5, 1) # sound effects
@@ -79,7 +111,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
 
 
     # Flags 2 - If unset by the game, the terp should leave them like that.
-    if zversion() > 4:
+    if zversion > 4:
         if getflag(2, 3): # pictures
             setflag(2, 3, zcode.screen.supportedgraphics(3))
         if getflag(2, 4): # undo
@@ -97,13 +129,13 @@ def setup(): # set all the relevant bits and bytes and words in the header
             setflag(2, 8, 0)
     
     # Flags 3 - If unset by the game, the terp should leave them like that. All unknown bits should be set to 0.
-    if zversion() > 4:
+    if zversion > 4:
         if getflag(3, 0): # transparency
             setflag(3, 0, zcode.screen.supportedgraphics(2))
         for a in range(1, 16): # set all the other bits to 0, because we don't know what they do
             setflag(3, a, 0)
 
-    if zversion() > 3:
+    if zversion > 3:
         # Interpreter number
         setterpnum(6)
         # Interpreter version
@@ -111,7 +143,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
     
     updateSizes()
 
-    if zversion() > 4:
+    if zversion > 4:
         # Default foreground colour
         setdeffgcolour(zcode.screen.DEFFOREGROUND)
         # Default background colour
@@ -122,9 +154,11 @@ def setup(): # set all the relevant bits and bytes and words in the header
     m = standards[zcode.use_standard][0]
     n = standards[zcode.use_standard][1]
     setstandardnum(m, n)
+    
+
 
 def updateFontSize():
-    if zversion() > 4:
+    if zversion > 4:
         # Font width 
         if zcode.screen.graphics_mode == 1:
             setfontwidth(zcode.screen.currentWindow.getFont().getWidth())
@@ -138,14 +172,14 @@ def updateFontSize():
 
 
 def updateSizes():
-    if zversion() > 3:
+    if zversion > 3:
         columns = int(zcode.screen.ioScreen.getWidth() // zcode.screen.getWindow(1).getFont().getWidth())
         # Screen height (lines)
         setscreenheightlines(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
         # Screen width (chars)
         setscreenwidthchars(columns)
         
-    if zversion() > 4:
+    if zversion > 4:
         # Screen width (units)
         if zcode.screen.graphics_mode == 1:
             setscreenwidth(zcode.screen.ioScreen.getWidth())
@@ -158,40 +192,18 @@ def updateSizes():
             setscreenheight(int(zcode.screen.ioScreen.getHeight() // zcode.screen.getWindow(1).getFont().getHeight()))
         updateFontSize()
 
-
-def release():
-    return zcode.memory.getword(RELEASE_ADDRESS)
-
-def serial():
-    x = zcode.memory.getarray(SERIAL_ADDRESS,6)
-    return ''.join([chr(b) for b in x])
-
 def identifier():
-    return str(release()) + "." + serial()
-
-zmachine_version = None    
-
-def zversion():
-    global zmachine_version
-    if zmachine_version == None:
-        zmachine_version = zcode.memory.getbyte(0)
-    return zmachine_version
-
+    return str(release) + "." + serial
 
 def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags 1, bit is the bit number to check, such as bit 1 for z3 status line type checking
     if bitmap == 1:
-        flag = 1
-        for a in range(bit):
-            flag = flag * 2
-
+        flag = pow(2,bit)
         if zcode.memory.getbyte(FLAGS1_ADDRESS) & flag == flag:
             return 1
         else:
             return 0
     elif bitmap == 2:
-        flag = 1
-        for a in range(bit):
-            flag = flag * 2
+        flag = pow(2,bit)
         if zcode.memory.getword(FLAGS2_ADDRESS) & flag == flag:
             return 1
         else:
@@ -200,131 +212,34 @@ def getflag(bitmap, bit): # bitmap is the set of flags to look in, such as flags
         if headerextsize() < 4:
             return 0
         else:
-            flag = 1
-            for a in range(bit):
-                flag = flag * 2
+            flag = pow(2,bit)
             if zcode.memory.getword(headerextloc() + 4) & flag == flag:
                 return 1
             else:
                 return 0
         
-
 def setflag(bitmap, bit, value): 
     # bitmap is the set of flags to look in, bit is the bit number to change, value is either 1 for on or 0 for off
     global flags1, flags2
     if bitmap == 1: 
-        flag = 1
-        for a in range(bit):
-            flag = flag * 2
+        flag = pow(2,bit)
         if value:
             zcode.memory.setbyte(FLAGS1_ADDRESS, zcode.memory.getbyte(FLAGS1_ADDRESS) | flag)
         else:
             zcode.memory.setbyte(FLAGS1_ADDRESS, zcode.memory.getbyte(FLAGS1_ADDRESS) & ~flag)
     elif bitmap == 2:
-        flag = 1      
-        for a in range(bit):
-            flag = flag * 2
+        flag = pow(2,bit)
         if value:
             zcode.memory.setword(FLAGS2_ADDRESS, zcode.memory.getword(FLAGS2_ADDRESS) | flag)
         else:
             zcode.memory.setword(FLAGS2_ADDRESS, zcode.memory.getword(FLAGS2_ADDRESS) & ~flag)
     elif bitmap == 3:
         if headerextsize() >= 4:
-            flag = 1
-            for a in range(bit):
-                flag = flag * 2
+            flag = pow(2,bit)
             if value:
                 zcode.memory.setword(headerextloc() + 8, zcode.memory.getword(headerextloc() + 8) | flag)
             else:
                 zcode.memory.setword(headerextloc() + 8, zcode.memory.getword(headerextloc() + 8) & ~flag)
-
-high_memory = None
-
-def highmembase():
-    global high_memory
-    if not high_memory:
-        high_memory = zcode.memory.getword(HIGHMEM_ADDRESS)
-    return high_memory
-
-initial_PC = None
-
-def initialPC(): # for non z6
-    global initial_PC
-    if not initial_PC:
-        initial_PC = zcode.memory.getword(INITIALPC_ADDRESS)
-    return initial_PC
-
-main_routine = None
-
-def mainroutine(): # for z6
-    global main_routine
-    if not main_routine:
-        main_routine = zcode.memory.getword(INITIALPC_ADDRESS)
-    return main_routine
-
-dictionary_location = None
-
-def dictionaryloc():
-    global dictionary_location
-    if not dictionary_location:
-        dictionary_location = zcode.memory.getword(DICTIONARY_ADDRESS)
-    return dictionary_location
-
-object_table = None
-
-def objtableloc():
-    global object_table
-    if not object_table:
-        object_table = zcode.memory.getword(OBJECTS_ADDRESS)
-    return object_table
-
-globals_location = None
-
-def globalsloc():
-    global globals_location
-    if not globals_location:
-        globals_location = zcode.memory.getword(GLOBALS_ADDRESS)
-    return globals_location
-
-static_memory = None
-
-def statmembase():
-    global static_memory
-    if not static_memory:
-        static_memory = zcode.memory.getword(STATICMEM_ADDRESS)
-    return static_memory
-
-abbreviations_table = None
-
-def abbrevtableloc():
-    global abbreviations_table
-    if not abbreviations_table:
-        abbreviations_table = zcode.memory.getword(ABBREVS_ADDRESS)
-    return abbreviations_table
-
-file_length = None
-
-def filelen(): # in the header, this may be 0, in which case this routine should figure it out manually.
-    global file_length
-    if not file_length:
-        l = zcode.memory.getword(FILELEN_ADDRESS)
-        if l == 0:
-            file_length = len(memory.data)
-        elif zversion() < 4: # versions 1 to 3
-            file_length = l * 2
-        elif zversion() < 6: # versions 4 and 5
-            file_length = l * 4
-        else: # versions 6, 7 and 8
-            file_length = l * 8
-    return file_length
-
-checksum = None
-
-def getchecksum():
-    global checksum
-    if not checksum:
-        checksum = zcode.memory.getword(CHECKSUM_ADDRESS)
-    return checksum
 
 def setterpnum(number):
     zcode.memory.setbyte(TERPNUM_ADDRESS, number)
@@ -371,25 +286,8 @@ def setscreenheight(units): # screen height in units
 def setfontwidth(units):
     zcode.memory.setbyte(FWIDTH_ADDRESS, units)
 
-
 def setfontheight(units):
     zcode.memory.setbyte(FHEIGHT_ADDRESS, units)
-
-    
-routines_offset = None
-def routineoffset(): # z6 only
-    global routines_offset
-    if not routines_offset:
-        routines_offset = zcode.memory.getword(ROFFSET_ADDRESS) * 8
-    return routines_offset
-
-strings_offset = None
-
-def stringoffset(): # z6 only
-    global strings_offset
-    if not strings_offset:
-        strings_offset = zcode.memory.getword(SOFFSET_ADDRESS) * 8
-    return strings_offset
 
 def setdefbgcolour(colour):
     zcode.memory.setbyte(BG_ADDRESS, colour)
@@ -403,14 +301,6 @@ def getdefbgcolour():
 def getdeffgcolour():
     return zcode.memory.getbyte(FG_ADDRESS)
 
-terminating_characters = None
-
-def termcharloc():
-    global terminating_characters
-    if terminating_characters == None:
-        terminating_characters = zcode.memory.getword(TERMCHARS_ADDRESS)
-    return terminating_characters
-
 def settextwidth(len): # total width in units of text sent to output stream 3
     zcode.memory.setword(TEXTWIDTH_ADDRESS, len)
 
@@ -423,22 +313,6 @@ def getstandardnum():
     m = zcode.memory.getbyte(STANDARD_ADDRESS+1)
     return (n,m)
 
-alphabet_table = None
-
-def alphatableloc():
-    global alphabet_table
-    if alphabet_table == None:
-        alphabet_table = zcode.memory.getword(ALPHATABLE_ADDRESS)
-    return alphabet_table
-
-header_extension = None
-
-def headerextloc():
-    global header_extension
-    if header_extension == None:
-        header_extension = zcode.memory.getword(HEADEREXT_ADDRESS)
-    return header_extension
-
 
     
 # header extension stuff 
@@ -448,10 +322,10 @@ header_extension_size = None
 def headerextsize():
     global header_extension_size
     if header_extension_size == None:
-        if headerextloc() == 0:
+        if headerextloc == 0:
             header_extension_size = 0
         else:
-            header_extension_size = zcode.memory.getword(headerextloc())    
+            header_extension_size = zcode.memory.getword(headerextloc)    
     return header_extension_size
 
 def setHeaderExtWord(word, value):  
@@ -463,7 +337,7 @@ def getHeaderExtWord(word):
     if headerextsize() < word:
         return 0
     else:
-        return zcode.memory.getword(headerextloc() + (word*2))
+        return zcode.memory.getword(headerextloc + (word*2))
     
 
 def setmousex(xpos):

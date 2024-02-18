@@ -110,7 +110,7 @@ class memorystream(outputstream):
                 line = (len(text[:x]), text[:x])
                 lines.append(line)
                 text = text[line[0]:]
-        if zcode.header.zversion() == 6:
+        if zcode.header.zversion == 6:
             zcode.header.settextwidth(zcode.screen.currentWindow.getFont().getStringLength(''.join(self.data)))
 
         c = 0

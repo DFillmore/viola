@@ -27,17 +27,15 @@ def importdict(address):
     entries = []
     for a in range(numofentries):
         offset = address + (a * entrylength)
-        if zcode.header.zversion() < 4:
+        if zcode.header.zversion < 4:
             entries.append(list(zcode.memory.getarray(offset,4)))
         else:
             entries.append(list(zcode.memory.getarray(offset,6)))
     return entries
 
 def getseperators(address):
-    seperators = []
     numcodes = zcode.memory.getbyte(address)
-    for a in range(numcodes):
-        seperators.append(chr(zcode.memory.getbyte(address+a+1)))
+    seperators = [chr(a) for a in zcode.memory.getarray(address+1, numcodes)]
     return seperators
 
 
@@ -50,7 +48,7 @@ def splitinput(text, seperators):
 
 def findword(word, dictionary): # attempts to find a word in a dictionary, returning the address if found, or 0
     if dictionary == 0:
-        dictionary = zcode.header.dictionaryloc()
+        dictionary = zcode.header.dictionaryloc
     dictlist = importdict(dictionary)
     numcodes = zcode.memory.getbyte(dictionary)
     entrylength = zcode.memory.getbyte(dictionary + numcodes + 1)
@@ -60,7 +58,7 @@ def findword(word, dictionary): # attempts to find a word in a dictionary, retur
         return 0
         
 def findstarts(textarray, seperators):
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         offset = 1
     else:
         offset = 2
@@ -85,11 +83,11 @@ def findstarts(textarray, seperators):
     return wordstarts
             
 def tokenise(intext, parseaddress=0, dictionary=0, flag=0):
-    if zcode.header.zversion() > 4 and parseaddress == 0:
+    if zcode.header.zversion > 4 and parseaddress == 0:
         pass
     else:
         if dictionary == 0: # default dictionary
-            dictionary = zcode.header.dictionaryloc()
+            dictionary = zcode.header.dictionaryloc
         seperators = getseperators(dictionary)
         words = splitinput(intext, seperators)
         maxparse = zcode.memory.getbyte(parseaddress)
