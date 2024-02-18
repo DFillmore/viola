@@ -225,7 +225,7 @@ def getZSCIIchar(code):
     elif code == 9:
         return '\t'
     elif code == 11 and zcode.header.zversion == 6: # sentence space. (needs to be smaller when using fixed pitch)
-        return '  '
+        return chr(0x2001)
     elif code == 13:
         return '\r'
     elif code > 31 and code < 127:
