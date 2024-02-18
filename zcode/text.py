@@ -222,9 +222,9 @@ def getZSCIIchar(code):
         return ''
     if code == 1 and zcode.header.zversion == 1:
         return '\r'
-    elif code == 9:
+    elif code == 9 and zcode.header.zversion == 6: # tab (needs to be smaller when using fixed pitch)
         return '\t'
-    elif code == 11 and zcode.header.zversion == 6: # sentence space. (needs to be smaller when using fixed pitch)
+    elif code == 11 and zcode.header.zversion == 6: # sentence space (needs to be smaller when using fixed pitch)
         return chr(0x2001)
     elif code == 13:
         return '\r'
