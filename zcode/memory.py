@@ -42,16 +42,17 @@ def setup(gamedata):
     if version < 1 or version > 8:
         return False
 
-    l = int.from_bytes(data[0x1a:0x1c], byteorder='big')
+    filelen = int.from_bytes(data[0x1a:0x1c], byteorder='big')
     # in the header, the file lenth may be 0, in which case it is figured it out manually.
-    if l == 0:
+    if filelen == 0:
         filelen = len(data)
-    elif data[0] < 4: # versions 1 to 3
-        filelen = l * 2
-    elif data[0] < 6: # versions 4 and 5
-        filelen = l * 4
-    else: # versions 6, 7 and 8
-        filelen = l * 8
+    elif version < 4: # versions 1 to 3
+        filelen *= 2
+    elif version < 6: # versions 4 and 5
+        filelen *= 4
+    elif version < 9: # versions 6, 7 and 8
+        filelen *= 8
+        
     data = array.array('B', data)
     originaldata = data[:]
     return True
