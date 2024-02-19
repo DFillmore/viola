@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -22,22 +22,30 @@ instring = []
 
 command_history = []
 chplace = -1
+streamfile = None
 
 
-def setup():
+def setup(playbackfile=False):
     global ioInput
     global mouse
     mouse = mouseTracker()
     ioInput = io.input(zcode.screen.ioScreen)
+    if playbackfile:
+        setStream(1, playbackfile)
 
-def setStream(number, filename=0):
+def setStream(number, filename=None):
     global stream
     global filecommands
+    global streamfile
     stream = number
-    if number == 0 and streamfile != 0:
-        streamfile = 0
+    if number == 0 and streamfile:
+        streamfile = None
     elif number == 1:
-        streamfile = readFile(-1, filename="COMMANDS.REC", prompt=True).decode('utf-8')
+        prompt = False
+        if not filename:
+            filename = 'COMMANDS.REC'
+            prompt = True
+        streamfile = readFile(-1, filename=filename, prompt=prompt).decode('utf-8')
         if streamfile:
             filecommands = streamfile.split('\n')
             while filecommands[-1].strip() == '':
@@ -46,9 +54,9 @@ def setStream(number, filename=0):
             stream = 1
 
 def getTerminatingCharacters():
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         return []
-    location = zcode.header.termcharloc()
+    location = zcode.header.termcharloc
     chars = []
     x = 1
     while x != 0:

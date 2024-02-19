@@ -1,4 +1,4 @@
-# Copyright (C) 2001 - 2019 David Fillmore
+# Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -16,7 +16,6 @@ quit = 0
 input = 0
 restart = 0
 timerreturn = False
-debug = False
 
 import zcode
 import vio.zcode as io
@@ -26,13 +25,20 @@ def setup():
     quit = 0
     input = 0
     restart = 0
+    
+static_routines = {}
 
 def setuproutine(address): 
     """set up the local variables and returns the address of the first instruction"""
+    global static_routines
+    if address in static_routines:
+        zcode.game.currentframe.lvars = static_routines[address]['vars'][:]
+        return static_routines[address]['address']
+    inaddress = address
     vars = []
     varnum = zcode.memory.getbyte(address)
     address += 1
-    if zcode.header.zversion() < 5:
+    if zcode.header.zversion < 5:
         for a in range(varnum):
             vars.append(zcode.memory.getword(address))
             address += 2
@@ -40,6 +46,12 @@ def setuproutine(address):
         for a in range(varnum):
             vars.append(0)
     zcode.game.currentframe.lvars = vars
+    if zcode.debug:
+        print()
+        print(varnum, 'local variables', end='')
+    if address > zcode.header.statmembase:
+        routine = {'address':address, 'vars':vars[:]}
+        static_routines[inaddress] = routine
     return address
 
 
@@ -58,32 +70,30 @@ def execloop():
         except:
             pass
         
-        
-        zcode.game.interrupt_call()
+        if len(zcode.game.interruptstack) > 0:
+            zcode.game.interrupt_call()
         oldpc = zcode.game.PC
-        zcode.game.PC = zcode.instructions.decode(zcode.game.PC, debug)
-        zcode.instructions.runops(oldpc, debug)             
+        zcode.game.PC = zcode.instructions.decode(zcode.game.PC)
+        zcode.instructions.runops(oldpc)             
     timerreturn = False
 
 
-def execstart(setdebug=False): 
+def execstart(): 
     """set up the Z-Machine to start executing instructions"""
     global quit # if set to 1, game ends
     global restart
-    global debug
-    debug = setdebug
-    if zcode.header.zversion() != 6:
-        zcode.game.PC = zcode.header.initialPC()
+    if zcode.debug:
+        print('start at', hex(zcode.header.startat))
+    if zcode.header.zversion != 6:
+        zcode.game.PC = zcode.header.startat
     else:
-        address = zcode.header.mainroutine()
-        zcode.game.call(address, [], 0, 0, 1)
+        zcode.game.call(zcode.header.startat, [], 0, 0, 1)
     execloop()
     while restart:
-        if zcode.header.zversion() != 6:
-            zcode.game.PC = zcode.header.initialPC()
+        if zcode.header.zversion != 6:
+            zcode.game.PC = zcode.header.startat
         else:
-            address = zcode.header.mainroutine()
-            zcode.game.call(address, [], 0, 0, 1)
+            zcode.game.call(zcode.header.startat, [], 0, 0, 1)
         restart = 0
         execloop()
 
