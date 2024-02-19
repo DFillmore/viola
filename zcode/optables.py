@@ -177,6 +177,12 @@ def setup():
             opext[0xc] = zcode.opcodes.z_check_unicode
         if zcode.use_standard >= STANDARD_11: # Standard 1.1 or later
             opext[0xd] = zcode.opcodes.z_set_true_colour
+        if zcode.use_standard >= STANDARD_12: # Standard 1.2 or later
+            opext[0xe] = zcode.opcodes.z_sound_channel
+            opext[0xf] = zcode.opcodes.z_sound_data
+            opext[0x1e] = zcode.opcodes.z_gestalt
+            opext[0x1f] = zcode.opcodes.z_write_file
+            opext[0x20] = zcode.opcodes.z_read_file 
             
     if zcode.memory.data[0] == 6:
         opext[0x5] = zcode.opcodes.z_draw_picture
@@ -198,8 +204,6 @@ def setup():
         opext[0x1c] = zcode.opcodes.z_picture_table
         if zcode.use_standard >= STANDARD_11: # Standard 1.1 or later
             opext[0x1d] = zcode.opcodes.z_buffer_screen
-
-
 
 
         

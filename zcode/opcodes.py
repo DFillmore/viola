@@ -690,19 +690,19 @@ def z_print_table():
         zcode.error.strictz('Tried to use print_table operation with height > 1 in lower window')
     else:
         for a in range(height):
-        line = zcode.memory.getarray(zsciitext + c, width)
-        c += len(line)
-        c += skip
-        t = ''.join([zcode.text.getZSCIIchar(c) for c in line])
-        zcode.output.printtext(t)
+            line = zcode.memory.getarray(zsciitext + c, width)
+            c += len(line)
+            c += skip
+            t = ''.join([zcode.text.getZSCIIchar(c) for c in line])
+            zcode.output.printtext(t)
                 
-        if a != height - 1:
-            if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions (standard explicitly doesn't specify what to do here)
-                zcode.output.printtext('\r')
-            else:
-                y += zcode.screen.currentWindow.getFont().getHeight()
-                zcode.screen.currentWindow.setCursor(x, y)
-                zcode.screen.currentWindow.flushTextBuffer()
+            if a != height - 1:
+                if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions
+                    zcode.output.printtext('\r')
+                else:
+                    y += zcode.screen.currentWindow.getFont().getHeight()
+                    zcode.screen.currentWindow.setCursor(x, y)
+                    zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
 
 def z_print_unicode():
