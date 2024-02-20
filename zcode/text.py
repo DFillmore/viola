@@ -200,12 +200,12 @@ def gettextlength(address): # this determines how much space an encoded string t
 
 
 def convertBZorkCode(code):
-    if zcode.screen.currentWindow.getFontNumber() == 3 and zcode.header.getterpnum() == 9: # apple iic
+    if zcode.screen.currentWindow.getFontNumber() == 3 and zcode.header.getterpnum() == zcode.header.TERP_APPLEC: # apple iic
         try:
             return appleiic_mousetext_chars[code]
         except:
             return code
-    elif zcode.header.getterpnum() == 6 and not zcode.header.getflag(2, 3): # ibm pc, and graphics not available
+    elif zcode.header.getterpnum() == zcode.header.TERP_IBM and not zcode.header.getflag(2, 3): # ibm pc, and graphics not available
         try:
             return ibm_graphics_chars[code]
         except:
