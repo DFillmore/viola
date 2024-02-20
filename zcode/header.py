@@ -51,6 +51,20 @@ STANDARD_ADDRESS = 0x32
 ALPHATABLE_ADDRESS = 0x34
 HEADEREXT_ADDRESS = 0x36
 
+TERP_DEC = 1      # DECSystem-20     
+TERP_APPLEE = 2   # Apple IIe       
+TERP_MAC = 3      # Macintosh       
+TERP_AMIGA = 4    # Amiga            
+TERP_ATARI = 5    # Atari ST           
+TERP_IBM = 6      # IBM PC           
+TERP_COMM128 = 7  # Commodore 128     
+TERP_COMM64 = 8   # Commodore 64
+TERP_APPLEC = 9   # Apple IIc
+TERP_APPLEGS = 10 # Apple IIgs
+TERP_TANDY = 11   # Tandy Color
+
+TERP_NUMBER = TERP_IBM 
+
 
 def setup(): # set all the relevant bits and bytes and words in the header
     global zversion, release, highmembase, startat, dictionaryloc, objtableloc, globalsloc, statmembase, serial, abbrevtableloc 
@@ -134,7 +148,7 @@ def setup(): # set all the relevant bits and bytes and words in the header
 
     if zversion > 3:
         # Interpreter number
-        setterpnum(6)
+        setterpnum(TERP_NUMBER)
         # Interpreter version
         setterpversion(ord('V'))
     
