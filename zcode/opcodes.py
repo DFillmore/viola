@@ -138,13 +138,22 @@ def z_copy_table():
     second = zcode.instructions.operands[1]['value']
     size = zcode.numbers.signed(zcode.instructions.operands[2]['value'])
     if second == 0:
-        zcode.memory.setarray(first, [0]*size)
+        for a in range(size):
+            zcode.memory.setbyte(first + a, 0)
     elif size >= 0:
-        zcode.memory.setarray(second, zcode.memory.getarray(first, abs(size)))
+        size = abs(size)
+        if first < second:
+            a = size
+            while a > 0:
+                a -= 1
+                zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a))
+        elif second < first:
+            for a in range(size):
+                zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a))
     else:
-        zcode.memory.setarray(second, zcode.memory.getarray(first, abs(size)))
-        if second+abs(size) >= first: # copy the array twice so that any corrupting overlap gets copied
-            zcode.memory.setarray(second, zcode.memory.getarray(first, abs(size)))
+        size = abs(size)
+        for a in range(size):
+            zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a)) 
            
 
 def z_dec():
