@@ -676,6 +676,8 @@ def z_print_table():
         c += skip
         t = ''.join([zcode.text.getZSCIIchar(c) for c in line])
         zcode.output.printtext(t)
+        if zcode.debug:
+            print('\n')
                 
         if a != height - 1:
             if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions (standard explicitly doesn't specify what to do here)
