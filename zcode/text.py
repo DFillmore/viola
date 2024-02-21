@@ -27,7 +27,7 @@ def setup():
     setupunitable()
     setupreverseunitable()
     setupalphatable()
-    if settings.code in beyond_zork_codes:
+    if settings.code in zcode.constants.beyond_zork_codes:
         if zcode.header.getterpnum() == 9 or zcode.header.getterpnum() == 6 and not zcode.header.getflag(2, 3):
             zcode.screen.specialfont3()
 
@@ -213,7 +213,7 @@ def convertBZorkCode(code):
     return code
 
 def getZSCIIchar(code):
-    if settings.code in beyond_zork_codes:
+    if settings.code in zcode.constants.beyond_zork_codes:
         newcode = convertBZorkCode(code)
         if newcode != code:
             return chr(newcode)
