@@ -1429,5 +1429,5 @@ def z_window_style():
     window.setattributes(flags, operation)
 
 def z_badop(): # not really an opcode, this is called when the opcode is unknown
-    zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC))
+    zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC) + ' (' + str(zcode.memory.getarray(zcode.game.PC, 10)) + ')')
 
