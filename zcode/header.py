@@ -57,13 +57,13 @@ TERP_MAC = 3      # Macintosh
 TERP_AMIGA = 4    # Amiga            
 TERP_ATARI = 5    # Atari ST           
 TERP_IBM = 6      # IBM PC           
-TERP_COMM128 = 7  # Commodore 128     
-TERP_COMM64 = 8   # Commodore 64
+TERP_C128 = 7  # Commodore 128     
+TERP_C64 = 8   # Commodore 64
 TERP_APPLEC = 9   # Apple IIc
 TERP_APPLEGS = 10 # Apple IIgs
 TERP_TANDY = 11   # Tandy Color
 
-TERP_NUMBER = TERP_IBM 
+TERP_NUMBER = TERP_IBM
 
 
 def setup(): # set all the relevant bits and bytes and words in the header
