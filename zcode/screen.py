@@ -234,11 +234,13 @@ def units2chars(units, horizontal, coord=False): # converts a number of units in
         value += 1    
     return value
 
+font3 = io.font(io.getBaseDir() + "//fonts//bzork.ttf")
+
 fontlist = [ None, 
-             io.font1,
-             io.font2, # picture font. Unspecified, should always return 0
-             io.font3, # Beyond Zork font. Going to require some hacking.
-             io.font4
+             io.defaultFont,
+             None, # picture font. Unspecified, should always return 0
+             font3, # Beyond Zork font. Going to require some hacking.
+             io.fixedFont
         ]
 
 
@@ -477,6 +479,13 @@ class window(io.window):
     old_relative_font_size = 0
     window_id = None
     last_x_cursor = 1
+    
+    # styles
+    reverse = False
+    bold = False
+    italic = False
+    fixed = False
+    
 
     def __init__(self, screen, font):
         self.screen = screen
@@ -486,6 +495,12 @@ class window(io.window):
         background = convertBasicToRealColour(9)
         self.setRealColours(foreground, background)
         self.getFont().resetSize()
+        
+    def preFlush(self):
+        self.font = self.getFont()
+        self.font.setReverse(self.reverse)
+        self.font.setBold(self.bold)
+        self.font.setItalic(self.italic)
 
     def testfont(self, font):
         """Checks to see if the givenfont is available for use. Returns 1 if available, 0 if unavailable."""
@@ -514,9 +529,9 @@ class window(io.window):
         return True
 
     def getFont(self):
-        if fixedpitchbit:
+        if fixedpitchbit or self.fixed:
             return self.fontlist[4]
-        return self.font
+        return self.fontlist[self.font_number]
 
 
     def resetfontsize(self):
@@ -566,30 +581,32 @@ class window(io.window):
     def setStyle(self, style):
         self.flushTextBuffer()
         if style == 0:
-            self.font.setReverse(False)
-            self.font.setFixed(False)
-            self.font.setBold(False)
-            self.font.setItalic(False)
+            self.reverse = False
+            self.bold = False
+            self.italic = False
+            self.fixed = False
+            
         else:
             if style & 1:
-                self.font.setReverse(True)
+                self.reverse = True
             if style & 2:
-                self.font.setBold(True)
+                self.bold = True
             if style & 4:
-                self.font.setItalic(True)
+                self.italic = True
             if style & 8:
-                self.font.setFixed(True)
+                self.fixed = True
+
 
 
     def getStyle(self):
         s = 0
-        if self.font.reversevideo:
+        if self.reversevideo:
             s += 1
-        if self.font.bold:
+        if self.bold:
             s += 2
-        if self.font.italic:
+        if self.italic:
             s += 4
-        if self.font.fixedstyle:
+        if self.fixedstyle:
             s += 8
         return s
 

@@ -367,7 +367,7 @@ class window:
 
 
     def getFont(self):
-        return font
+        return self.font
 
 
     def preNewline():
@@ -462,7 +462,13 @@ class window:
         area = pygame.Rect(xpos, ypos, width, height)
         self.screen.updates.append(area)
 
+    def preFlush(self):
+        # do stuff before flushing the text buffer.
+        # by default does nothing. replace this routine in sub-classes to add behaviour
+        return None
+
     def flushTextBuffer(self):
+        self.preFlush()
         #self.hideCursor()
         self.setCursorToMargin()
 
@@ -611,46 +617,30 @@ class font:
     #def __str__(self):
     #    return 'Font: ' + str(self.name)
 
-    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, fixedfile=None, boldfixedfile=None, italicfixedfile=None, bolditalicfixedfile=None):
+    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None):
         self.size = self.defaultSize()
         self.fontfile = fontfile
         self.boldfile = boldfile
         self.italicfile = italicfile
         self.bolditalicfile = bolditalicfile
-        self.fixedfile =fixedfile
-        self.boldfixedfile = boldfixedfile
-        self.italicfixedfile = italicfixedfile
-        self.bolditalicfixedfile = bolditalicfixedfile
         self.usefile = self.fontfile
-        codePointsRoman = fonts.getCodes(fontfile)
-        codePointsBold = fonts.getCodes(boldfile)
-        codePointsItalic = fonts.getCodes(italicfile)
-        codePointsBoldItalic = fonts.getCodes(bolditalicfile)
-        codePointsFixed = fonts.getCodes(fixedfile)
-        codePointsBoldFixed = fonts.getCodes(boldfixedfile)
-        codePointsItalicFixed = fonts.getCodes(italicfixedfile)
-        codePointsBoldItalicFixed = fonts.getCodes(bolditalicfixedfile)
-        self.codePoints = list(set(codePointsRoman).intersection(*[codePointsBold, codePointsItalic,codePointsBoldItalic,codePointsFixed,codePointsBoldFixed,codePointsItalicFixed,codePointsBoldItalicFixed]))
 
+        self.codePointsDefault = fonts.getCodes(fontfile)
+        self.codePointsBold = fonts.getCodes(boldfile)
+        self.codePointsItalic = fonts.getCodes(italicfile)
+        self.codePointsBoldItalic = fonts.getCodes(bolditalicfile)
 
+    def codePoints(self):
+        return self.codePointsDefault
     
     bold = False
     italic = False
     usefile = None
 
     reversevideo = False
-    fixedstyle = False
 
     def getUseFile(self):
-        if self.italic and self.bold and self.fixedstyle:
-            return self.bolditalicfixedfile
-        elif self.italic and self.fixedstyle:
-            return self.italicfixedfile
-        elif self.bold and self.fixedstyle:
-            return self.boldfixedfile
-        elif self.fixedstyle:
-            return self.fixedfile
-        elif self.italic and self.bold:
+        if self.italic and self.bold:
             return self.bolditalicfile
         elif self.italic:
             return self.italicfile
@@ -679,13 +669,6 @@ class font:
         else:
             self.reversevideo = False
 
-    def setFixed(self, value):
-        if value:
-            self.fixedstyle = True
-        else:
-            self.fixedstyle = False
-        self.usefile = self.getUseFile()
-
     def getWidth(self):
         self.width = self.fontData().size('0')[0]
         return self.width
@@ -704,7 +687,7 @@ class font:
         return abs(self.fontData().get_descent())
 
     def checkChar(self, charnum):
-        if charnum in self.codePoints:
+        if charnum in self.codePoints():
             return True
         return False
 
@@ -725,13 +708,17 @@ class font:
         self.size = self.defaultSize()
 
     def render(self, text, antialias, colour, background):
-        unavailable = list(numpy.setdiff1d(self.codePoints,list(map(ord, text))))
-        for elem in unavailable:
-            # Check if string is in the main string
-            if chr(elem) in text:
-                # Replace the string
-                text = text.replace(elem, "?")
-
+        text = text.replace(chr(0), '') # remove null characters
+        unavailable = set(map(ord, text)).difference(self.codePoints())
+        #print(len(set(map(ord, text))), len(self.codePoints))
+        #for a in text:
+        #  print(ord(a), ord(a) in self.codePoints)
+        #print("un", unavailable)
+        #for elem in unavailable:
+        #    # Check if string is in the main string
+        #    if chr(elem) in text:
+        #        # Replace the string
+        #        text = text.replace(chr(elem), chr(0xfffd))
 
         f = self.fontData()
         if self.reversevideo:
@@ -744,39 +731,18 @@ class font:
     def fontData(self):
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
+        
+defaultFont = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
+                   boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
+                   italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
+                   bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf"
+                  )
 
-font1 = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
-             boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
-             italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-            )
-
-font2 = None
-
-font3 = font(getBaseDir() + "//fonts//bzork.ttf", 
-             boldfile=getBaseDir() + "//fonts//bzork.ttf", 
-             italicfile=getBaseDir() + "//fonts//bzork.ttf", 
-             bolditalicfile=getBaseDir() + "//fonts//bzork.ttf", 
-             fixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-             bolditalicfixedfile=getBaseDir() + "//fonts//bzork.ttf", 
-            )
-#font3 = None
-
-font4 = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-             fixedfile=getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-             boldfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-             italicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-             bolditalicfixedfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-            )
+fixedFont = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
+                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
+                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
+                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf"
+                )
 
 
 # Z-Machine Sounds
