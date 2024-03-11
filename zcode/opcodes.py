@@ -120,7 +120,7 @@ def z_check_arg_count():
 
 def z_check_unicode():
     charnumber = zcode.instructions.operands[0]['value']
-    if zcode.screen.fontlist[zcode.screen.currentWindow.font_number].checkChar(charnumber):
+    if zcode.screen.currentWindow.fontlist[zcode.screen.currentWindow.font_number].checkChar(charnumber):
         zcode.instructions.store(3)
     else:
         zcode.instructions.store(0)
