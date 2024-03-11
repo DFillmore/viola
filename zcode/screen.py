@@ -247,7 +247,7 @@ fontlist = [ None,
 
 def specialfont3():
     for w in zwindow:
-        w.fontlist[3] = io.font4
+        w.fontlist[3] = io.fixedfont
 
 
     
@@ -585,7 +585,6 @@ class window(io.window):
             self.bold = False
             self.italic = False
             self.fixed = False
-            
         else:
             if style & 1:
                 self.reverse = True
@@ -600,13 +599,13 @@ class window(io.window):
 
     def getStyle(self):
         s = 0
-        if self.reversevideo:
+        if self.reverse:
             s += 1
         if self.bold:
             s += 2
         if self.italic:
             s += 4
-        if self.fixedstyle:
+        if self.fixed:
             s += 8
         return s
 
