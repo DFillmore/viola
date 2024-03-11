@@ -614,16 +614,17 @@ def getpic(screen, picture_number):
 # Z-Machine Fonts
 
 class font:
-    #def __str__(self):
-    #    return 'Font: ' + str(self.name)
+    def __str__(self):
+        return 'Font: ' + str(self.name)
 
-    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None):
+    def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, name="unnamed"):
         self.size = self.defaultSize()
         self.fontfile = fontfile
         self.boldfile = boldfile
         self.italicfile = italicfile
         self.bolditalicfile = bolditalicfile
         self.usefile = self.fontfile
+        self.name = name
 
         self.codePointsDefault = fonts.getCodes(fontfile)
         self.codePointsBold = fonts.getCodes(boldfile)
@@ -735,13 +736,15 @@ class font:
 defaultFont = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
                    boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
                    italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
-                   bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf"
+                   bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
+                   name="Default font (FreeSerif)"
                   )
 
 fixedFont = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
                  boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
                  italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf"
+                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
+                 name="Fixed font (FreeMono)"
                 )
 
 

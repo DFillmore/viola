@@ -234,7 +234,7 @@ def units2chars(units, horizontal, coord=False): # converts a number of units in
         value += 1    
     return value
 
-font3 = io.font(io.getBaseDir() + "//fonts//bzork.ttf")
+font3 = io.font(io.getBaseDir() + "//fonts//bzork.ttf", name="Runic Font")
 
 fontlist = [ None, 
              io.defaultFont,
