@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Copyright (C) 2001 - 2024 David Fillmore
 #
@@ -17,7 +17,6 @@
 import vio.zcode as io
 import sys
 import getopt
-import os
 import settings
 import zcode
 import blorb
@@ -98,7 +97,10 @@ def handle_parameters(argv): # handles command line parameters
     global height, width, title, transcriptfile, usespec, recordfile, playbackfile
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h <pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer calls (default 100)\n  -R <filename> record input commands to file\n  -P <filename> playback input commands from file\n  -B force blorb file to work even if it does not match the game')
+        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h'
+              '<pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer'
+              'calls (default 100)\n  -R <filename> record input commands to file\n  -P <filename> playback input '
+              'commands from file\n  -B force blorb file to work even if it does not match the game')
         sys.exit()
 
     if len(argv) <= 1:
@@ -143,8 +145,6 @@ def handle_parameters(argv): # handles command line parameters
         print('Cannot record commands and playback commands at the same time (-P and -R).')
         sys.exit()
     
-
-
     gamedata = getgame(args[0])
     for a in range(len(args[1:])):
         blorbs.append(blorb.Blorb(args[1:][a], gamedata))
@@ -159,36 +159,39 @@ def setupmodules(gamefile):
 
     io.setup(width, height, blorbs, title, realForeground, realBackground)
     zcode.use_standard = usespec
-    if zcode.memory.setup(gamefile) == False:
+    if not zcode.memory.setup(gamefile):
         return False
-    
-    
+
     # set up the various modules
     zcode.game.setup()
     zcode.routines.setup()
     zcode.screen.setup()
     zcode.input.setup(playbackfile)
-    zcode.output.setup([False, True, transcriptfile, False, recordfile])
+    zcode.output.setup((False, True, transcriptfile, False, recordfile))
     zcode.optables.setup()
     zcode.sounds.setup(blorbs)
     zcode.header.setup()
     zcode.objects.setup()
     zcode.text.setup()
-    if terpnum != None:
+    if terpnum is not None:
         zcode.header.setterpnum(int(terpnum))
 
     return True
+
 
 def rungame(gamedata):
     global height, width, title, terpnum, foreground, background
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
+    print(defset)
     gameset = settings.getsettings(settings.findgame())
-        
+    print(gameset)
+
     for a in range(len(gameset)):
         if gameset[a] == None:
             gameset[a] = defset[a]
     
+
     if height == None:
         height = gameset[2]
     if width == None:
@@ -198,7 +201,7 @@ def rungame(gamedata):
         foreground = zcode.screen.basic_colours[gameset[5]]
     except:
         foreground = 2
-    
+
     try:
         background = zcode.screen.basic_colours[gameset[6]]
     except:
@@ -210,7 +213,7 @@ def rungame(gamedata):
     for a in range(len(blorbs)):
         if blorbs[a] == False:
             blorbs.pop(a)
-    
+
     bwidth = 0
     bheight = 0
     for a in blorbs:
@@ -218,7 +221,7 @@ def rungame(gamedata):
             bwidth, bheight = a.getWinSizes()[:2]
         except:
             pass
-    
+
     if bwidth == 0:
         wrat = 1
         bwidth = width
@@ -229,61 +232,57 @@ def rungame(gamedata):
         bheight = height
     else:
         hrat = height / bheight
-    
+
     if wrat < hrat:
         rat = wrat
     else:
-        rat = hrat        
+        rat = hrat
     width = round(bwidth * rat)
-    height = round(bheight * rat) 
+    height = round(bheight * rat)
 
     terpnum = gameset[4]
 
-    if title == None:
+    if title is None:
         title = gameset[0]
-    
-    if title == None:
+
+    if title is None:
         for a in blorbs:
             iFiction = a.getmetadata()
             if iFiction:
                 title = babel.gettitle(iFiction)
                 headline = babel.getheadline(iFiction)
                 author = babel.getauthor(iFiction)
-                if title == None:
+                if title is None:
                     title = ''
-                if headline != None:
+                if headline is not None:
                     title = title + ' (' + headline + ')'
-                if author != None:
+                if author is not None:
                     title += ' by ' + author
 
-    if title == '' or title == None:
+    if title == '' or title is None:
         title = 'Viola'
     else:
         title = 'Viola - ' + title
 
-    if setupmodules(gamedata) == False:
-        zcode.error.fatal('Couldn\'t open gamefile ' + sys.argv[1])  
-       
-
-
-    
-
+    if not setupmodules(gamedata):
+        zcode.error.fatal('Couldn\'t open gamefile ' + sys.argv[1])
 
     zcode.routines.execstart()
     return 1
 
-gamedata = handle_parameters(sys.argv)
 
-if zcode.profile:
-    import cProfile
-    import pstats
+if __name__ == '__main__':
+    gamedata = handle_parameters(sys.argv)
 
-    with cProfile.Profile() as pr:
+    if zcode.profile:
+        import cProfile
+        import pstats
+
+        with cProfile.Profile() as pr:
+            rungame(gamedata)
+
+        stats = pstats.Stats(pr)
+        stats.sort_stats(pstats.SortKey.TIME)
+        stats.dump_stats(filename='viola.prof')
+    else:
         rungame(gamedata)
-    
-    stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
-    stats.dump_stats(filename='viola.prof')
-else:
-    rungame(gamedata)
-
