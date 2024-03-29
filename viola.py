@@ -33,16 +33,16 @@ terpnum = None
 
 def checkgamefile(gamefile):
     gamefile.seek(0)
-    id = gamefile.read(4)
-    if id.decode('latin-1') == 'FORM': # The file is an IFF FORM file
+    gameid = gamefile.read(4)
+    if gameid.decode('latin-1') == 'FORM':  # The file is an IFF FORM file
         gamefile.seek(8)
         if gamefile.read(4).decode('latin-1') == 'IFRS': # The file is a Blorb resource file
             return 'blorb'
         else:
             return 'unknown'
-    elif id.decode('latin-1') == 'GLUL':
+    elif gameid.decode('latin-1') == 'GLUL':
         return 'glulx'
-    elif id[0] >= 1 and id[0] <= 8:
+    elif 1 <= gameid[0] <= 8:
         return 'zcode'
     else:
         return 'unknown'
