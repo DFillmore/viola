@@ -77,7 +77,6 @@ class cmemchunk(iff.chunk):
                 obmem.append(commem[a])
         while len(obmem) < len(storydata.omemory):
             obmem.append(0)
-        mem = []
         
         mem = [obmem[a] ^ storydata.omemory[a] for a in range(len(obmem))]
         storydata.memory = mem[:]
