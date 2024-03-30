@@ -12,12 +12,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sys
-
+import settings
 import zcode
 from zcode.constants import *
-import settings
-
 
 ibm_graphics_chars = {191:0x2510, 192:0x2514, 217:0x2518, 218:0x250C, 196:0x2500, 179:0x2502, 24:0x2191, 25:0x2193}
 appleiic_mousetext_chars = {95:0x258f, 90:0x2595, 76:0x2594,  75:0x2191, 74:0x2193}
