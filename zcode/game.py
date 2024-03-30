@@ -12,14 +12,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import sys
 import copy
-import os
 
 import quetzal
 import vio.zcode as io
 import zcode
-
 
 returning = False
 
