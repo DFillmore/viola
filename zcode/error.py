@@ -41,7 +41,7 @@ def strictz(message):
     else: # exit after any error
         for a in range(1,3):
             zcode.output.streams[a].write('Fatal Error: ' + str(message) + '\r')
-        routines.quit = 1
+        zcode.routines.quit = 1
 
 def warning(message):
     for a in range(1,3):
