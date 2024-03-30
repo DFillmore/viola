@@ -685,7 +685,7 @@ class font:
         return self.width
     
     def getHeight(self):
-        self.height = self.fontData().size('0')[1]
+        self.height=self.fontData().get_linesize()
         return self.height
 
     def getStringLength(self, text):
