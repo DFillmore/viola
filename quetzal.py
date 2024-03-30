@@ -65,7 +65,7 @@ class cmemchunk(iff.chunk):
         obmem = []
         zerorun = False
         for a in range(len(commem)): # loop over compressed memory
-            if zerorun == True:
+            if zerorun:
                 runlength = commem[a]
                 for b in range(runlength):
                     obmem.append(0)
