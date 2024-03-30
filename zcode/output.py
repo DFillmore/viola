@@ -59,6 +59,9 @@ class outputstream:
             self.output(data)
     def output(self, data):
         pass
+        
+combining = [chr(a) for a in range(0x0300, 0x0370)]
+nbsp = chr(0x00A0)
 
 class screenstream(outputstream):
     active = True
@@ -68,6 +71,8 @@ class screenstream(outputstream):
             print('"', end='')
             print(data.replace('\r', '\n'), end='')
             print('"', end=' ')
+        for a in combining:
+            data = data.replace(a, nbsp+a)
         if zcode.game.currentframe.interrupt:
             self.interruptprinted = True
         zcode.screen.printtext(data)
