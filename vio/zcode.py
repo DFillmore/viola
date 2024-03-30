@@ -468,7 +468,13 @@ class window:
         # by default does nothing. replace this routine in sub-classes to add behaviour
         return None
 
+    flushCount = 0 # horrible hacky way to avoid infinite loops
+    
     def flushTextBuffer(self):
+        self.flushCount += 1
+        if self.flushCount > 1:
+            return None
+        
         self.preFlush()
         #self.hideCursor()
         self.setCursorToMargin()
@@ -528,10 +534,11 @@ class window:
                     self.newline()
                 else:
                     self.x_cursor += self.getStringLength(linebuffer)
+                self.flushCount = 0
                 if self.cdown:
                     return 1
         
-
+        self.flushCount = 0
         #self.showCursor()
         #self.screen.update() # if we uncomment this, screen updates are more immediate, but that means you see everything getting slowly drawn
 
