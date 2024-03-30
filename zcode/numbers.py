@@ -25,7 +25,7 @@ import zcode
 
 def div(a, b): # divide a by b
     if b == 0:
-        error.fatal('Tried to divide by zero')
+        zcode.error.fatal('Tried to divide by zero')
     else:
         x = a / b
         y = round(x)
@@ -38,7 +38,7 @@ def div(a, b): # divide a by b
 
 def mod(a, b): # divide a by b and return the remainder
     if b == 0:
-        error.fatal('Tried to divide by zero')
+        zcode.error.fatal('Tried to divide by zero')
     else:
         x = a / b
         y = round(x)
