@@ -7,25 +7,27 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 
-__all__ = ["dictionary", 
-           "error", 
-           "game", 
-           "header", 
-           "input", 
-           "instructions", 
-           "memory", 
-           "numbers", 
-           "objects", 
-           "opcodes", 
-           "optables", 
-           "output", 
-           "routines", 
-           "screen", 
-           "sounds", 
-           "text"
+__all__ = ["dictionary",
+           "error",
+           "game",
+           "header",
+           "input",
+           "instructions",
+           "memory",
+           "numbers",
+           "objects",
+           "opcodes",
+           "optables",
+           "output",
+           "routines",
+           "screen",
+           "sounds",
+           "text",
+           "constants"
           ]
-          
+
 from zcode import *
 
 debug = False
 profile = False
+use_standard = 3
