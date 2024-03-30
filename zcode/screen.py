@@ -543,7 +543,7 @@ class window(io.window):
         return True
 
     def getFont(self):
-        if fixedpitchbit or self.fixed:
+        if (fixedpitchbit or self.fixed) and self.font_number == 1:
             return self.fontlist[4]
         return self.fontlist[self.font_number]
 
