@@ -14,7 +14,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parseString
 
 
 def getbibliographic(iFiction):
