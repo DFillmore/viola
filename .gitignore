@@ -214,6 +214,10 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
+#PyCharm
+venv/
+.idea/
+
 # Viola 
 glk/
 glulx/
@@ -222,8 +226,7 @@ misc/
 future/
 zcode/lgop.txt
 icons/
-fonts/unifont-12.1.01.ttf
-fonts/unifont_csur-12.1.01.ttf
+
 *.txt
 
 *.zblorb
