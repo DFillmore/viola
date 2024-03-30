@@ -14,14 +14,10 @@
 
 
 import copy
-import os
 
 import iff
 
 
-
-
-            
 class umemchunk(iff.chunk):
     ID = 'UMem'
     data = []
