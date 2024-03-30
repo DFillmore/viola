@@ -757,6 +757,10 @@ def z_quit():
     zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we're supposed to have quit
     zcode.sounds.stopall()
     zcode.screen.currentWindow.getFont().resetSize()
+    zcode.screen.currentWindow.setFontByNumber(1) # make sure we're using a legible font
+    f = zcode.screen.convertBasicToRealColour(2)
+    b = zcode.screen.convertBasicToRealColour(9)
+    zcode.screen.currentWindow.setRealColours(f,b) # make sure the text is visible
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
