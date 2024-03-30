@@ -260,7 +260,7 @@ fontlist = [ None,
 
 def specialfont3():
     for w in zwindow:
-        w.fontlist[3] = io.fixedfont
+        w.fontlist[3] = io.fixedFont
 
 
     
