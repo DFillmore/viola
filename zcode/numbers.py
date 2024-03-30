@@ -13,9 +13,9 @@
 # GNU General Public License for more details.
 
 import random
-import sys
 
 import zcode
+
 
 # Due to the fact that the Z-machine is generally considered to round numbers
 # towards 0, and Python always rounds numbers towards minus infinity, we need
