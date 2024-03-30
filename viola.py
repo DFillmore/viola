@@ -189,9 +189,7 @@ def rungame(gamedata):
     global height, width, title, terpnum, foreground, background
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
-    print(defset)
     gameset = settings.getsettings(settings.findgame())
-    print(gameset)
 
     for a in range(len(gameset)):
         if gameset[a] == None:
