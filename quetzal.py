@@ -64,7 +64,7 @@ class cmemchunk(iff.chunk):
         commem = self.data[:]
         obmem = []
         zerorun = False
-        for a in range(len(commem)): # loop over commpressed memory
+        for a in range(len(commem)): # loop over compressed memory
             if zerorun == True:
                 runlength = commem[a]
                 for b in range(runlength):
