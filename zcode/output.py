@@ -17,7 +17,7 @@ import vio.zcode as io
 import zcode
 from zcode.constants import *
 
-def setup(startstreams=[False, True, False, False, False]):
+def setup(startstreams=(False, True, False, False, False)):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
     if startstreams[2]:
