@@ -71,12 +71,12 @@ class undoframe:
 def save():
     f = io.openfile(zcode.screen.currentWindow, 'w')
     sd = quetzal.qdata()
-    sd.release = zcode.header.release()
-    sd.serial = zcode.header.serial()
-    sd.checksum = zcode.header.getchecksum()
+    sd.release = zcode.header.release
+    sd.serial = zcode.header.serial
+    sd.checksum = zcode.header.checksum
     sd.PC = PC
-    sd.memory = zcode.memory.data[:zcode.header.statmembase()]
-    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase()]
+    sd.memory = zcode.memory.data[:zcode.header.statmembase]
+    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase]
     sd.callstack = copy.deepcopy(callstack)
     sd.currentframe = copy.deepcopy(currentframe)
     return quetzal.save(f, sd)
@@ -97,10 +97,10 @@ def restore(filename=None, prompt=1):
     interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
     f = io.openfile(zcode.screen.currentWindow, 'r')
     sd = quetzal.qdata()
-    sd.release = zcode.header.release()
-    sd.serial = zcode.header.serial()
-    sd.checksum = zcode.header.getchecksum()
-    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase()]
+    sd.release = zcode.header.release
+    sd.serial = zcode.header.serial
+    sd.checksum = zcode.header.checksum
+    sd.omemory = zcode.memory.originaldata[:zcode.header.statmembase]
 
     sd = quetzal.restore(f.read(), sd)
     if sd == False:
