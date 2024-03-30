@@ -97,10 +97,16 @@ def handle_parameters(argv): # handles command line parameters
     global height, width, title, transcriptfile, usespec, recordfile, playbackfile
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
-        print('Syntax: viola [options] game-file [resource-file]\n  -d debug messages\n  -w <pixels> screen width\n  -h'
-              '<pixels> screen height\n  -T <filename> output transcript file\n  -t <period> milliseconds between timer'
-              'calls (default 100)\n  -R <filename> record input commands to file\n  -P <filename> playback input '
-              'commands from file\n  -B force blorb file to work even if it does not match the game')
+        print('Syntax: viola [options] game-file [resource-file]\n'
+              '  -d  print debug messages\n'
+              '  -w <pixels>  screen width\n'
+              '  -h <pixels>  screen height\n'
+              '  -T <filename>  output transcript file\n'
+              '  -t <period>  milliseconds between timer calls (default 100)\n'
+              '  -R <filename>  record input commands to file\n'
+              '  -P <filename>  playback input commands from file\n'
+              '  -B  force blorb file to work even if it does not match the game'
+             )
         sys.exit()
 
     if len(argv) <= 1:
