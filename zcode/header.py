@@ -12,8 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import string
-
 import zcode
 from zcode.constants import *
 
@@ -381,3 +379,7 @@ def gettruedefaultforeground():
 
 def gettruedefaultbackground():
     return getHeaderExtWord(6)
+
+
+def objtableloc():
+    return None
