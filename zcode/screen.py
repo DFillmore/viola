@@ -212,11 +212,11 @@ def units2pix(units, horizontal, coord=False): # converts a number of units into
 def chars2units(chars, horizontal, coord=False): # converts a height/width size in number of characters into a number of units
 
     if graphics_mode == 1:
-        return pix
+        return chars
     if not horizontal:
-        value = ((pix - 1) // currentWindow.getFont().getHeight()) + 1
+        value = ((chars - 1) // currentWindow.getFont().getHeight()) + 1
     else:
-        value = ((pix - 1) // currentWindow.getFont().getWidth()) + 1
+        value = ((chars - 1) // currentWindow.getFont().getWidth()) + 1
     return value
 
 def units2chars(units, horizontal, coord=False): # converts a number of units into a height/width size in number of characters 
