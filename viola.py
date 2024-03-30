@@ -243,8 +243,14 @@ def rungame(gamedata):
         rat = wrat
     else:
         rat = hrat
-    width = round(bwidth * rat)
-    height = round(bheight * rat)
+    try:
+        width = round(bwidth * rat)
+    except:
+        width = 1024
+    try:
+        height = round(bheight * rat)
+    except:
+        height = 768
 
     terpnum = gameset[4]
 

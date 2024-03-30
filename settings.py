@@ -17,12 +17,6 @@
 import re
 import os
 
-
-title = ""
-width = 1024
-height = 768
-code = ""
-
 locations = ["$HOME", "$USERPROFILE"]
 
 for l in locations:
@@ -118,7 +112,7 @@ def getbackground(gamesettings):
 
 def getsettings(gamesettings):
     if gamesettings == None:
-        return [None, width, height, None, None]
+        return [None, None, None, None, None]
     set = []
     set.append(gettitle(gamesettings))
     set.append(getwidth(gamesettings))
