@@ -749,7 +749,7 @@ class window(io.window):
     stylebuffer = []
     linestylebuffer = []
 
-    def updatestylebuffer():
+    def updatestylebuffer(self):
         pass
 
     def alterTabs(self): # changes the tab character to various spaces
