@@ -12,10 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import iff
-import tempfile
-import os
-import sys
 import babel
 
 forceblorb = False
