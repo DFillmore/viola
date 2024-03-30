@@ -654,15 +654,28 @@ class font:
     bold = False
     italic = False
     usefile = None
+    
+    fakeitalic = False
+    fakebold = False
 
     reversevideo = False
 
     def getUseFile(self):
         if self.italic and self.bold:
+            if not self.bolditalicfile:
+                self.fakebold = True
+                self.fakeitalic = True
+                return self.fontfile
             return self.bolditalicfile
         elif self.italic:
+            if not self.italicfile:
+                self.fakeitalic = True
+                return self.fontfile
             return self.italicfile
         elif self.bold:
+            if not self.boldfile:
+                self.fakebold = True
+                return self.fontfile
             return self.boldfile
         else:
             return self.fontfile
@@ -732,6 +745,8 @@ class font:
         text = self.prerender(text)
         text = text.replace(chr(0), '') # remove null characters
         f = self.fontData()
+        f.italic = self.fakeitalic & self.italic
+        f.bold = self.fakebold & self.bold
         if self.reversevideo:
             return f.render(text, antialias, background, colour)
         else:
@@ -743,18 +758,16 @@ class font:
         fon = pygame.ftfont.Font(self.usefile, self.size)
         return fon
         
-defaultFont = font(getBaseDir() + "//fonts//FreeFont//FreeSerif.ttf",
-                   boldfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBold.ttf",
-                   italicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifItalic.ttf",
-                   bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeSerifBoldItalic.ttf",
-                   name="Default font (FreeSerif)"
+defaultFont = font(getBaseDir() + "//fonts//noto//serif//NotoSerif-Regular.ttf",
+                   boldfile=getBaseDir() + "//fonts//noto//serif//NotoSerif-Bold.ttf",
+                   italicfile=getBaseDir() + "//fonts//noto//serif//NotoSerif-Italic.ttf",
+                   bolditalicfile=getBaseDir() + "//fonts//noto//serif//NotoSerif-BoldItalic.ttf",
+                   name="Default font (Noto Serif)"
                   )
 
-fixedFont = font(getBaseDir() + "//fonts//FreeFont//FreeMono.ttf", 
-                 boldfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBold.ttf", 
-                 italicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoOblique.ttf",
-                 bolditalicfile=getBaseDir() + "//fonts//FreeFont//FreeMonoBoldOblique.ttf",
-                 name="Fixed font (FreeMono)"
+fixedFont = font(getBaseDir() + "//fonts//noto/mono/NotoSansMono-Regular.ttf",
+                 boldfile=getBaseDir() + "//fonts//noto/mono/NotoSansMono-Bold.ttf", 
+                 name="Fixed font (Noto Sans Mono)"
                 )
 
 
