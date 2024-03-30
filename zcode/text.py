@@ -198,6 +198,13 @@ def gettextlength(address): # this determines how much space an encoded string t
         
     return loc - address
 
+def undefinedChars(text):
+    undefined = []
+    undefined.extend(range(0x0020))
+    undefined.extend(range(0x007f, 0x0100))
+    for c in undefined:
+        text = text.replace(chr(c), chr(zcode.screen.currentWindow.font.missingGlyph))
+    return text
 
 def convertBZorkCode(code):
     if zcode.screen.currentWindow.getFontNumber() == 3 and zcode.header.getterpnum() == zcode.header.TERP_APPLEC: # apple iic
@@ -234,6 +241,7 @@ def getZSCIIchar(code):
         try:
             char = unitable[code]
             char = chr(char)
+            char = undefinedChars(char)
         except:
             zcode.error.warning(f'ZSCII character {code} undefined for output.')
             return ''

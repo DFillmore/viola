@@ -702,8 +702,9 @@ def z_print_table():
 def z_print_unicode():
     try:
         char = chr(zcode.instructions.operands[0]['value'])
+        char = zcode.text.undefinedChars(char)
     except:
-        char = '?'
+        char = chr(zcode.screen.currentWindow.font.missingGlyph)
     zcode.output.printtext(char)
 
 

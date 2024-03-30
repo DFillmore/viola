@@ -619,6 +619,7 @@ class font:
         return 'Font: ' + str(self.name)
         
     antialiase = 1
+    missingGlyph = None
 
     def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, name="unnamed"):
         self.size = self.defaultSize()
@@ -633,6 +634,12 @@ class font:
         self.codePointsBold = fonts.getCodes(boldfile)
         self.codePointsItalic = fonts.getCodes(italicfile)
         self.codePointsBoldItalic = fonts.getCodes(bolditalicfile)
+
+        self.missingGlyph = 0xfffd
+        for m in [0x1a, 0x80, 0x2fe0]:
+            if m not in self.codePointsDefault:
+                self.missingGlyph = m
+                break
 
     def codePoints(self):
         return self.codePointsDefault
@@ -717,17 +724,6 @@ class font:
     def render(self, text, antialias, colour, background):
         text = self.prerender(text)
         text = text.replace(chr(0), '') # remove null characters
-        unavailable = set(map(ord, text)).difference(self.codePoints())
-        #print(len(set(map(ord, text))), len(self.codePoints))
-        #for a in text:
-        #  print(ord(a), ord(a) in self.codePoints)
-        #print("un", unavailable)
-        #for elem in unavailable:
-        #    # Check if string is in the main string
-        #    if chr(elem) in text:
-        #        # Replace the string
-        #        text = text.replace(chr(elem), chr(0xfffd))
-
         f = self.fontData()
         if self.reversevideo:
             return f.render(text, antialias, background, colour)
