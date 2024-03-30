@@ -794,8 +794,9 @@ class window(io.window):
             self.line_count = 0
             pfont = self.setFontByNumber(4)
             morestring = '[MORE]' 
+            self.drawText(morestring)
             self.setFontByNumber(pfont)
-            self.drawText(morestring) 
+            
             while zcode.input.getInput(ignore=True) != 32:
                 pass
             x = self.getCursor()[0]# + self.getPosition()[0] - 1
