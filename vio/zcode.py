@@ -707,8 +707,12 @@ class font:
 
     def resetSize(self):
         self.size = self.defaultSize()
+        
+    def prerender(self, text):
+        return text
 
     def render(self, text, antialias, colour, background):
+        text = self.prerender(text)
         text = text.replace(chr(0), '') # remove null characters
         unavailable = set(map(ord, text)).difference(self.codePoints())
         #print(len(set(map(ord, text))), len(self.codePoints))

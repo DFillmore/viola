@@ -234,7 +234,20 @@ def units2chars(units, horizontal, coord=False): # converts a number of units in
         value += 1    
     return value
 
-font3 = io.font(io.getBaseDir() + "//fonts//bzork.ttf", name="Runic Font")
+class runeFont(io.font):
+    def prerender(self, text):
+        # The version of font 3 used on the Mac has 6 characters for the 'bar filling up'
+        # Other versions have 8 characters. This hack fixes the visual by changing
+        # characters to the correct ones.
+        if (zcode.header.TERP_NUMBER == zcode.header.TERP_MAC) and (settings.code in zcode.constants.beyond_zork_codes):
+            text = text.replace('U', 'W')
+            text = text.replace('T', 'V')
+            text = text.replace('S', 'T')
+            text = text.replace('R', 'S')
+            text = text.replace('Q', 'R')
+        return text 
+
+font3 = runeFont(io.getBaseDir() + "//fonts//bzork.ttf", name="Runic Font")
 
 fontlist = [ None, 
              io.defaultFont,
