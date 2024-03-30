@@ -236,6 +236,7 @@ def units2chars(units, horizontal, coord=False): # converts a number of units in
 
 class runeFont(io.font):
     def prerender(self, text):
+        self.antialiase = 0
         # The version of font 3 used on the Mac has 6 characters for the 'bar filling up'
         # Other versions have 8 characters. This hack fixes the visual by changing
         # characters to the correct ones.

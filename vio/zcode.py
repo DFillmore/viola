@@ -453,13 +453,14 @@ class window:
         fg, bg = self.getColours()
         xpos, ypos = self.x_coord-1, self.y_coord-1
         xcursor, ycursor = self.x_cursor-1, self.y_cursor-1
-        width, height = self.getSize()
-        textsurface = self.getFont().render(text, 1, fg, bg)
+        winwidth, winheight = self.getSize()
+        antialiase = self.getFont().antialiase
+        textsurface = self.getFont().render(text, antialiase, fg, bg)
         x = xpos + xcursor
         y = ypos + ycursor
         if text != '':
             self.screen.canvas.blit(textsurface, (x,y))
-        area = pygame.Rect(xpos, ypos, width, height)
+        area = pygame.Rect(xpos, ypos, winwidth, winheight)
         self.screen.updates.append(area)
 
     def preFlush(self):
@@ -616,6 +617,8 @@ def getpic(screen, picture_number):
 class font:
     def __str__(self):
         return 'Font: ' + str(self.name)
+        
+    antialiase = 1
 
     def __init__(self, fontfile, boldfile=None, italicfile=None, bolditalicfile=None, name="unnamed"):
         self.size = self.defaultSize()
