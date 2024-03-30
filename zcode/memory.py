@@ -171,7 +171,7 @@ def setarray(offset, newdata):
 @functools.lru_cache(maxsize=128)
 def wordaddress(address): # this is so simple, and so rare, it seems kinda pointless having it here.
     if address*WORDSIZE >= len(data):
-        zcode.error.fatal("Tried to access data beyond available memory at " + hex(offset) + ".")
+        zcode.error.fatal("Tried to access data beyond available memory at " + hex(address) + ".")
     return address * WORDSIZE
 
 @functools.lru_cache(maxsize=128)
