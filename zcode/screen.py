@@ -13,10 +13,8 @@
 # GNU General Public License for more details.
 
 
-import sys
-import string
-import vio.zcode as io
 import settings
+import vio.zcode as io
 import zcode
 from zcode.constants import *
 
