@@ -1,27 +1,24 @@
-from distutils.core import setup
-
-
+from setuptools import setup
 
 setup(name='Viola',
       version='0.8',
-      description='A Blorb-capable Z-Machine interpreter.',
+      description='Z-Machine interpreter written in Python',
       author='David Fillmore',
       author_email='marvin@frobnitz.co.uk',
-      packages=["zio", "zcode"],
-      scripts=['viola.py',],      
+      packages=["vio", "zcode"],
+      scripts=['viola.py',],
       py_modules=["babel", "blorb", "iff", "quetzal", "settings"],
-      data_files=[('fonts', ['fonts/FreeMono.ttf',
-                             'fonts/FreeMonoBold.ttf',
-                             'fonts/FreeMonoBoldOblique.ttf',
-                             'fonts/FreeMonoOblique.ttf',
-                             'fonts/FreeSans.ttf',
-                             'fonts/FreeSansBold.ttf',
-                             'fonts/FreeSansBoldOblique.ttf',
-                             'fonts/FreeSerif.ttf',
-                             'fonts/FreeSerifBold.ttf',
-                             'fonts/FreeSerifBoldItalic.ttf',
-                             'fonts/FreeSerifItalic.ttf',
+      data_files=[('fonts', ['bzork.ttf/mono/'
+                             'noto/mono/NotoSansMono-Bold.ttf',
+                             'noto/mono/NotoSansMono-Regular.ttf',
+                             'noto/mono/OFL.txt',
+                             'noto/serif/NotoSerif-Regular.ttf',
+                             'noto/serif/NotoSerif-Bold.ttf',
+                             'noto/serif/NotoSerif-Italic.ttf',
+                             'noto/serif/NotoSerif-BoldItalic.ttf',
+                             'noto/serif/OFL.txt'
                             ]
                   )
-                 ]
-     ) 
+                 ],
+      install_requires=['pygame>=2.5']
+     )
