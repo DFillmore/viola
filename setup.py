@@ -8,15 +8,15 @@ setup(name='Viola',
       packages=["vio", "zcode"],
       scripts=['viola.py',],
       py_modules=["babel", "blorb", "iff", "quetzal", "settings"],
-      data_files=[('fonts', ['bzork.ttf/mono/'
-                             'noto/mono/NotoSansMono-Bold.ttf',
-                             'noto/mono/NotoSansMono-Regular.ttf',
-                             'noto/mono/OFL.txt',
-                             'noto/serif/NotoSerif-Regular.ttf',
-                             'noto/serif/NotoSerif-Bold.ttf',
-                             'noto/serif/NotoSerif-Italic.ttf',
-                             'noto/serif/NotoSerif-BoldItalic.ttf',
-                             'noto/serif/OFL.txt'
+      data_files=[('fonts', ['fonts/bzork.ttf',
+                             'fonts/noto/mono/NotoSansMono-Bold.ttf',
+                             'fonts/noto/mono/NotoSansMono-Regular.ttf',
+                             'fonts/noto/mono/OFL.txt',
+                             'fonts/noto/serif/NotoSerif-Regular.ttf',
+                             'fonts/noto/serif/NotoSerif-Bold.ttf',
+                             'fonts/noto/serif/NotoSerif-Italic.ttf',
+                             'fonts/noto/serif/NotoSerif-BoldItalic.ttf',
+                             'fonts/noto/serif/OFL.txt'
                             ]
                   )
                  ],
