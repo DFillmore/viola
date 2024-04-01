@@ -51,7 +51,7 @@ def setup(width, height, b, title, foreground, background):
     blorbs = b
     timerrunning = False
     inputtext = []
-    pygame.key.set_repeat(1000, 100)
+    pygame.key.set_repeat(1000, 200)
     zApp = VApp(width, height, title, foreground, background)
     
     icon = None
