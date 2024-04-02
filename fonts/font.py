@@ -65,44 +65,9 @@ def readTableDirectory(fontFile):
         tables[t] = table
 
 
-def readcmap(fontFile):
-    o = tables['cmap']['offset']
-    fontFile.seek(o)
+def subtable(fontFile, tableLoc):
+    fontFile.seek(tableLoc)
 
-    #The 'cmap' index
-    #Type	    Name	            Description
-    #UInt16	    version	            Version number (Set to zero)
-    #UInt16	    numberSubtables	    Number of encoding subtables
-    strt = fontFile.tell()
-    b = fontFile.read(2)
-    vers = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    numberSubtables = int.from_bytes(b, byteorder='big')
-
-
-    #The 'cmap' encoding subtable
-    #Type	    Name	            Description
-    #UInt16	    platformID	        Platform identifier
-    #UInt16	    platformSpecificID	Platform-specific encoding identifier
-    #UInt32	    offset	            Offset of the mapping table
-
-
-    for a in range(numberSubtables):
-        b = fontFile.read(2)
-        platformID = int.from_bytes(b, byteorder='big')
-        b = fontFile.read(2)
-        platformSpecificID = int.from_bytes(b, byteorder='big')
-        b = fontFile.read(4)
-        o = int.from_bytes(b, byteorder='big')
-        if platformID == 0: # Unicode
-            mapOffset = o
-
-
-
-    fontFile.seek(strt)
-    fontFile.seek(mapOffset, 1)
-
-    # we're assuming the format of the cmap table is 4. 
     #'cmap' format 4
     #Type	    Name	                    Description
     #UInt16	    format	                    Format number is set to 4
@@ -123,53 +88,133 @@ def readcmap(fontFile):
     idDeltas = []
     idRangeOffsets = []
     glyphIndexArrays = []
-
+    codes = set()
     b = fontFile.read(2)
     form = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    leng = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    language = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    segCount = int(int.from_bytes(b, byteorder='big') / 2)
-    b = fontFile.read(2)
-    searchRange = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    entrySelector = int.from_bytes(b, byteorder='big')
-    b = fontFile.read(2)
-    rangeShift = int.from_bytes(b, byteorder='big')
-
-
-    for a in range(segCount):
+    if form == 4:
         b = fontFile.read(2)
-        endCodes.append(int.from_bytes(b, byteorder='big'))
-
-    b = fontFile.read(2)
-    reservedPad = int.from_bytes(b, byteorder='big')
-
-    for a in range(segCount):
+        leng = int.from_bytes(b, byteorder='big')
         b = fontFile.read(2)
-        startCodes.append(int.from_bytes(b, byteorder='big'))
-
-    for a in range(segCount):
+        language = int.from_bytes(b, byteorder='big')
         b = fontFile.read(2)
-        idDeltas.append(int.from_bytes(b, byteorder='big'))
-
-    for a in range(segCount):
+        segCount = int(int.from_bytes(b, byteorder='big') / 2)
         b = fontFile.read(2)
-        idRangeOffsets.append(int.from_bytes(b, byteorder='big'))
+        searchRange = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(2)
+        entrySelector = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(2)
+        rangeShift = int.from_bytes(b, byteorder='big')
 
-    b = fontFile.read(2)
-    glyphIndexArray = int.from_bytes(b, byteorder='big')
+        for a in range(segCount):
+            b = fontFile.read(2)
+            endCodes.append(int.from_bytes(b, byteorder='big'))
+        b = fontFile.read(2)
+        reservedPad = int.from_bytes(b, byteorder='big')
+        
+        for a in range(segCount):
+            b = fontFile.read(2)
+            startCodes.append(int.from_bytes(b, byteorder='big'))
+
+        for a in range(segCount):
+            b = fontFile.read(2)
+            idDeltas.append(int.from_bytes(b, byteorder='big'))
+
+        for a in range(segCount):
+            b = fontFile.read(2)
+            idRangeOffsets.append(int.from_bytes(b, byteorder='big'))
+
+        b = fontFile.read(2)
+        glyphIndexArray = int.from_bytes(b, byteorder='big')
 
 
-    #to find if a glyph is available, search endCodes for the first number >= the character number we want. If the corresponding startCode is <= the character number, there is a glyph. If not, not.
-    codes = []
-    for c in range(segCount):
-        endCode = endCodes[c] + 1
-        startCode = startCodes[c]
-        codes.extend(range(startCode, endCode))
+        #to find if a glyph is available, search endCodes for the first number >= the character number we want. If the corresponding startCode is <= the character number, there is a glyph. If not, not.
+        
+        for s in range(segCount):
+            endCode = endCodes[s]
+            startCode = startCodes[s]
+            idRangeOffset = idRangeOffsets[s]
+            idDelta = idDeltas[s]
+            #print('r', startCode, endCode)
+            #for c in range(startCode, endCode+1):
+            #    if c not in codes:
+            #        if idRangeOffset == 0:
+            #            glyphId = idDelta + c
+            #            if c == 0x0370:
+            #                print('g', glyphId)
+                            
+            #            codes.add(c)
+            #        else:
+            #            glyphId = idRangeOffset + 2 * (c - startCode) + l
+            #            code.
+             
+            codes.update(range(startCode, endCode+1))
+    elif form == 12:
+        # format 12 header
+        # UInt16 	format 	Subtable format; set to 12
+        #UInt16 	reserved 	Set to 0.
+        #UInt32 	length 	Byte length of this subtable (including the header)
+        #UInt32 	language 	Language code 
+        #UInt32 	nGroups 	Number of groupings which follow
+        b = fontFile.read(2)
+        reserved = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(4)
+        tlength = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(4)
+        language = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(4)
+        numGroups = int.from_bytes(b, byteorder='big')
+        
+        # format 12 group
+        #UInt32 	startCharCode 	First character code in this group
+        #UInt32 	endCharCode 	Last character code in this group
+        #UInt32 	startGlyphCode 	Glyph index corresponding to the starting character code; subsequent charcters are mapped to sequential glyphs
+        for a in range(numGroups):
+            b = fontFile.read(4)
+            startCharCode = int.from_bytes(b, byteorder='big')
+            if startCharCode > 0xffff:
+                continue
+            b = fontFile.read(4)
+            endCharCode = int.from_bytes(b, byteorder='big')
+            b = fontFile.read(4)
+            startGlyphCode = int.from_bytes(b, byteorder='big')
+            codes.update(range(startCharCode, endCharCode+1))
+        
     return codes
+
+def readcmap(fontFile):
+    o = tables['cmap']['offset']
+    fontFile.seek(o)
+    #The 'cmap' index
+    #Type	    Name	            Description
+    #UInt16	    version	            Version number (Set to zero)
+    #UInt16	    numberSubtables	    Number of encoding subtables
+    strt = fontFile.tell()
+    b = fontFile.read(2)
+    vers = int.from_bytes(b, byteorder='big')
+    b = fontFile.read(2)
+    numberSubtables = int.from_bytes(b, byteorder='big')
+
+    #The 'cmap' encoding subtable
+    #Type	    Name	            Description
+    #UInt16	    platformID	        Platform identifier
+    #UInt16	    platformSpecificID	Platform-specific encoding identifier
+    #UInt32	    offset	            Offset of the mapping table
+
+    codes = set()
+    for a in range(numberSubtables):
+        b = fontFile.read(2)
+        platformID = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(2)
+        platformSpecificID = int.from_bytes(b, byteorder='big')
+        b = fontFile.read(4)
+        mapOffset = int.from_bytes(b, byteorder='big')
+        if platformID == 0: # Unicode
+            codes.update(subtable(fontFile, mapOffset+o))
+    return codes
+
+
+
+
 
 def getCodes(fontFileName):
     if fontFileName:
