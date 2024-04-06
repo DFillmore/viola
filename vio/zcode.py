@@ -145,7 +145,7 @@ def openfile(window, mode, filename=None, prompt=None):
 
 class VApp:
     updates = []
-    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
+    def __init__(self, width, height, title='', foreground=(0,0,0,0xff), background=(0xFF,0xFF,0xFF,0xff)):
         self.screen = zscreen(width, height, title, foreground, background)
         pygame.display.set_caption(title)
         self.width = width
@@ -203,7 +203,7 @@ class VApp:
 
 class zscreen:
     updates = []
-    def __init__(self, width, height, title='', foreground=0x000000, background=0xFFFFFF):
+    def __init__(self, width, height, title='', foreground=(0,0,0,0xff), background=(0xFF,0xFF,0xFF,0xff)):
         self.canvas = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         self.canvas.fill(background)
         self.defaultForeground = foreground
