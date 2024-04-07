@@ -19,14 +19,6 @@ import os
 
 locations = ["$HOME", "$USERPROFILE"]
 
-for l in locations:
-    filename = os.path.join(os.path.expandvars(l), ".violarc")
-    if os.path.exists(filename) == 1:
-        break
-    else:
-        filename = None
-
-
 def getcode(gamedata):
     release = (gamedata[2] << 8) + gamedata[3]
     serial = gamedata[0x12:0x18].decode('latin-1')
@@ -125,6 +117,13 @@ def getsettings(gamesettings):
         
 def setup(gamedata):
     global file, filesize, filetext, code, defaults, gamesettings
+
+    filename: str | None = None
+    for l in locations:
+        filename = os.path.join(os.path.expandvars(l), ".violarc")
+        if os.path.exists(filename) == 1:
+            break
+
     if filename == None:
         filetext = ''
     else:
