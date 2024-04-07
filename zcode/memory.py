@@ -12,7 +12,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import array
 import functools
 import sys
 
@@ -31,7 +30,10 @@ def setup(gamedata):
     global filelen
     global WORDSIZE
     global memory_size
-    data = gamedata[:]
+
+    originaldata = gamedata[:]
+    data = bytearray(gamedata)
+
     memory_size = len(data)
 
     version = data[0]
@@ -51,9 +53,8 @@ def setup(gamedata):
         filelen *= 4
     elif version < 9: # versions 6, 7 and 8
         filelen *= 8
-        
-    data = array.array('B', data)
-    originaldata = data[:]
+
+
     return True
     
 def verify():
@@ -146,7 +147,7 @@ def setword(offset, word):
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset) + ".")
 
     word = zcode.numbers.unsigned(word)
-    data[offset:offset+WORDSIZE] = array.array(data.typecode, int.to_bytes(word, WORDSIZE, byteorder='big'))
+    data[offset:offset+WORDSIZE] = int.to_bytes(word, WORDSIZE, byteorder='big')
 
 
 def getarray(offset, length):
@@ -164,7 +165,7 @@ def setarray(offset, newdata):
     offset = zcode.numbers.unsigned(offset)
     if len(newdata) + offset > zcode.header.statmembase:
         zcode.error.fatal("Tried to write a word beyond dynamic memory at " + hex(offset+len(newdata)) + ".")
-    data[offset:offset+len(newdata)] = array.array(data.typecode, newdata)
+    data[offset:offset+len(newdata)] = newdata[:]
 
 
 @functools.lru_cache(maxsize=128)
