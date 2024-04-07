@@ -141,7 +141,7 @@ class Blorb:
         try:
             x = self.resindex[b'Exec'][execnum]
         except:
-            return False
+            return None
         size = self.chunkSize(x)
         data = self.data[x+8:x+8+size]
         return data

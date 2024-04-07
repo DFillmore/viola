@@ -69,7 +69,7 @@ def getgame(filename):
     except:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
-    x = gamefile.read()
+
     gamefile.seek(0)
 
         
@@ -195,10 +195,9 @@ def rungame(gamedata):
         if gameset[a] == None:
             gameset[a] = defset[a]
     
-
-    if height == None:
+    if height is None:
         height = gameset[2]
-    if width == None:
+    if width is None:
         width = gameset[1]
 
     try:
@@ -211,11 +210,11 @@ def rungame(gamedata):
     except:
         background = 9
 
-    if gameset[3] != None:
+    if gameset[3] is not None:
         blorbs.append(io.findfile(gameset[3]))
 
     for a in range(len(blorbs)):
-        if blorbs[a] == False:
+        if not blorbs[a]:
             blorbs.pop(a)
 
     bwidth = 0

@@ -95,9 +95,7 @@ def openfile(window, mode, filename=None, prompt=None):
     # if filename == None, prompt for a filename
     # returns a file object to be read/written
 
-
-
-    if filename == None: # should prompt for filename
+    if filename is None:  # should prompt for filename
         prompt = True
 
     if prompt: # prompt for filename, but supply suggestion

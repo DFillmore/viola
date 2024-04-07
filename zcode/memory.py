@@ -83,12 +83,12 @@ def setbyte(offset, byte):
 
     if offset == 0x11:
         # if the transcription bit is being set, start transcription
-        if byte & 1 and (zcode.output.streams[2].active == False):
+        if byte & 1 and not zcode.output.streams[2].active:
             zcode.output.openstream(2)
-        elif byte & 1 == 0 and (zcode.output.streams[2].active): # if however it has just been unset, stop transcription
+        elif byte & 1 == 0 and zcode.output.streams[2].active: # if however it has just been unset, stop transcription
             zcode.output.closestream(2)
 
-        if byte & 2 and zcode.screen.fixedpitchbit == False:
+        if not (byte & 2 and zcode.screen.fixedpitchbit):
             zcode.screen.currentWindow.flushTextBuffer()
             zcode.screen.fixedpitchbit = True
         elif byte & 2 == 0 and zcode.screen.fixedpitchbit:
