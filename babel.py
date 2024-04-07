@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 # Copyright (C) 2001 - 2024 David Fillmore
 #
 # This file is part of Viola.
