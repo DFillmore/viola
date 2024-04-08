@@ -412,6 +412,3 @@ def gettruedefaultforeground():
 def gettruedefaultbackground():
     return getHeaderExtWord(6)
 
-
-def objtableloc():
-    return None
