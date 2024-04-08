@@ -17,6 +17,7 @@ class chunk:
     subID = '    '
     length = 0
     data = []
+
     def dowrite(self, input=0):
         if input != 0:
             self.input = input
@@ -24,10 +25,10 @@ class chunk:
         self.length = len(self.data)
         if self.length % 2 == 1:
             self.data.append(0)
-               
+
     def writeID(self):
         return list(self.ID)
-    
+
     def writelen(self):
         clen = []
         clen.append((self.length >> 24) & 0xff)
@@ -51,7 +52,7 @@ class chunk:
     def fbnum(self, string):
         num = (((((ord(string[0]) << 8) + ord(string[1])) << 8) + ord(string[2])) << 8) + ord(string[3])
         return num
-                
+
     def doread(self, data):
         len = self.readlen(data)
         self.data = []
@@ -64,34 +65,39 @@ class chunk:
 
     def write(self):
         pass
-                        
+
+
 class authchunk(chunk):
     ID = 'AUTH'
+
 
 class annochunk(chunk):
     ID = 'ANNO'
 
+
 class copychunk(chunk):
     ID = '(c) '
+
 
 class formchunk(chunk):
     ID = 'FORM'
     data = []
     wchunks = []
+
     def write(self):
-        self.data.append(ord(self.subID[0])) 
+        self.data.append(ord(self.subID[0]))
         self.data.append(ord(self.subID[1]))
         self.data.append(ord(self.subID[2]))
         self.data.append(ord(self.subID[3]))
-        chunks = self.wchunks # chunks to write
+        chunks = self.wchunks  # chunks to write
         for a in chunks:
-            cchunk = a() # set cchunk to current chunk
-            cchunk.dowrite(self.input) # write current chunk's data
-            id = cchunk.writeID() # set id to current chunk's ID
+            cchunk = a()  # set cchunk to current chunk
+            cchunk.dowrite(self.input)  # write current chunk's data
+            id = cchunk.writeID()  # set id to current chunk's ID
             for b in range(len(id)):
-                self.data.append(ord(id[b])) # write current chunk's ID to data
-            clen = cchunk.writelen() # write current
-                        
+                self.data.append(ord(id[b]))  # write current chunk's ID to data
+            clen = cchunk.writelen()  # write current
+
             for b in clen:
                 self.data.append(b)
             for b in cchunk.data:
@@ -103,7 +109,7 @@ class formchunk(chunk):
         while place < len(self.data):
             clen = self.readlen(datachunk)
             id = self.readID(datachunk)
-            datachunk = datachunk[place+8:clen]
+            datachunk = datachunk[place + 8:clen]
             try:
                 cchunk = self.chunks[id]()
             except:
@@ -112,6 +118,3 @@ class formchunk(chunk):
             place += clen
             if clen % 2 == 1:
                 place += 1
-
-
-                 

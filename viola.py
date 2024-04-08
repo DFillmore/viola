@@ -35,7 +35,7 @@ def checkgamefile(gamefile):
     gameid = gamefile.read(4)
     if gameid.decode('latin-1') == 'FORM':  # The file is an IFF FORM file
         gamefile.seek(8)
-        if gamefile.read(4).decode('latin-1') == 'IFRS': # The file is a Blorb resource file
+        if gamefile.read(4).decode('latin-1') == 'IFRS':  # The file is a Blorb resource file
             return 'blorb'
         else:
             return 'unknown'
@@ -46,17 +46,22 @@ def checkgamefile(gamefile):
     else:
         return 'unknown'
 
+
 class UnknownGameType(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
+
 
 class UnsupportedGameType(Exception):
     def __init__(self, value):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
+
 
 def getgame(filename):
     global blorbs
@@ -72,7 +77,6 @@ def getgame(filename):
 
     gamefile.seek(0)
 
-        
     # check to see if it's actually a blorb file
 
     gametype = checkgamefile(gamefile)
@@ -91,8 +95,7 @@ def getgame(filename):
     return game
 
 
-
-def handle_parameters(argv): # handles command line parameters
+def handle_parameters(argv):  # handles command line parameters
     global blorbfiles
     global height, width, title, transcriptfile, usespec, recordfile, playbackfile
     # viola [options] gamefile [resourcefile]
@@ -106,12 +109,12 @@ def handle_parameters(argv): # handles command line parameters
               '  -R <filename>  record input commands to file\n'
               '  -P <filename>  playback input commands from file\n'
               '  -B  force blorb file to work even if it does not match the game'
-             )
+              )
         sys.exit()
 
     if len(argv) <= 1:
         return None
-    
+
     args = getopt.getopt(argv[1:], 'Bdh:w:T:t:R:P:', 'zspec=')
 
     options = args[0]
@@ -146,20 +149,21 @@ def handle_parameters(argv): # handles command line parameters
                     print(a)
                 sys.exit()
             usespec = specs.index(specversion)
-            
+
     if playbackfile and recordfile:
         print('Cannot record commands and playback commands at the same time (-P and -R).')
         sys.exit()
-    
+
     gamedata = getgame(args[0])
     for a in range(len(args[1:])):
         blorbs.append(blorb.Blorb(args[1:][a], gamedata))
 
     return gamedata
 
+
 def setupmodules(gamefile):
     global terpnum, title, transcriptfile
-    
+
     realForeground = zcode.screen.convertBasicToRealColour(foreground)
     realBackground = zcode.screen.convertBasicToRealColour(background)
 
@@ -194,7 +198,7 @@ def rungame(gamedata):
     for a in range(len(gameset)):
         if gameset[a] == None:
             gameset[a] = defset[a]
-    
+
     if height is None:
         height = gameset[2]
     if width is None:

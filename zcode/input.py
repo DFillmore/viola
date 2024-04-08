@@ -32,6 +32,7 @@ def setup(playbackfile=False):
     if playbackfile:
         setStream(1, playbackfile)
 
+
 def setStream(number, filename=None):
     global stream
     global filecommands
@@ -52,6 +53,7 @@ def setStream(number, filename=None):
             filecommands.reverse()
             stream = 1
 
+
 def getTerminatingCharacters():
     if zcode.header.zversion < 5:
         return []
@@ -63,14 +65,15 @@ def getTerminatingCharacters():
         location += 1
         chars.append(x)
     chars.pop()
-    if chars.count(255) != 0: # if 255 is one of the terminating characters, make every 'function character' terminating
+    if chars.count(255) != 0:  # if 255 is one of the terminating characters, make every 'function character' terminating
         chars = []
-        for a in range(129,155):
+        for a in range(129, 155):
             chars.append(a)
-        for a in range(252,255):
+        for a in range(252, 255):
             chars.append(a)
     return chars
-    
+
+
 class mouseTracker:
     xpos = 1
     ypos = 1
@@ -117,8 +120,8 @@ def getInput(display=True, ignore=False, chistory=True):
         zsciivalue = None
 
         if isinstance(input, io.keypress):
-            if chistory and input.value == 273: # pressed up key
-                if chplace < len(command_history) -1:
+            if chistory and input.value == 273:  # pressed up key
+                if chplace < len(command_history) - 1:
                     chplace += 1
 
                     inp = [chr(a) for a in zcode.input.instring]
@@ -127,8 +130,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     h = zcode.screen.currentWindow.getStringHeight(inp)
                     x = zcode.screen.currentWindow.getCursor()[0] - w
                     y = zcode.screen.currentWindow.getCursor()[1]
-                    zcode.screen.currentWindow.eraseArea(x,y,w,h)
-                    zcode.screen.currentWindow.setCursor(x,y)
+                    zcode.screen.currentWindow.eraseArea(x, y, w, h)
+                    zcode.screen.currentWindow.setCursor(x, y)
 
                     instring = command_history[chplace]
                     for c in instring:
@@ -137,7 +140,7 @@ def getInput(display=True, ignore=False, chistory=True):
                 if zcode.screen.cursor:
                     zcode.screen.currentWindow.showCursor()
                 return None
-            if chistory and input.value == 274: # pressed down key
+            if chistory and input.value == 274:  # pressed down key
                 if chplace >= 0:
                     if chplace >= 0:
                         chplace -= 1
@@ -151,8 +154,8 @@ def getInput(display=True, ignore=False, chistory=True):
                     h = zcode.screen.currentWindow.getStringHeight(inp)
                     x = zcode.screen.currentWindow.getCursor()[0] - w
                     y = zcode.screen.currentWindow.getCursor()[1]
-                    zcode.screen.currentWindow.eraseArea(x,y,w,h)
-                    zcode.screen.currentWindow.setCursor(x,y)
+                    zcode.screen.currentWindow.eraseArea(x, y, w, h)
+                    zcode.screen.currentWindow.setCursor(x, y)
 
                     instring = newstring
                     for c in instring:
@@ -161,7 +164,7 @@ def getInput(display=True, ignore=False, chistory=True):
                 if zcode.screen.cursor:
                     zcode.screen.currentWindow.showCursor()
                 return None
-                    
+
             if len(input.character) == 1:
                 zsciivalue = ord(input.character)
             else:
@@ -172,14 +175,13 @@ def getInput(display=True, ignore=False, chistory=True):
         if isinstance(input, io.mousedown):
             if input.button != None:
                 mouse.buttons[input.button] = 1
-                zsciivalue = 254 # mouse down == single click
+                zsciivalue = 254  # mouse down == single click
                 zcode.header.setmousex(mouse.xpos)
                 zcode.header.setmousey(mouse.ypos)
 
         if isinstance(input, io.mouseup):
             if input.button != None:
                 mouse.buttons[input.button] = 0
-
 
         if isinstance(input, io.mousemove):
             mouse.xpos = zcode.screen.pix2units(input.xpos, horizontal=True, coord=True)
@@ -192,7 +194,7 @@ def getInput(display=True, ignore=False, chistory=True):
                         zcode.screen.currentWindow.hideCursor()
 
                     zcode.output.streams[1].write(zcode.text.getZSCIIchar(zsciivalue))
-    
+
                     zcode.screen.currentWindow.flushTextBuffer()
                     #if zcode.header.zversion != 6:
                     #    zcode.output.streams[2].write(zcode.text.getZSCIIchar(zsciivalue))
@@ -210,12 +212,12 @@ def getInput(display=True, ignore=False, chistory=True):
             if len(c) == 1:
                 zsciivalue = ord(c)
             else:
-                zsciivalue = convertInputToZSCII(c) 
+                zsciivalue = convertInputToZSCII(c)
             currentcommand = currentcommand[1:]
             filecommands.append(currentcommand)
-            
+
             if zsciivalue not in getTerminatingCharacters() and display:
-                 zcode.output.streams[1].write(chr(zsciivalue))
+                zcode.output.streams[1].write(chr(zsciivalue))
             return zsciivalue
         else:
             if len(filecommands) == 0:
@@ -223,7 +225,8 @@ def getInput(display=True, ignore=False, chistory=True):
             zcode.output.streams[1].write('\r')
             return 13
 
-def readFile(length, filename=None, prompt=False, seek=0): 
+
+def readFile(length, filename=None, prompt=False, seek=0):
     f = io.openfile(zcode.screen.currentWindow, 'r', filename, prompt)
     if f == None:
         return False
@@ -234,4 +237,3 @@ def readFile(length, filename=None, prompt=False, seek=0):
         data = f.read(length)
     f.close()
     return data
-

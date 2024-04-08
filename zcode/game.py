@@ -20,7 +20,6 @@ import zcode
 
 returning = False
 
-
 undolist = []
 
 LARGEST_STACK = 0
@@ -31,10 +30,12 @@ INT_INPUT = 1
 INT_NEWLINE = 2
 INT_SOUND = 3
 
+
 class interruptdata:
     def __init__(self, itype, routine):
         self.routine = routine
         self.type = itype
+
     routine = None
     type = 0
 
@@ -47,10 +48,11 @@ def setup():
         currentframe = frame()
         currentframe.lvars = []
         currentframe.evalstack = []
-    
+
     interruptroutine = 0
     timerroutine = 0
     timer = None
+
 
 class frame:
     retPC = 0
@@ -62,11 +64,13 @@ class frame:
     evalstack = []
     interrupt = False
 
+
 class undoframe:
     memory = []
     callstack = []
     currentframe = 0
     PC = 0
+
 
 def save():
     f = io.openfile(zcode.screen.currentWindow, 'w')
@@ -81,6 +85,7 @@ def save():
     sd.currentframe = copy.deepcopy(currentframe)
     return quetzal.save(f, sd)
 
+
 def save_undo():
     undodata = undoframe()
     undodata.memory = zcode.memory.data[:]
@@ -90,11 +95,12 @@ def save_undo():
     undolist.append(undodata)
     return 1
 
+
 def restore(filename=None, prompt=1):
     global PC, callstack, currentframe, interruptstack
     zcode.sounds.stopall()
-    bis = interruptstack[:] 
-    interruptstack = [] # clear the interrupt stack, or it may do weird things after the game is restored
+    bis = interruptstack[:]
+    interruptstack = []  # clear the interrupt stack, or it may do weird things after the game is restored
     f = io.openfile(zcode.screen.currentWindow, 'r')
     sd = quetzal.qdata()
     sd.release = zcode.header.release
@@ -104,16 +110,15 @@ def restore(filename=None, prompt=1):
 
     sd = quetzal.restore(f.read(), sd)
     if sd == False:
-        interruptstack = bis[:] # if the restore failed, put the interrupt stack back how it was
+        interruptstack = bis[:]  # if the restore failed, put the interrupt stack back how it was
         return 0
     preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.setarray(0, sd.memory)
     postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
-    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags + postflags)
     PC = sd.PC
     callstack = copy.deepcopy(sd.callstack)
     currentframe = copy.deepcopy(sd.currentframe)
-    
 
     return 1
 
@@ -126,12 +131,13 @@ def restore_undo():
     preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
     zcode.memory.data = undodata.memory[:]
     postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
-    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags + postflags)
     callstack = copy.deepcopy(undodata.callstack)
     currentframe = copy.deepcopy(undodata.currentframe)
     PC = undodata.PC
-    
+
     return 2
+
 
 def getvar(varnum, indirect=False):
     if varnum == 0:
@@ -141,13 +147,15 @@ def getvar(varnum, indirect=False):
     else:
         return getglobal(varnum - 0x10)
 
-def setvar(varnum, value, indirect=False): 
+
+def setvar(varnum, value, indirect=False):
     if varnum == 0:
         putstack(value, indirect)
     elif varnum < 0x10:
         setlocal(varnum - 1, value)
     else:
         setglobal(varnum - 0x10, value)
+
 
 def getstack(indirect=False):
     global currentframe
@@ -169,18 +177,22 @@ def putstack(value, indirect=False):
     else:
         currentframe.evalstack.append(value)
 
+
 def getlocal(varnum):
     global currentframe
     return currentframe.lvars[varnum]
+
 
 def getglobal(varnum):
     table = zcode.header.globalsloc
     return zcode.memory.getword(table + (varnum * zcode.memory.WORDSIZE))
 
+
 def setlocal(varnum, value):
     global currentframe
     value = zcode.numbers.unsigned(value)
     currentframe.lvars[varnum] = value
+
 
 def setglobal(varnum, value):
     value = zcode.numbers.unsigned(value)
@@ -190,7 +202,7 @@ def setglobal(varnum, value):
 
 def interrupt_call():
     global PC
-    if len(interruptstack) > 0 and not returning and not zcode.routines.quit: # if there are calls on the interrupt stack
+    if len(interruptstack) > 0 and not returning and not zcode.routines.quit:  # if there are calls on the interrupt stack
         oldPC = PC
         i = interruptstack.pop()
         if zcode.instructions.inputInstruction:
@@ -201,8 +213,7 @@ def interrupt_call():
         PC = oldPC
 
 
-        
-def call(address, args, useret, introutine=0, initial=0): # initial is for the initial routine call by z6 games
+def call(address, args, useret, introutine=0, initial=0):  # initial is for the initial routine call by z6 games
     global LARGEST_STACK
     global callstack
     global currentframe
@@ -239,7 +250,6 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
             newframe.interrupt = currentframe.interrupt
             callstack.append(newframe)
 
-
         currentframe = frame()
         currentframe.evalstack = []
         currentframe.lvars = []
@@ -265,13 +275,13 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
         # then we set up said routine
         PC = zcode.routines.setuproutine(address)
         currentframe.flags += len(currentframe.lvars)
-        if len(args) > len(currentframe.lvars): # now we throw away any arguments that won't fit
+        if len(args) > len(currentframe.lvars):  # now we throw away any arguments that won't fit
             args = args[:len(currentframe.lvars)]
-            
-        args = list(map(zcode.numbers.unsigned, args)) # make sure the numbers are unsigned
-        
-        currentframe.lvars[:len(args)] = args[:] # overlay the local variables with the arguments
-      
+
+        args = list(map(zcode.numbers.unsigned, args))  # make sure the numbers are unsigned
+
+        currentframe.lvars[:len(args)] = args[:]  # overlay the local variables with the arguments
+
         if zcode.debug:
             print(' [', end='')
             if currentframe.lvars != []:
@@ -280,6 +290,8 @@ def call(address, args, useret, introutine=0, initial=0): # initial is for the i
                 print(currentframe.lvars[-1], end=']')
             else:
                 print(']', end='')
+
+
 def ret(value):
     global PC
     global retPC
@@ -313,15 +325,16 @@ def ret(value):
         # the input text. Yay.
         if zcode.output.streams[1].interruptprinted:
             inp = [chr(a) for a in zcode.input.instring]
-            inp = ''.join(inp)  
+            inp = ''.join(inp)
             inp = inp.lower()
             zcode.output.streams[1].write(inp)
             zcode.output.streams[1].interruptprinted = False
             zcode.screen.currentWindow.flushTextBuffer()
 
 
-timervalue = False        
-        
+timervalue = False
+
+
 # user stacks
 
 def pushuserstack(address, value):
@@ -330,9 +343,10 @@ def pushuserstack(address, value):
     if slots == 0:
         return 0
     else:
-        zcode.memory.setword(address + (slots*zcode.memory.WORDSIZE), value)
+        zcode.memory.setword(address + (slots * zcode.memory.WORDSIZE), value)
         zcode.memory.setword(address, slots - 1)
         return 1
+
 
 def pulluserstack(address):
     slots = zcode.memory.getword(address)
@@ -342,13 +356,13 @@ def pulluserstack(address):
     zcode.memory.setword(address, slots)
     return value
 
+
 def popuserstack(address, items):
     slots = zcode.memory.getword(address)
     slots += items
     zcode.memory.setword(address, slots)
 
 
-    
 def firetimer():
     global timerreturned
     global timer
@@ -361,4 +375,3 @@ def firetimer():
     interruptstack.append(i)
     interrupt_call()
     zcode.routines.timerreturn = False
-

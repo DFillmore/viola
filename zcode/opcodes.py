@@ -21,6 +21,7 @@ from zcode.constants import *
 def unfinished():
     zcode.error.fatal('Unfinished opcode')
 
+
 # all the opcodes in alphabetical order
 
 def z_add():
@@ -29,11 +30,13 @@ def z_add():
     result = a + b
     zcode.instructions.store(zcode.numbers.reduce(result))
 
+
 def z_and():
     a = zcode.instructions.operands[0]['value']
     b = zcode.instructions.operands[1]['value']
     result = a & b
     zcode.instructions.store(result)
+
 
 def z_art_shift():
     number = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
@@ -47,6 +50,7 @@ def z_art_shift():
         result = result & 65535
     zcode.instructions.store(result)
 
+
 def z_buffer_mode():
     flag = zcode.instructions.operands[0]['value']
     if zcode.header.zversion != 6:
@@ -56,59 +60,70 @@ def z_buffer_mode():
     if flag == 0:
         flag = 2
         window.flushTextBuffer()
-    window.setattributes(8, flag) # set the buffer attribute for the lower window
+    window.setattributes(8, flag)  # set the buffer attribute for the lower window
 
-def z_buffer_screen(): # Sets the current screen buffering mode. Currently both modes are identical in viola.
+
+def z_buffer_screen():  # Sets the current screen buffering mode. Currently both modes are identical in viola.
     old_mode = zcode.screen.screen_buffer_mode
     new_mode = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     if new_mode == -1:
         zcode.screen.currentWindow.screen.update()
     else:
         zcode.screen.screen_buffer_mode = new_mode
-    
+
     zcode.instructions.store(old_mode)
+
 
 def z_call_1n():
     routine = zcode.instructions.operands[0]['value']
-    zcode.game.call(routine, [], 0) # routine address unpacking is done by the call routine
+    zcode.game.call(routine, [], 0)  # routine address unpacking is done by the call routine
+
 
 def z_call_1s():
     routine = zcode.instructions.operands[0]['value']
     zcode.game.call(routine, [], 1)
+
 
 def z_call_2n():
     routine = zcode.instructions.operands[0]['value']
     arg1 = zcode.instructions.operands[1]['value']
     zcode.game.call(routine, [arg1], 0)
 
+
 def z_call_2s():
     routine = zcode.instructions.operands[0]['value']
     arg1 = zcode.instructions.operands[1]['value']
     zcode.game.call(routine, [arg1], 1)
+
 
 def z_call_vn():
     routine = zcode.instructions.operands[0]['value']
     args = [i['value'] for i in zcode.instructions.operands[1:]]
     zcode.game.call(routine, args, 0)
 
+
 def z_call_vs():
     routine = zcode.instructions.operands[0]['value']
     args = [i['value'] for i in zcode.instructions.operands[1:]]
     zcode.game.call(routine, args, 1)
+
 
 def z_call_vn2():
     routine = zcode.instructions.operands[0]['value']
     args = [i['value'] for i in zcode.instructions.operands[1:]]
     zcode.game.call(routine, args, 0)
 
+
 def z_call_vs2():
     routine = zcode.instructions.operands[0]['value']
     args = [i['value'] for i in zcode.instructions.operands[1:]]
     zcode.game.call(routine, args, 1)
 
+
 def z_catch():
     x = len(zcode.game.callstack)
     zcode.instructions.store(x)
+
 
 def z_check_arg_count():
     argnum = zcode.instructions.operands[0]['value']
@@ -117,12 +132,14 @@ def z_check_arg_count():
     else:
         zcode.instructions.branch(0)
 
+
 def z_check_unicode():
     charnumber = zcode.instructions.operands[0]['value']
     if zcode.screen.currentWindow.fontlist[zcode.screen.currentWindow.font_number].checkChar(charnumber):
         zcode.instructions.store(3)
     else:
         zcode.instructions.store(0)
+
 
 def z_clear_attr():
     object = zcode.instructions.operands[0]['value']
@@ -131,6 +148,7 @@ def z_clear_attr():
     else:
         attribute = zcode.instructions.operands[1]['value']
         zcode.objects.clearAttribute(object, attribute)
+
 
 def z_copy_table():
     first = zcode.instructions.operands[0]['value']
@@ -145,20 +163,21 @@ def z_copy_table():
             a = size
             while a > 0:
                 a -= 1
-                zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a))
+                zcode.memory.setbyte(second + a, zcode.memory.getbyte(first + a))
         elif second < first:
             for a in range(size):
-                zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a))
+                zcode.memory.setbyte(second + a, zcode.memory.getbyte(first + a))
     else:
         size = abs(size)
         for a in range(size):
-            zcode.memory.setbyte(second+a, zcode.memory.getbyte(first+a)) 
-           
+            zcode.memory.setbyte(second + a, zcode.memory.getbyte(first + a))
+
 
 def z_dec():
     x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0]['value'], True))
-    x = zcode.numbers.reduce(x-1)
+    x = zcode.numbers.reduce(x - 1)
     zcode.game.setvar(zcode.instructions.operands[0]['value'], x, True)
+
 
 def z_dec_chk():
     x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0]['value'], True))
@@ -170,11 +189,13 @@ def z_dec_chk():
     else:
         zcode.instructions.branch(0)
 
+
 def z_div():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     result = zcode.numbers.div(a, b)
     zcode.instructions.store(zcode.numbers.reduce(result))
+
 
 def z_draw_picture():
     picture_number = zcode.instructions.operands[0]['value']
@@ -186,18 +207,20 @@ def z_draw_picture():
         x = zcode.instructions.operands[2]['value']
     else:
         x = zcode.screen.currentWindow.getCursor()[0]
-  
+
     zcode.screen.currentWindow.drawpic(picture_number, x, y)
+
 
 def z_encode_text():
     zsciitext = zcode.instructions.operands[0]['value']
     length = zcode.instructions.operands[1]['value']
     frombyte = zcode.instructions.operands[2]['value']
     codedtext = zcode.instructions.operands[3]['value']
-    intext = list(zcode.memory.getarray(zsciitext+frombyte, length))
+    intext = list(zcode.memory.getarray(zsciitext + frombyte, length))
     outtext = zcode.text.encodetext(intext)
     for count, value in enumerate(outtext):
-        zcode.memory.setbyte(codedtext+count, value)
+        zcode.memory.setbyte(codedtext + count, value)
+
 
 def z_erase_line():
     value = zcode.instructions.operands[0]['value']
@@ -208,7 +231,7 @@ def z_erase_line():
             pass
         else:
             zcode.screen.currentWindow.eraseline(value)
-        
+
 
 def z_erase_picture():
     picture_number = zcode.instructions.operands[0]['value']
@@ -225,16 +248,18 @@ def z_erase_picture():
     for a in io.blorbs:
         pic = a.getPict(picture_number)
         scale = a.getScale(picture_number, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
-   
+
     if pic != False and zcode.screen.currentWindow.getColours()[1][3] != 0:
         zcode.screen.currentWindow.erasepic(pic, x, y, scale)
+
 
 def z_erase_window():
     window = zcode.instructions.operands[0]['value']
     if zcode.screen.getWindow(window).getColours()[1][3] != 0:
         zcode.screen.eraseWindow(window)
 
-def z_extended(debug=False): # This isn't really an opcode, but it's easier to treat it as such.
+
+def z_extended(debug=False):  # This isn't really an opcode, but it's easier to treat it as such.
     oldPC = zcode.game.PC
     zcode.game.PC = zcode.instructions.decodeextended(zcode.game.PC)
     opcode = zcode.memory.getbyte(oldPC)
@@ -242,6 +267,7 @@ def z_extended(debug=False): # This isn't really an opcode, but it's easier to t
         print(zcode.optables.opext[opcode].__name__.replace('z_', '@'), end=' ')
         zcode.instructions.printoperands()
     zcode.optables.opext[opcode]()
+
 
 def z_get_child():
     object = zcode.instructions.operands[0]['value']
@@ -257,6 +283,7 @@ def z_get_child():
         else:
             zcode.instructions.branch(1)
 
+
 def z_get_cursor():
     zcode.screen.currentWindow.flushTextBuffer()
     array = zcode.instructions.operands[0]['value']
@@ -267,7 +294,8 @@ def z_get_cursor():
     ypos = zcode.screen.pix2units(window.getCursor()[1], 0)
     xpos = zcode.screen.pix2units(window.getCursor()[0], 1)
     zcode.memory.setword(array, ypos)
-    zcode.memory.setword(array+2, xpos)
+    zcode.memory.setword(array + 2, xpos)
+
 
 def z_get_next_prop():
     object = zcode.instructions.operands[0]['value']
@@ -285,12 +313,14 @@ def z_get_next_prop():
             num = zcode.objects.getPropertyNumber(address)
         zcode.instructions.store(num)
 
+
 def z_get_parent():
     object = zcode.instructions.operands[0]['value']
     if object == 0:
         zcode.error.strictz('Tried to find the parent of object 0')
     parent = zcode.objects.getParent(object)
     zcode.instructions.store(parent)
+
 
 def z_get_prop():
     object = zcode.instructions.operands[0]['value']
@@ -313,7 +343,8 @@ def z_get_prop():
                 result = zcode.memory.getword(zcode.objects.getPropertyDataAddress(object, property))
                 zcode.error.strictz('Tried to read from a property with length > 2')
         zcode.instructions.store(result)
-    
+
+
 def z_get_prop_addr():
     object = zcode.instructions.operands[0]['value']
     if object == 0:
@@ -323,17 +354,18 @@ def z_get_prop_addr():
         property = zcode.instructions.operands[1]['value']
         result = zcode.objects.getPropertyDataAddress(object, property)
         zcode.instructions.store(result)
-    
+
 
 def z_get_prop_len():
     propaddr = zcode.instructions.operands[0]['value']
     if propaddr == 0:
         result = 0
-    elif zcode.header.zversion > 3 and (zcode.memory.getbyte(zcode.instructions.operands[0]['value']-1) >> 7) & 1 == 1:
+    elif zcode.header.zversion > 3 and (zcode.memory.getbyte(zcode.instructions.operands[0]['value'] - 1) >> 7) & 1 == 1:
         result = zcode.objects.getPropertySize(propaddr - 2)
     else:
         result = zcode.objects.getPropertySize(propaddr - 1)
     zcode.instructions.store(result)
+
 
 def z_get_sibling():
     object = zcode.instructions.operands[0]['value']
@@ -349,31 +381,36 @@ def z_get_sibling():
         else:
             zcode.instructions.branch(1)
 
+
 def z_get_wind_prop():
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
-    
+
     propnum = zcode.instructions.operands[1]['value']
     result = window.getprops(propnum)
     zcode.instructions.store(result)
 
+
 def z_inc():
     x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0]['value'], True))
-    x = zcode.numbers.reduce(x+1)
+    x = zcode.numbers.reduce(x + 1)
     zcode.game.setvar(zcode.instructions.operands[0]['value'], x, True)
-        
+
+
 def z_inc_chk():
     x = zcode.numbers.signed(zcode.game.getvar(zcode.instructions.operands[0]['value'], True))
     value = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
-    x = zcode.numbers.reduce(x+1)
+    x = zcode.numbers.reduce(x + 1)
     zcode.game.setvar(zcode.instructions.operands[0]['value'], x, True)
     if x > value:
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
 
+
 def z_input_stream():
     stream = zcode.instructions.operands[0]['value']
     zcode.input.setStream(stream)
+
 
 def z_insert_obj():
     object = zcode.instructions.operands[0]['value']
@@ -384,26 +421,28 @@ def z_insert_obj():
         oldparent = zcode.objects.getParent(object)
         oldsibling = zcode.objects.getSibling(object)
         oldeldersibling = zcode.objects.getElderSibling(object)
-        if oldeldersibling != 0: # the object had a valid parent and was not the eldest child
-            zcode.objects.setSibling(oldeldersibling, oldsibling) # fill in the gap of siblings left by remove this object
-        elif zcode.objects.getChild(oldparent) == object: # if the object was the eldest child
-            zcode.objects.setChild(oldparent, oldsibling) # make the object's sibling the new eldest child, filling in the gap
+        if oldeldersibling != 0:  # the object had a valid parent and was not the eldest child
+            zcode.objects.setSibling(oldeldersibling, oldsibling)  # fill in the gap of siblings left by remove this object
+        elif zcode.objects.getChild(oldparent) == object:  # if the object was the eldest child
+            zcode.objects.setChild(oldparent, oldsibling)  # make the object's sibling the new eldest child, filling in the gap
 
         # then we have to put the object in the new parent
         newparent = zcode.instructions.operands[1]['value']
         newsibling = zcode.objects.getChild(newparent)
         if newsibling == object:
             newsibling = oldsibling
-        zcode.objects.setParent(object, newparent) # set the object's parent to newparent
-        zcode.objects.setChild(newparent, object) # set the new parent's child to object
-        zcode.objects.setSibling(object, newsibling) # set the object's sibling to newsibling
+        zcode.objects.setParent(object, newparent)  # set the object's parent to newparent
+        zcode.objects.setChild(newparent, object)  # set the new parent's child to object
+        zcode.objects.setSibling(object, newsibling)  # set the object's sibling to newsibling
 
-def z_je():   
-    if zcode.instructions.operands[0]['value'] in map(lambda o : o['value'], zcode.instructions.operands[1:]):
+
+def z_je():
+    if zcode.instructions.operands[0]['value'] in map(lambda o: o['value'], zcode.instructions.operands[1:]):
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
-     
+
+
 def z_jg():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
@@ -411,6 +450,7 @@ def z_jg():
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
+
 
 def z_jin():
     obj1 = zcode.instructions.operands[0]['value']
@@ -422,6 +462,7 @@ def z_jin():
     else:
         zcode.instructions.branch(0)
 
+
 def z_jl():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
@@ -429,11 +470,13 @@ def z_jl():
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
-    
+
+
 def z_jump():
     offset = zcode.instructions.operands[0]['value'] - 2
     offset = zcode.numbers.signed(offset)
     zcode.game.PC += offset
+
 
 def z_jz():
     a = zcode.instructions.operands[0]['value']
@@ -442,19 +485,23 @@ def z_jz():
     else:
         zcode.instructions.branch(0)
 
+
 def z_load():
     var = zcode.instructions.operands[0]['value']
     zcode.instructions.store(zcode.game.getvar(var, True))
+
 
 def z_loadb():
     array = zcode.instructions.operands[0]['value']
     byteindex = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     zcode.instructions.store(zcode.memory.getbyte(array + byteindex))
 
+
 def z_loadw():
     array = zcode.instructions.operands[0]['value']
     wordindex = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     zcode.instructions.store(zcode.memory.getword(array + (zcode.memory.WORDSIZE * wordindex)))
+
 
 def z_log_shift():
     number = zcode.instructions.operands[0]['value']
@@ -467,6 +514,7 @@ def z_log_shift():
         result = number >> places
         result = result & 65535
     zcode.instructions.store(result)
+
 
 def z_make_menu():
     number = zcode.instructions.operands[0]['value']
@@ -488,27 +536,32 @@ def z_make_menu():
         result = io.zApp.makemenu(items[0], items[1:len(items)], number)
         zcode.instructions.branch(result)
 
+
 def z_mod():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     result = zcode.numbers.mod(a, b)
     zcode.instructions.store(zcode.numbers.reduce(result))
 
+
 def z_mouse_window():
     window = zcode.instructions.operands[0]['value']
     zcode.screen.mouse_window = window
+
 
 def z_move_window():
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
     y = zcode.instructions.operands[1]['value']
     x = zcode.instructions.operands[2]['value']
-    window.setPosition(x,y)
+    window.setPosition(x, y)
+
 
 def z_mul():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     result = a * b
     zcode.instructions.store(zcode.numbers.reduce(result))
+
 
 def z_new_line():
     zcode.output.printtext('\r')
@@ -517,9 +570,11 @@ def z_new_line():
 def z_nop():
     pass
 
+
 def z_not():
     value = zcode.instructions.operands[0]['value']
     zcode.instructions.store(~value)
+
 
 def z_or():
     a = zcode.instructions.operands[0]['value']
@@ -527,7 +582,8 @@ def z_or():
     result = a | b
     zcode.instructions.store(result)
 
-def z_output_stream(): # unfinished (need to fix the width stuff)
+
+def z_output_stream():  # unfinished (need to fix the width stuff)
     stream = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     if stream == 3:
         table = zcode.instructions.operands[1]['value']
@@ -548,7 +604,8 @@ def z_output_stream(): # unfinished (need to fix the width stuff)
             zcode.output.openstream(abs(stream))
         elif stream < 0:
             zcode.output.closestream(abs(stream))
-    
+
+
 def z_picture_data():
     picnum = zcode.instructions.operands[0]['value']
     array = zcode.instructions.operands[1]['value']
@@ -561,7 +618,7 @@ def z_picture_data():
                 picindex[key] = a.resindex[b'Pict'][key]
             relnum = a.release
         zcode.memory.setword(array, len(picindex))
-        zcode.memory.setword(array+2, relnum)
+        zcode.memory.setword(array + 2, relnum)
 
         if len(picindex) > 0:
             zcode.instructions.branch(1)
@@ -574,7 +631,7 @@ def z_picture_data():
             scale = a.getScale(picnum, zcode.screen.ioScreen.getWidth(), zcode.screen.ioScreen.getHeight())
 
         if pic != False:
-            if len(pic) == 8: # If it's only eight bytes long, it should be a Rect.
+            if len(pic) == 8:  # If it's only eight bytes long, it should be a Rect.
                 pic = blorb.rect(pic)
             else:
                 pic = io.image(pic)
@@ -582,20 +639,24 @@ def z_picture_data():
             height = int(int(pic.getHeight()) * scale)
             width = int(int(pic.getWidth()) * scale)
             zcode.memory.setword(array, height)
-            zcode.memory.setword(array+2, width)
+            zcode.memory.setword(array + 2, width)
             zcode.instructions.branch(1)
         else:
 
             zcode.instructions.branch(0)
 
+
 def z_picture_table():
     pass
+
 
 def z_piracy():
     zcode.instructions.branch(1)
 
+
 def z_pop():
     zcode.game.currentframe.evalstack.pop()
+
 
 def z_pop_stack():
     items = zcode.instructions.operands[0]['value']
@@ -608,40 +669,44 @@ def z_pop_stack():
     else:
         zcode.game.popuserstack(stack, items)
 
-def z_print(): #int
+
+def z_print():  #int
     address = zcode.game.PC
     textlen = zcode.text.gettextlength(address)
     zcode.game.PC = textlen + address
     zcode.output.printtext(zcode.text.decodetext(address))
-    
+
 
 def z_print_addr():
     byteaddress = zcode.instructions.operands[0]['value']
     zcode.output.printtext(zcode.text.decodetext(byteaddress))
 
+
 def z_print_char():
     char = zcode.text.getZSCIIchar(zcode.instructions.operands[0]['value'])
     zcode.output.printtext(char)
 
-def z_print_form(): # unfinished (it sort of works, but doesn't do line breaks right)
+
+def z_print_form():  # unfinished (it sort of works, but doesn't do line breaks right)
     linestart = zcode.instructions.operands[0]['value']
     linelen = zcode.memory.getword(linestart)
     x, y = zcode.screen.currentWindow.getCursor()
     while linelen != 0:
         linestart += 2
         for a in range(linelen):
-            char = chr(zcode.memory.getbyte(linestart+a))
+            char = chr(zcode.memory.getbyte(linestart + a))
             zcode.output.printtext(char)
         linestart += linelen
         linelen = zcode.memory.getword(linestart)
         y += zcode.screen.currentWindow.getFont().getHeight()
         zcode.screen.currentWindow.flushTextBuffer()
         zcode.screen.currentWindow.setCursor(x, y)
-        
+
 
 def z_print_num():
     num = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     zcode.output.printtext(str(num))
+
 
 def z_print_obj():
     object = zcode.instructions.operands[0]['value']
@@ -650,17 +715,20 @@ def z_print_obj():
     else:
         zcode.output.printtext(zcode.objects.getShortName(object))
 
+
 def z_print_paddr():
     packedaddress = zcode.instructions.operands[0]['value']
     zcode.output.printtext(zcode.text.decodetext(zcode.memory.unpackaddress(packedaddress, 2)))
 
-def z_print_ret(): #int
+
+def z_print_ret():  #int
     address = zcode.game.PC
     textlen = zcode.text.gettextlength(address)
     zcode.game.PC = address + textlen
     zcode.game.ret(1)
     zcode.output.printtext(zcode.text.decodetext(address))
     zcode.output.printtext('\r')
+
 
 def z_print_table():
     zcode.screen.currentWindow.flushTextBuffer()
@@ -675,9 +743,9 @@ def z_print_table():
     else:
         skip = 0
 
-    x,y = zcode.screen.currentWindow.getCursor()
+    x, y = zcode.screen.currentWindow.getCursor()
     c = 0
-    
+
     for a in range(height):
         line = zcode.memory.getarray(zsciitext + c, width)
         c += len(line)
@@ -686,17 +754,16 @@ def z_print_table():
         zcode.output.printtext(t)
         if zcode.debug:
             print('\n')
-                
+
         if a != height - 1:
-            if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0': # special behaviour for lower window in most versions (standard explicitly doesn't specify what to do here)
+            if zcode.header.zversion != 6 and zcode.screen.currentWindow.window_id == '0':  # special behaviour for lower window in most versions (standard explicitly doesn't specify what to do here)
                 zcode.output.printtext('\r')
             else:
                 y += zcode.screen.currentWindow.getFont().getHeight()
                 zcode.screen.currentWindow.setCursor(x, y)
                 zcode.screen.currentWindow.flushTextBuffer()
     zcode.screen.currentWindow.flushTextBuffer()
-            
-    
+
 
 def z_print_unicode():
     try:
@@ -716,16 +783,18 @@ def z_pull():
             zcode.instructions.store(zcode.game.getvar(0, True))
     else:
         zcode.game.setvar(zcode.instructions.operands[0]['value'], zcode.game.getvar(0), True)
-        
+
 
 def z_push():
     value = zcode.instructions.operands[0]['value']
     zcode.game.setvar(0, value)
 
+
 def z_push_stack():
     value = zcode.instructions.operands[0]['value']
     stack = zcode.instructions.operands[1]['value']
     zcode.instructions.branch(zcode.game.pushuserstack(stack, value))
+
 
 def z_put_prop():
     object = zcode.instructions.operands[0]['value']
@@ -753,20 +822,22 @@ def z_put_wind_prop():
     value = zcode.instructions.operands[2]['value']
     window.setprops(propnum, value)
 
+
 def z_quit():
-    zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we're supposed to have quit
+    zcode.game.interruptstack = []  # clear the interrupt stack so that it doesn't call a routine after we're supposed to have quit
     zcode.sounds.stopall()
     zcode.screen.currentWindow.getFont().resetSize()
-    zcode.screen.currentWindow.setFontByNumber(1) # make sure we're using a legible font
+    zcode.screen.currentWindow.setFontByNumber(1)  # make sure we're using a legible font
     f = zcode.screen.convertBasicToRealColour(2)
     b = zcode.screen.convertBasicToRealColour(9)
-    zcode.screen.currentWindow.setRealColours(f,b) # make sure the text is visible
+    zcode.screen.currentWindow.setRealColours(f, b)  # make sure the text is visible
     zcode.screen.currentWindow.printText('\r[Press any key to quit]')
     zcode.screen.currentWindow.flushTextBuffer()
     inp = None
     while not isinstance(inp, io.keypress):
         inp = zcode.input.ioInput.getinput()
     zcode.routines.quit = 1
+
 
 def z_random():
     rrange = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
@@ -775,6 +846,7 @@ def z_random():
     else:
         zcode.numbers.randomize(abs(rrange))
         zcode.instructions.store(0)
+
 
 def z_read():
     io.stoptimer()
@@ -796,23 +868,22 @@ def z_read():
         zcode.game.timerreturned = 1
         io.starttimer(t, zcode.game.firetimer)
 
-
     if zcode.header.zversion >= 5:
-        leftover = zcode.memory.getbyte(text+1)
+        leftover = zcode.memory.getbyte(text + 1)
     else:
         leftover = 0
-    
+
     maxinput = zcode.memory.getbyte(text)
     if zcode.header.zversion < 5:
-        maxinput -= 1 # leave one space for the zero terminator
+        maxinput -= 1  # leave one space for the zero terminator
         start = 1
     else:
         start = 2
 
     for a in range(leftover):
-        zcode.input.instring.append(zcode.memory.getbyte(text+2+a))
+        zcode.input.instring.append(zcode.memory.getbyte(text + 2 + a))
     inchar = None
-    
+
     if zcode.screen.cursor:
         zcode.screen.currentWindow.showCursor()
     while inchar not in zcode.input.getTerminatingCharacters() and inchar != 13 and zcode.game.timervalue == False:
@@ -834,10 +905,10 @@ def z_read():
             if inchar in zcode.text.inputvalues and inchar in zcode.text.outputvalues:
                 zcode.input.instring.append(inchar)
     zcode.screen.currentWindow.hideCursor()
-    
+
     if zcode.input.stream == 1:
         zcode.screen.currentWindow.screen.update()
-    
+
     if zcode.game.timervalue == True:
         termchar = 0
         zcode.game.timervalue = False
@@ -849,12 +920,10 @@ def z_read():
     zcode.input.command_history.append(zcode.input.instring)
     zcode.input.command_history.reverse()
 
-
     inp = [zcode.text.getZSCIIchar(a) for a in zcode.input.instring]
     inp = ''.join(inp)
     inp = inp.lower()
     inp = zcode.text.unicodetozscii(inp)
-    
 
     zcode.output.streams[4].write(inp)
     zcode.output.streams[4].write('\r')
@@ -870,16 +939,17 @@ def z_read():
         zcode.memory.setbyte(text + start + count, ord(value))
 
     if zcode.header.zversion < 5:
-        zcode.memory.setbyte(text+1+len(inp), 0)
+        zcode.memory.setbyte(text + 1 + len(inp), 0)
     else:
-        zcode.memory.setbyte(text+1, len(inp))
+        zcode.memory.setbyte(text + 1, len(inp))
 
     if zcode.header.zversion < 5 or parse != 0:
         zcode.dictionary.tokenise(inp, parse)
 
     if zcode.header.zversion >= 5:
         zcode.instructions.store(termchar)
-    
+
+
 def z_read_char():
     io.stoptimer()
     zcode.screen.currentWindow.flushTextBuffer()
@@ -906,48 +976,50 @@ def z_read_char():
     zcode.screen.currentWindow.hideCursor()
     zcode.instructions.store(inchar)
 
+
 def z_read_mouse():
     array = zcode.instructions.operands[0]['value']
     zcode.memory.setword(array, zcode.input.mouse.ypos)
-    zcode.memory.setword(array+2, zcode.input.mouse.xpos)
+    zcode.memory.setword(array + 2, zcode.input.mouse.xpos)
 
     mmap = zcode.input.mouse.buttons[:]
     #mmap.reverse()
     val = 1
     buttonbits = 0
     for a in mmap:
-        buttonbits += val*a
+        buttonbits += val * a
         val *= 2
-    zcode.memory.setword(array+4, buttonbits)
+    zcode.memory.setword(array + 4, buttonbits)
 
-    zcode.memory.setword(array+6, 0) # menus not supported yet
+    zcode.memory.setword(array + 6, 0)  # menus not supported yet
+
 
 def z_remove_obj():
     object = zcode.instructions.operands[0]['value']
     if object == 0:
         zcode.error.strictz('Tried to remove object 0 from the object tree')
     else:
-        parent = zcode.objects.getParent(object) # find out what the parent is
-        sibling = zcode.objects.getSibling(object) # find out what the sibling is
-        eldersibling = zcode.objects.getElderSibling(object) # find out what the elder sibling is
+        parent = zcode.objects.getParent(object)  # find out what the parent is
+        sibling = zcode.objects.getSibling(object)  # find out what the sibling is
+        eldersibling = zcode.objects.getElderSibling(object)  # find out what the elder sibling is
 
-        zcode.objects.setParent(object, 0) # set the object's parent to 0
-        if eldersibling == 0: # if there was no elder sibling, sibling is now the child of parent
+        zcode.objects.setParent(object, 0)  # set the object's parent to 0
+        if eldersibling == 0:  # if there was no elder sibling, sibling is now the child of parent
             zcode.objects.setChild(parent, sibling)
-        else: # otherwise, sibling is now the sibling of eldersibling
+        else:  # otherwise, sibling is now the sibling of eldersibling
             zcode.objects.setSibling(eldersibling, sibling)
 
-def z_restart():
 
+def z_restart():
     zcode.sounds.stopall()
-    zcode.game.interruptstack = [] # clear the interrupt stack so that it doesn't call a routine after we've restarted
+    zcode.game.interruptstack = []  # clear the interrupt stack so that it doesn't call a routine after we've restarted
     zcode.screen.eraseWindow(zcode.numbers.unsigned(-1))
     # make sure the transcription and fixed bits stay set
     preflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 3
-    zcode.memory.data = zcode.memory.originaldata[:] # reset the memory contents
+    zcode.memory.data = zcode.memory.originaldata[:]  # reset the memory contents
     postflags = zcode.memory.getword(zcode.header.FLAGS2_ADDRESS) & 0xfffc
-    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags+postflags)
-    zcode.game.setup() # reset all the module contents
+    zcode.memory.setword(zcode.header.FLAGS2_ADDRESS, preflags + postflags)
+    zcode.game.setup()  # reset all the module contents
     zcode.header.setup()
     zcode.objects.setup()
     zcode.screen.setup(restarted=True)
@@ -955,14 +1027,15 @@ def z_restart():
     zcode.optables.setup()
     zcode.routines.restart = 1
 
+
 def z_restore():
     if zcode.header.zversion > 4 and len(zcode.instructions.operands) > 0:
         table = zcode.instructions.operands[0]['value']
         bytes = zcode.instructions.operands[1]['value']
         nameloc = zcode.instructions.operands[2]['value']
         filename = zcode.output.savefilename(nameloc)
-            
-        if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
+
+        if zcode.use_standard <= STANDARD_10:  # Standard 1.0 and lower
             prompt = 1
         else:
             try:
@@ -971,57 +1044,62 @@ def z_restore():
                 prompt = 1
 
         data = zcode.input.readFile(bytes, filename, prompt)
-            
+
         if data == 0:
             zcode.instructions.store(0)
         else:
             data = data[:bytes]
             for count, value in enumerate(data):
-                zcode.memory.setbyte(table+count, value)
+                zcode.memory.setbyte(table + count, value)
             zcode.instructions.store(len(data))
-                 
-    else:       
+
+    else:
         result = zcode.game.restore()
         if zcode.header.zversion >= 4:
-            result += result # add 1 if 1, add 0 if 0
-            
-        if result: # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
+            result += result  # add 1 if 1, add 0 if 0
+
+        if result:  # if we're here, all the memory stuff ought to be set up. We just need to return the correct value. Maybe.
             zcode.header.setup()
         if zcode.header.zversion < 4:
             zcode.instructions.branch(result)
         else:
-            zcode.instructions.store(result)           
-        
+            zcode.instructions.store(result)
+
 
 def z_restore_undo():
     zcode.instructions.store(zcode.game.restore_undo())
+
 
 def z_ret():
     value = zcode.instructions.operands[0]['value']
     zcode.game.ret(value)
 
+
 def z_ret_popped():
-    value = zcode.game.getvar(0) # get the value off of the top of the stack
+    value = zcode.game.getvar(0)  # get the value off of the top of the stack
     zcode.game.ret(value)
+
 
 def z_rfalse():
     zcode.game.ret(0)
 
+
 def z_rtrue():
     zcode.game.ret(1)
+
 
 def z_save():
     if zcode.header.zversion < 4:
         zcode.instructions.branch(zcode.game.save())
         return None
-            
+
     if zcode.header.zversion > 4 and len(zcode.instructions.operands) > 0:
         table = zcode.instructions.operands[0]['value']
         bytes = zcode.instructions.operands[1]['value']
         data = zcode.memory.getarray(table, bytes)
         nameloc = zcode.instructions.operands[2]['value']
         filename = zcode.output.savefilename(nameloc)
-        if zcode.use_standard <= STANDARD_10: # Standard 1.0 and lower
+        if zcode.use_standard <= STANDARD_10:  # Standard 1.0 and lower
             prompt = 1
         else:
             try:
@@ -1037,10 +1115,10 @@ def z_save():
     else:
         zcode.instructions.store(zcode.game.save())
 
-       
 
 def z_save_undo():
     zcode.instructions.store(zcode.game.save_undo())
+
 
 def z_scan_table():
     x = zcode.instructions.operands[0]['value']
@@ -1056,16 +1134,17 @@ def z_scan_table():
     for a in range(length):
         if (result == 0):
             if form & 128 == 128:
-                y = zcode.memory.getword(table+(a*fieldlen))
-                if x == zcode.memory.getword(table+(a*fieldlen)):
+                y = zcode.memory.getword(table + (a * fieldlen))
+                if x == zcode.memory.getword(table + (a * fieldlen)):
                     result = 1
-                    place = table + (a*fieldlen)
+                    place = table + (a * fieldlen)
             else:
-                if x == zcode.memory.getbyte(table+(a*fieldlen)):
+                if x == zcode.memory.getbyte(table + (a * fieldlen)):
                     result = 1
-                    place = table + (a*fieldlen)
+                    place = table + (a * fieldlen)
     zcode.instructions.store(place)
     zcode.instructions.branch(result)
+
 
 def z_scroll_window():
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
@@ -1077,6 +1156,7 @@ def z_scroll_window():
         dir = 0
     window.scroll(abs(pixels), dir)
 
+
 def z_set_attr():
     object = zcode.instructions.operands[0]['value']
     if object == 0:
@@ -1084,7 +1164,6 @@ def z_set_attr():
     else:
         attribute = zcode.instructions.operands[1]['value']
         zcode.objects.setAttribute(object, attribute)
-
 
 
 def z_set_colour():
@@ -1117,14 +1196,11 @@ def z_set_colour():
                 background = 1
                 real_background = None
 
-
-    if foreground == 1:        
+    if foreground == 1:
         foreground = zcode.header.getdeffgcolour()
     elif foreground not in zcode.screen.spectrum and foreground != 0:
         zcode.error.strictz('Invalid foreground value ' + str(foreground) + ' selected.')
         foreground = 0
-
-
 
     if background == 15 and zcode.header.zversion != 6 and zcode.use_standard >= STANDARD_11:
         zcode.error.strictz('Transparent colour only available in Z-Machine Version 6')
@@ -1134,7 +1210,6 @@ def z_set_colour():
     elif background not in zcode.screen.spectrum and background != 0:
         zcode.error.strictz('Invalid background value ' + str(foreground) + ' selected.')
         background = 0
-
 
     if zcode.header.zversion != 6:
         if foreground == 0:
@@ -1155,10 +1230,10 @@ def z_set_colour():
         if real_foreground == None:
             real_foreground = zcode.screen.convertBasicToRealColour(foreground)
         if real_background == None:
-            real_background = zcode.screen.convertBasicToRealColour(background)        
+            real_background = zcode.screen.convertBasicToRealColour(background)
 
         window.setRealColours(real_foreground, real_background)
-    
+
 
 def z_set_cursor():
     y = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
@@ -1174,9 +1249,7 @@ def z_set_cursor():
     else:
         window = zcode.screen.getWindow(1)
     window.flushTextBuffer()
-    
-    
-    
+
     if zcode.header.zversion == 6 and y < 0:
         if y == -1:
             zcode.screen.cursor = False
@@ -1192,6 +1265,7 @@ def z_set_cursor():
             zcode.error.strictz('cursor moved to position outside window 1 (window automatically resized)')
             zcode.screen.split(yplus)
 
+
 def z_set_font():
     font = zcode.instructions.operands[0]['value']
 
@@ -1201,7 +1275,7 @@ def z_set_font():
         else:
             zcode.screen.getWindow(0).setFontByNumber(font)
             result = zcode.screen.getWindow(1).setFontByNumber(font)
-            if result == 0 and zcode.use_standard <= STANDARD_02: # Standard 0.2 or lower
+            if result == 0 and zcode.use_standard <= STANDARD_02:  # Standard 0.2 or lower
                 result = zcode.screen.getWindow(0).getFontNumber()
             zcode.instructions.store(result)
     else:
@@ -1212,11 +1286,12 @@ def z_set_font():
         if font == 0:
             zcode.instructions.store(window.getFontNumber())
         else:
-            
+
             result = window.setFontByNumber(font)
-            if result == 0 and zcode.use_standard <= STANDARD_02: # Standard 0.2 or lower
+            if result == 0 and zcode.use_standard <= STANDARD_02:  # Standard 0.2 or lower
                 result = zcode.screen.window.getFontNumber()
             zcode.instructions.store(result)
+
 
 def z_set_margins():
     left = zcode.instructions.operands[0]['value']
@@ -1228,6 +1303,7 @@ def z_set_margins():
     window.flushTextBuffer()
     window.setMargins(left, right)
 
+
 def z_set_text_style():
     style = zcode.instructions.operands[0]['value']
     if zcode.header.zversion != 6:
@@ -1236,7 +1312,8 @@ def z_set_text_style():
     else:
         zcode.screen.currentWindow.setStyle(style)
 
-def z_set_true_colour(): # a z-spec 1.1 opcode.
+
+def z_set_true_colour():  # a z-spec 1.1 opcode.
     zcode.screen.currentWindow.flushTextBuffer()
     foreground = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     background = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
@@ -1284,17 +1361,20 @@ def z_set_true_colour(): # a z-spec 1.1 opcode.
         if real_foreground == None:
             real_foreground = zcode.screen.convertTrueToRealColour(foreground)
         if real_background == None:
-            real_background = zcode.screen.convertTrueToRealColour(background)        
+            real_background = zcode.screen.convertTrueToRealColour(background)
 
         window.setRealColours(real_foreground, real_background)
+
 
 def z_set_window():
     zcode.screen.currentWindow.flushTextBuffer()
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
     zcode.screen.currentWindow = window
 
+
 def z_show_status():
     zcode.screen.updatestatusline()
+
 
 def z_sound_effect():
     number = zcode.instructions.operands[0]['value']
@@ -1317,12 +1397,13 @@ def z_sound_effect():
                 repeats = 255
         if volume == 255:
             volume = 8
-        volume = (1/8) * volume
+        volume = (1 / 8) * volume
         if len(zcode.instructions.operands) > 3:
             routine = zcode.instructions.operands[3]['value']
         else:
             routine = 0
         zcode.sounds.playsound(number, effect, volume, repeats, routine)
+
 
 def z_split_window():
     if zcode.header.zversion != 6:
@@ -1332,10 +1413,12 @@ def z_split_window():
         size = zcode.instructions.operands[0]['value']
     zcode.screen.split(size)
 
+
 def z_store():
     var = zcode.instructions.operands[0]['value']
     value = zcode.instructions.operands[1]['value']
     zcode.game.setvar(var, value, True)
+
 
 def z_storeb():
     array = zcode.instructions.operands[0]['value']
@@ -1343,17 +1426,20 @@ def z_storeb():
     value = zcode.instructions.operands[2]['value']
     zcode.memory.setbyte(array + byteindex, value)
 
+
 def z_storew():
     array = zcode.instructions.operands[0]['value']
     wordindex = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     value = zcode.instructions.operands[2]['value']
     zcode.memory.setword(array + (2 * wordindex), value)
 
+
 def z_sub():
     a = zcode.numbers.signed(zcode.instructions.operands[0]['value'])
     b = zcode.numbers.signed(zcode.instructions.operands[1]['value'])
     result = a - b
     zcode.instructions.store(zcode.numbers.reduce(result))
+
 
 def z_test():
     bitmap = zcode.instructions.operands[0]['value']
@@ -1362,7 +1448,8 @@ def z_test():
         zcode.instructions.branch(1)
     else:
         zcode.instructions.branch(0)
-        
+
+
 def z_test_attr():
     object = zcode.instructions.operands[0]['value']
     if object == 0:
@@ -1375,13 +1462,15 @@ def z_test_attr():
         else:
             zcode.instructions.branch(0)
 
+
 def z_throw():
     value = zcode.instructions.operands[0]['value']
     frame = zcode.instructions.operands[1]['value']
     while len(zcode.game.callstack) > frame:
-        zcode.game.callstack.pop() # remove frames from the stack until the top frame is the one in value
+        zcode.game.callstack.pop()  # remove frames from the stack until the top frame is the one in value
     zcode.game.currentframe = zcode.game.callstack.pop()
     zcode.game.ret(value)
+
 
 def z_tokenise():
     text = zcode.instructions.operands[0]['value']
@@ -1400,14 +1489,15 @@ def z_tokenise():
         while byte != 0:
             address += 1
             byte = zcode.memory.getbyte(address)
-        length = address-(text+1)
-        temp = zcode.memory.getarray(text+1, length)
+        length = address - (text + 1)
+        temp = zcode.memory.getarray(text + 1, length)
         intext = ''.join([chr(b) for b in temp])
     else:
-        textlen = zcode.memory.getbyte(text+1)
-        temp = zcode.memory.getarray(text+2, textlen)
+        textlen = zcode.memory.getbyte(text + 1)
+        temp = zcode.memory.getarray(text + 2, textlen)
         intext = ''.join([chr(b) for b in temp])
     zcode.dictionary.tokenise(intext, parse, dictionaryaddress, flag)
+
 
 def z_verify():
     if zcode.memory.verify():
@@ -1415,13 +1505,15 @@ def z_verify():
     else:
         zcode.instructions.branch(0)
 
+
 def z_window_size():
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
     y = zcode.instructions.operands[1]['value']
     x = zcode.instructions.operands[2]['value']
     window.setSize(x, y)
     if window.getCursor()[0] > window.getSize()[0] or window.getCursor()[1] > window.getSize()[1]:
-        window.setCursor(1,1)
+        window.setCursor(1, 1)
+
 
 def z_window_style():
     window = zcode.screen.getWindow(zcode.instructions.operands[0]['value'])
@@ -1432,6 +1524,6 @@ def z_window_style():
         operation = 0
     window.setattributes(flags, operation)
 
-def z_badop(): # not really an opcode, this is called when the opcode is unknown
-    zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC) + ' (' + str(zcode.memory.getarray(zcode.game.PC, 10)) + ')')
 
+def z_badop():  # not really an opcode, this is called when the opcode is unknown
+    zcode.error.fatal('Unknown opcode at ' + hex(zcode.game.PC) + ' (' + str(zcode.memory.getarray(zcode.game.PC, 10)) + ')')

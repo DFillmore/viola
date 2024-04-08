@@ -20,7 +20,6 @@ from zcode.constants import *
 AVAILABLE = False
 
 
-
 def setup(b):
     global device, channel, currentchannel, x, sounds, effectschannel, musicchannel
     global AVAILABLE, blorbs
@@ -33,25 +32,26 @@ def setup(b):
         pass
     blorbs = b
 
-def availablechannels(arg): 
+
+def availablechannels(arg):
     if AVAILABLE:
         return len(soundchannels[arg])
-    return 0 # no sound capablities, no sound channels available
+    return 0  # no sound capablities, no sound channels available
 
-def bleep(type): # Either a high or a low bleep. 1 is high, 2 is low
+
+def bleep(type):  # Either a high or a low bleep. 1 is high, 2 is low
     if type == 1:
         io.beep()
     if type == 2:
         io.boop()
+
 
 # It might be a good idea to check the relevant flag in Flags 2 to see
 # if the game wants to use sounds. If it does, various sound setting-up stuff can be done (such
 # as loading the relevant data from a blorb file)
 
 
-    
 #SOUND
-
 
 
 class Channel(io.soundChannel):
@@ -68,10 +68,11 @@ class Channel(io.soundChannel):
             zcode.game.interruptstack.append(i)
             zcode.game.interrupt_call()
             zcode.routines.execloop()
-            
+
 
 class musicChannel(io.musicChannel):
     type = 1
+
 
 class effectsChannel(io.effectsChannel):
     type = 0
@@ -94,7 +95,7 @@ class Sound:
             self.type = a.getSndType(sound_number)
         # Standards below 1.1 do not support seperate channels for different sound types, so we 
         # just don't support music in that case
-        if zcode.use_standard < STANDARD_11 and self.type != 0: 
+        if zcode.use_standard < STANDARD_11 and self.type != 0:
             self.sound = None
         elif sound_data:
             self.sound = io.sound(sound_data, self.type)
@@ -120,7 +121,10 @@ class Sound:
 
 currentchannel = [1, 1]
 
-def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops or finishes with a sound. the 'volume' data from the opcode 'sound_effect' contains both the volume and repeats data needed here    
+
+def playsound(sound, effect, volume, repeats, routine):
+    """plays, prepares, stops or finishes with a sound."""
+    # the 'volume' data from the opcode 'sound_effect' contains both the volume and repeats data needed here
     if repeats == 255:
         repeats = -1
     else:
@@ -130,12 +134,12 @@ def playsound(sound, effect, volume, repeats, routine): # plays, prepares, stops
         return False
     elif effect == 2:
         try:
-            s = Sound(sound)        
+            s = Sound(sound)
             soundchannels[s.type][currentchannel[s.type]-1].play(s, volume, repeats, routine)
             return True
         except:
             return False
-       
+
     elif effect == 3:
         try:
             s = Sound(sound)
@@ -149,4 +153,3 @@ def stopall():
     for a in soundchannels:
         for b in a:
             b.stop(b.sound)
-

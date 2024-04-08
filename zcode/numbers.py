@@ -23,7 +23,7 @@ import zcode
 # and I couldn't be bothered to figure it all out again. As such it is probably
 # the only code surviving from the original, very messy version of Viola.
 
-def div(a, b): # divide a by b
+def div(a, b):  # divide a by b
     if b == 0:
         zcode.error.fatal('Tried to divide by zero')
     else:
@@ -36,7 +36,8 @@ def div(a, b): # divide a by b
         z = int(y)
     return z
 
-def mod(a, b): # divide a by b and return the remainder
+
+def mod(a, b):  # divide a by b and return the remainder
     if b == 0:
         zcode.error.fatal('Tried to divide by zero')
     else:
@@ -47,19 +48,22 @@ def mod(a, b): # divide a by b and return the remainder
         if (y > 0) and (y > x):
             y = y - 1
             y = int(y)
-        z = int((0 -((y * b) - a)))
+        z = int((0 - ((y * b) - a)))
         return z
 
-def reduce(num): # reduces out of range numbers
+
+def reduce(num):  # reduces out of range numbers
     num = unsigned(num)
     if num > 0xFFFF:
         num = num % 0x10000
     num = signed(num)
     return num
 
-mode = 0 # 0 is random mode. 1 is predictable mode.
+
+mode = 0  # 0 is random mode. 1 is predictable mode.
 seed = 0
 sequence = 1
+
 
 # since the z-machine uses 16-bit numbers and python uses 32-bit numbers,
 # we have to convert back and forth a bit. If we want to do signed maths with
@@ -69,12 +73,14 @@ sequence = 1
 def signed(negnum):
     return negnum - ((negnum & 0x8000) * 2)
 
+
 def unsigned(negnum):
     if (negnum < 0):
         negnum += 0x10000
     return negnum
 
-def randomize(zseed): # seeds the z-machine random number generator
+
+def randomize(zseed):  # seeds the z-machine random number generator
     global seed
     global mode
     global sequence
@@ -88,20 +94,21 @@ def randomize(zseed): # seeds the z-machine random number generator
         seed = zseed
         mode = 1
         random.seed(seed)
-        
-def getrandom(max): # returns a number from the z-machine random number generator. Max should not be more than 32767
+
+
+def getrandom(max):  # returns a number from the z-machine random number generator. Max should not be more than 32767
     global seed
     global sequence
     if mode == 0:
         if max == 1:
             value = 1
         else:
-            value = random.randrange(1, max+1)
-    elif seed < 1000: #  if the mode is predictable and the seed is less than 1000, max is ignored (it should be the same as seed in any case)
+            value = random.randrange(1, max + 1)
+    elif seed < 1000:  #  if the mode is predictable and the seed is less than 1000, max is ignored (it should be the same as seed in any case)
         value = sequence
         sequence += 1
         if sequence > seed:
             sequence = 1
     else:
-        value = random.randrange(1,max+1)
+        value = random.randrange(1, max + 1)
     return value

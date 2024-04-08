@@ -21,6 +21,7 @@ import iff
 class umemchunk(iff.chunk):
     ID = 'UMem'
     data = []
+
     def write(self):
         self.data = storydata.memory[:]
 
@@ -33,6 +34,7 @@ class umemchunk(iff.chunk):
 class cmemchunk(iff.chunk):
     ID = 'CMem'
     data = []
+
     def write(self):
         #mem = []
         commem = []
@@ -64,7 +66,7 @@ class cmemchunk(iff.chunk):
         commem = self.data[:]
         obmem = []
         zerorun = False
-        for a in range(len(commem)): # loop over compressed memory
+        for a in range(len(commem)):  # loop over compressed memory
             if zerorun:
                 runlength = commem[a]
                 for b in range(runlength):
@@ -77,10 +79,11 @@ class cmemchunk(iff.chunk):
                 obmem.append(commem[a])
         while len(obmem) < len(storydata.omemory):
             obmem.append(0)
-        
+
         mem = [obmem[a] ^ storydata.omemory[a] for a in range(len(obmem))]
         storydata.memory = mem[:]
         return mem
+
 
 class frame:
     retPC = 0
@@ -91,10 +94,12 @@ class frame:
     lvars = []
     evalstack = []
     interrupt = False
-            
+
+
 class stkschunk(iff.chunk):
     ID = 'Stks'
     data = []
+
     def write(self):
         global zstack
         for a in range(len(storydata.callstack)):
@@ -114,7 +119,7 @@ class stkschunk(iff.chunk):
             for x in range(len(storydata.callstack[a].lvars)):
                 self.data.append((storydata.callstack[a].lvars[x] >> 8) & 255)
                 self.data.append(storydata.callstack[a].lvars[x] & 255)
-            
+
             for x in range(storydata.callstack[a].evalstacksize):
                 self.data.append((storydata.callstack[a].evalstack[x] >> 8) & 255)
                 self.data.append(storydata.callstack[a].evalstack[x] & 255)
@@ -133,7 +138,7 @@ class stkschunk(iff.chunk):
         for x in range(len(storydata.currentframe.lvars)):
             self.data.append((storydata.currentframe.lvars[x] >> 8) & 255)
             self.data.append(storydata.currentframe.lvars[x] & 255)
-            
+
         for x in range(storydata.currentframe.evalstacksize):
             self.data.append((storydata.currentframe.evalstack[x] >> 8) & 255)
             self.data.append(storydata.currentframe.evalstack[x] & 255)
@@ -148,37 +153,33 @@ class stkschunk(iff.chunk):
             callstack.append(frame())
             callstack[-1].lvars = []
             callstack[-1].evalstack = []
-            callstack[-1].retPC = (self.data[place] << 16) + (self.data[place+1] << 8) + self.data[place+2]
-            callstack[-1].flags = self.data[place+3]
-            numvars = self.data[place+3] & 15
-            callstack[-1].varnum = self.data[place+4]
+            callstack[-1].retPC = (self.data[place] << 16) + (self.data[place + 1] << 8) + self.data[place + 2]
+            callstack[-1].flags = self.data[place + 3]
+            numvars = self.data[place + 3] & 15
+            callstack[-1].varnum = self.data[place + 4]
             done = 1
             x = 0
-            args = self.data[place+5]
+            args = self.data[place + 5]
             while done != 0:
                 x += 1
                 done = args & 1
                 args = args >> 1
             args -= 1
             callstack[-1].numargs = args
- 
-            callstack[-1].evalstacksize = (self.data[place+6] << 8) + self.data[place+7]
-            
+
+            callstack[-1].evalstacksize = (self.data[place + 6] << 8) + self.data[place + 7]
+
             place += 8
-            for x in range(numvars): 
-                
-                callstack[-1].lvars.append((self.data[place] << 8) + self.data[place+1])
+            for x in range(numvars):
+                callstack[-1].lvars.append((self.data[place] << 8) + self.data[place + 1])
                 place += 2
-            
+
             for x in range(callstack[-1].evalstacksize):
-                
-                callstack[-1].evalstack.append((self.data[place] << 8) + self.data[place+1])
+                callstack[-1].evalstack.append((self.data[place] << 8) + self.data[place + 1])
                 place += 2
         storydata.callstack = copy.deepcopy(callstack)
         storydata.currentframe = storydata.callstack.pop()
         return callstack
-        
-        
 
 
 class ifhdchunk(iff.chunk):
@@ -189,8 +190,9 @@ class ifhdchunk(iff.chunk):
     checksum = 0
     PC = 0
     data = []
+
     def write(self):
-        self.data.append(storydata.release >> 8) # release number
+        self.data.append(storydata.release >> 8)  # release number
         self.data.append(storydata.release & 255)
 
         for a in storydata.serial:
@@ -199,20 +201,20 @@ class ifhdchunk(iff.chunk):
         self.data.append(storydata.checksum >> 8)
         self.data.append(storydata.checksum & 255)
 
-        self.data.append((storydata.PC >> 16) & 255)   # Initial PC
+        self.data.append((storydata.PC >> 16) & 255)  # Initial PC
         self.data.append((storydata.PC >> 8) & 255)
         self.data.append(storydata.PC & 255)
 
-
     def read(self):
         global storydata
-        if ((self.data[0] << 8) + self.data[1]) != storydata.release: # if the release number is wrong, fail
+        if ((self.data[0] << 8) + self.data[1]) != storydata.release:  # if the release number is wrong, fail
             return -1
 
-        if self.data[2:8] != storydata.serial.encode('utf-8'): # if the serial number is wrong, fail
+        if self.data[2:8] != storydata.serial.encode('utf-8'):  # if the serial number is wrong, fail
             return -1
-        storydata.PC = (self.data[10] << 16) + (self.data[11] << 8) + self.data[12] 
+        storydata.PC = (self.data[10] << 16) + (self.data[11] << 8) + self.data[12]
         return storydata.PC
+
 
 class intdchunk(iff.chunk):
     ID = 'IntD'
@@ -223,6 +225,7 @@ class intdchunk(iff.chunk):
     terpID = '    '
     xdata = 0
     data = []
+
 
 class formchunk(iff.chunk):
     ID = 'FORM'
@@ -236,22 +239,21 @@ class formchunk(iff.chunk):
     omemory = []
     callstack = []
     currentframe = None
-    
+
     def write(self):
-        self.data.append(ord('I')) 
+        self.data.append(ord('I'))
         self.data.append(ord('F'))
         self.data.append(ord('Z'))
         self.data.append(ord('S'))
-        chunks = [ ifhdchunk, umemchunk, stkschunk ] # chunks to write
+        chunks = [ifhdchunk, umemchunk, stkschunk]  # chunks to write
         for a in range(len(chunks)):
-            cchunk = chunks[a]() # set cchunk to current chunk
-            cchunk.dowrite() # write current chunk's data
-            id = cchunk.writeID() # set id to current chunk's ID
+            cchunk = chunks[a]()  # set cchunk to current chunk
+            cchunk.dowrite()  # write current chunk's data
+            id = cchunk.writeID()  # set id to current chunk's ID
             for b in range(len(id)):
-                self.data.append(ord(id[b])) # write current chunk's ID to data
-            clen = cchunk.writelen() # write current
+                self.data.append(ord(id[b]))  # write current chunk's ID to data
+            clen = cchunk.writelen()  # write current
 
-            
             for b in range(len(clen)):
                 self.data.append(clen[b])
             for b in range(len(cchunk.data)):
@@ -261,34 +263,34 @@ class formchunk(iff.chunk):
         # okay, first, we need to check if this is an IFZS file
         if chr(self.data[0]) != 'I' or chr(self.data[1]) != 'F' or chr(self.data[2]) != 'Z' or chr(self.data[3]) != 'S':
             return -1
-        
+
         data = self.data[4:]
         while len(data) > 0:
             cchunk = iff.chunk()
             cchunk.data = data
             clen = cchunk.readlen()
             id = cchunk.readID()
-            
+
             if id == 'CMem':
                 cchunk = cmemchunk()
-                
+
             elif id == 'UMem':
                 cchunk = umemchunk()
-                
+
             elif id == 'Stks':
                 cchunk = stkschunk()
-                
+
             elif id == 'IFhd':
                 cchunk = ifhdchunk()
             else:
                 cchunk = iff.chunk()
 
-            cchunk.data = data[8:clen+8]
+            cchunk.data = data[8:clen + 8]
             if clen % 2 == 1:
-                data = data[clen+9:]
+                data = data[clen + 9:]
             else:
-                data = data[clen+8:]
-            
+                data = data[clen + 8:]
+
             if cchunk.read() == -1:
                 return -1
 
@@ -297,30 +299,32 @@ class qdata:
     release = None
     serial = None
     checksum = None
-    PC = None 
+    PC = None
     memory = None
     omemory = None
     callstack = None
     currentframe = None
 
+
 def save(sfile, qd):
     global storydata
     storydata = qd
     data = []
-    cchunk = formchunk() # cchunk is a form chunk
-    cchunk.dowrite() # fill cchunk.data with data
-    id = cchunk.writeID() # find cchunk's id
+    cchunk = formchunk()  # cchunk is a form chunk
+    cchunk.dowrite()  # fill cchunk.data with data
+    id = cchunk.writeID()  # find cchunk's id
     for b in range(len(id)):
-        data.append(ord(id[b])) # write ID to data
-    clen = cchunk.writelen() # find cchunk's length
+        data.append(ord(id[b]))  # write ID to data
+    clen = cchunk.writelen()  # find cchunk's length
     for b in range(len(clen)):
-        data.append(clen[b]) # write length to data
+        data.append(clen[b])  # write length to data
     for b in range(len(cchunk.data)):
-        data.append(cchunk.data[b]) # write cchunk's data to data
-    sfile.write(bytes(data)) # write data to file
-    sfile.close() # close file
+        data.append(cchunk.data[b])  # write cchunk's data to data
+    sfile.write(bytes(data))  # write data to file
+    sfile.close()  # close file
     condition = True
     return condition
+
 
 def restore(savedata, qd):
     global storydata
@@ -329,6 +333,5 @@ def restore(savedata, qd):
     fchunk.data = savedata[8:]
     if fchunk.read() == -1:
         return False
-    else:         
+    else:
         return storydata
-

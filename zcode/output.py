@@ -17,6 +17,7 @@ import vio.zcode as io
 import zcode
 from zcode.constants import *
 
+
 def setup(startstreams=(False, True, False, False, False)):
     global streams
     streams = [None, screenstream(), transcriptstream(), [], commandstream(), interpreterstream()]
@@ -29,13 +30,12 @@ def setup(startstreams=(False, True, False, False, False)):
             streams[stream].open()
 
 
-
 def savefilename(location):
     alphanumeric = string.digits + string.ascii_letters
     try:
         nameloc = zcode.instructions.operands[2]['value']
         namelen = zcode.memory.getbyte(nameloc)
-        name = bytearray(zcode.memory.getarray(nameloc+1, namelen)).decode('latin-1')
+        name = bytearray(zcode.memory.getarray(nameloc + 1, namelen)).decode('latin-1')
         ext = name.find('.')
         if ext >= 0:
             name = name[:ext]
@@ -47,35 +47,44 @@ def savefilename(location):
 
     return filename
 
+
 class outputstream:
     active = False
     quiet = False
+
     def open(self):
         self.active = True
+
     def close(self):
         self.active = False
+
     def write(self, data):
         if self.active and self.quiet == False:
             self.output(data)
+
     def output(self, data):
         pass
-        
+
+
 combining = [chr(a) for a in range(0x0300, 0x0370)]
 nbsp = chr(0x00A0)
+
 
 class screenstream(outputstream):
     active = True
     interruptprinted = False
+
     def output(self, data):
         if zcode.debug:
             print('"', end='')
             print(data.replace('\r', '\n'), end='')
             print('"', end=' ')
         for a in combining:
-            data = data.replace(a, nbsp+a)
+            data = data.replace(a, nbsp + a)
         if zcode.game.currentframe.interrupt:
             self.interruptprinted = True
         zcode.screen.printtext(data)
+
 
 class transcriptstream(outputstream):
     filename = None
@@ -84,7 +93,7 @@ class transcriptstream(outputstream):
         if self.filename == None:
             self.filename = writefile(b"", filename="TRANSCRIPT.LOG", prompt=True, append=False)
         self.active = True
-        zcode.header.setflag(2,0,1)
+        zcode.header.setflag(2, 0, 1)
 
     def output(self, data):
         data = data.replace('\r', '\n')
@@ -94,14 +103,14 @@ class transcriptstream(outputstream):
 
     def close(self):
         self.active = False
-        zcode.header.setflag(2,0,0) # make sure the transcripting bit reflects the current state of transcription
-
+        zcode.header.setflag(2, 0, 0)  # make sure the transcripting bit reflects the current state of transcription
 
 
 class memorystream(outputstream):
     location = None
     width = None
     data = ""
+
     def open(self, location, width=None):
         global stream
         self.location = location
@@ -120,8 +129,8 @@ class memorystream(outputstream):
             OFFSET = 2
         else:
             OFFSET = 0
-        lines = []        
-        if self.width != None: # formatted text for z6
+        lines = []
+        if self.width != None:  # formatted text for z6
             text = ''.join(self.data)
             while len(text) > 0:
                 x = zcode.screen.currentWindow.fitText(text, self.width)
@@ -136,11 +145,11 @@ class memorystream(outputstream):
         c = 0
         data = []
         if self.width == None:
-            for a in self.data: # make absolutely certain each value in data fits in a byte
+            for a in self.data:  # make absolutely certain each value in data fits in a byte
                 b = ord(a)
                 d = []
                 while b > 255:
-                    d.append(b&255)
+                    d.append(b & 255)
                     b = b >> 8
                 data.append(b)
                 d.reverse()
@@ -156,17 +165,18 @@ class memorystream(outputstream):
                 data.append(linelength & 0xff)
                 for c in line:
                     data.append(ord(c))
-  
-        for count, value in enumerate(data):
-            zcode.memory.setbyte(self.location+OFFSET+count, value)
 
-        if self.width != None: # if a width operand was passed to output stream 3, we need to add a 0 word on the end of the text
-            zcode.memory.setword(self.location+len(data), 0)
+        for count, value in enumerate(data):
+            zcode.memory.setbyte(self.location + OFFSET + count, value)
+
+        if self.width != None:  # if a width operand was passed to output stream 3, we need to add a 0 word on the end of the text
+            zcode.memory.setword(self.location + len(data), 0)
         self.data = []
 
     def output(self, data):
         data = zcode.text.unicodetozscii(data)
         self.data += data
+
 
 class commandstream(outputstream):
     filename = None
@@ -180,23 +190,22 @@ class commandstream(outputstream):
         file = io.openfile(zcode.screen.currentWindow, 'a', self.filename)
         writefile(data.encode('utf-8'), filename=self.filename, prompt=False, append=True)
 
+
 class istreamdata():
     data = []
 
 
 class gibberize(istreamdata):
     ident = 'GIBBERIZE:'
+
     def processdata(self, data):
         c = data.index(':')
-        data = data[c+1:]
+        data = data[c + 1:]
         t = ''.join(data).replace('S', '5').replace('A', '4').replace('E', '3').replace('I', '1').replace('O', '0')
         streams[5].outputdata = t
 
 
-
-
 istreamidents = {'GIBBERIZE:': gibberize()}
-
 
 
 class interpreterstream(outputstream):
@@ -204,6 +213,7 @@ class interpreterstream(outputstream):
     tempdata = []
     location = None
     outputdata = []
+
     def open(self, location):
         self.tempdata = []
         self.active = True
@@ -217,7 +227,7 @@ class interpreterstream(outputstream):
         # here we should actually process the data
         # first, search the tempdata stream for a :
         c = self.tempdata.index(':')
-       
+
         # then, use all data up to and including the : as an identifier string
         identdata = self.tempdata[:c+1]
         ident = ''.join(identdata)
@@ -227,9 +237,9 @@ class interpreterstream(outputstream):
             self.tempdata = []
         else:
             # if we do, send the tempdata to the class object for the ident type, and let that deal with what to do next
-            istreamidents[ident].processdata(self.tempdata) # this should set up the output data for us if it needs to
+            istreamidents[ident].processdata(self.tempdata)  # this should set up the output data for us if it needs to
             self.tempdata = []
-        
+
         # check to see if there's any output data to write back to the game memory
         if len(self.outputdata) > 0 and self.location:
             tablelen = zcode.memory.getword(self.location)
@@ -237,18 +247,19 @@ class interpreterstream(outputstream):
             d = list(self.outputdata[:])
             z = 0
             d2 = []
-            for a in d: # make absolutely certain each value in data fits in a byte
+            for a in d:  # make absolutely certain each value in data fits in a byte
                 z += 1
                 try:
                     b = ord(a)
                 except:
                     pass
                 while b > 255:
-                    d2.append(b&255)
+                    d2.append(b & 255)
                     b = b >> 8
                 d2.append(b)
-            d = d2[:tablelen] # lose any data that will not fit (we should have checked before this to make sure this won't happen, though)
+            d = d2[:tablelen]  # lose any data that will not fit (we should have checked before this to make sure this won't happen, though)
             zcode.memory.setarray(self.location+2, d)
+            zcode.memory.setarray(self.location + 2, d)
         self.outputdata = []
 
 
@@ -266,20 +277,21 @@ def checkident(address):
     else:
         return 0
 
+
 def numopenstreams(stream):
     try:
-        if streams[stream].active: # should work for most streams (any that aren't lists like stream 3)
+        if streams[stream].active:  # should work for most streams (any that aren't lists like stream 3)
             return 1
         else:
             return 0
     except:
         try:
-            return len(streams[stream]) # should work for any streams that are lists (like stream 3)
+            return len(streams[stream])  # should work for any streams that are lists (like stream 3)
         except:
-            return 0 # just in case
-        
+            return 0  # just in case
 
-def openstream(stream, location=None, width=None): # area is only used for stream 3, width only for z6 stream 3
+
+def openstream(stream, location=None, width=None):  # area is only used for stream 3, width only for z6 stream 3
     global streams
     if stream == 3:
         if zcode.use_standard <= STANDARD_02:
@@ -322,8 +334,9 @@ def closestream(stream):
                 streams[1].quiet = False
                 streams[2].quiet = False
                 streams[4].quiet = False
-        
-def printtext(text, special=False): # All text to be printed anywhere should be printed here. It will then be sorted out.
+
+
+def printtext(text, special=False):  # All text to be printed anywhere should be printed here. It will then be sorted out.
     streams[1].write(text)
     if len(streams[3]) > 0:
         streams[3][-1].write(text)
@@ -333,8 +346,6 @@ def printtext(text, special=False): # All text to be printed anywhere should be 
         streams[4].write(text)
 
 
-
-    
 def writefile(data, filename=None, prompt=False, append=False):
     """Opens a file, writes data to it, and returns the filename"""
     if append:
@@ -345,7 +356,3 @@ def writefile(data, filename=None, prompt=False, append=False):
     filename = f.name
     f.close()
     return filename
-
-            
-        
-        

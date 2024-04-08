@@ -16,8 +16,8 @@ import settings
 import zcode
 from zcode.constants import *
 
-ibm_graphics_chars = {191:0x2510, 192:0x2514, 217:0x2518, 218:0x250C, 196:0x2500, 179:0x2502, 24:0x2191, 25:0x2193}
-appleiic_mousetext_chars = {95:0x258f, 90:0x2595, 76:0x2594,  75:0x2191, 74:0x2193}
+ibm_graphics_chars = { 191:0x2510, 192:0x2514, 217:0x2518, 218:0x250C, 196:0x2500, 179:0x2502, 24:0x2191, 25:0x2193 }
+appleiic_mousetext_chars = { 95:0x258f, 90:0x2595, 76:0x2594,  75:0x2191, 74:0x2193 }
 
 
 def setup():
@@ -27,6 +27,7 @@ def setup():
     if settings.code in zcode.constants.beyond_zork_codes:
         if zcode.header.getterpnum() == 9 or (zcode.header.getterpnum() == 6 and not zcode.header.getflag(2, 3)):
             zcode.screen.specialfont3()
+
 
 addrwibble = 0
 A0 = '      abcdefghijklmnopqrstuvwxyz'
@@ -119,6 +120,7 @@ inputvalues.extend(list(range(145, 155)))
 inputvalues.extend(list(range(155, 252)))
 inputvalues.extend(list(range(252, 255)))
 
+
 def setupunitable():
     global unitable
     if zcode.use_standard >= STANDARD_10:
@@ -148,7 +150,7 @@ def setupreverseunitable():
     for key in list(unitable.keys()):
         val = unitable[key]
         reverseunitable[val] = key
-                
+
 
 def setupalphatable():
     global A0, A1, A2
@@ -178,11 +180,14 @@ def setupalphatable():
         temp[7] = '\r'
         A2 = ''.join(temp)
 
+
 def splitwords(word):
     chars = (word >> 10 & 31, word >> 5 & 31, word & 31)
     return chars
 
-def gettextlength(address): # this determines how much space an encoded string takes up
+
+def gettextlength(address):
+    """determines how much space an encoded string takes up"""
     loc = address
     endbit = 0
     a = 1
@@ -192,8 +197,9 @@ def gettextlength(address): # this determines how much space an encoded string t
             endbit = 1
         loc += 2
         a += 1
-        
+
     return loc - address
+
 
 def undefinedChars(text):
     undefined = []
@@ -203,38 +209,40 @@ def undefinedChars(text):
         text = text.replace(chr(c), chr(zcode.screen.currentWindow.font.missingGlyph))
     return text
 
+
 def convertBZorkCode(code):
-    if zcode.screen.currentWindow.getFontNumber() == 3 and zcode.header.getterpnum() == zcode.header.TERP_APPLEC: # apple iic
+    if zcode.screen.currentWindow.getFontNumber() == 3 and zcode.header.getterpnum() == zcode.header.TERP_APPLEC:  # apple iic
         try:
             return appleiic_mousetext_chars[code]
         except:
             return code
-    elif zcode.header.getterpnum() == zcode.header.TERP_IBM and not zcode.header.getflag(2, 3): # ibm pc, and graphics not available
+    elif zcode.header.getterpnum() == zcode.header.TERP_IBM and not zcode.header.getflag(2, 3):  # ibm pc, and graphics not available
         try:
             return ibm_graphics_chars[code]
         except:
             return code
     return code
 
+
 def getZSCIIchar(code):
     if settings.code in zcode.constants.beyond_zork_codes:
         newcode = convertBZorkCode(code)
         if newcode != code:
             return chr(newcode)
-        
+
     if code == 0:
         return ''
     if code == 1 and zcode.header.zversion == 1:
         return '\r'
-    elif code == 9 and zcode.header.zversion == 6: # tab (needs to be smaller when using fixed pitch)
+    elif code == 9 and zcode.header.zversion == 6:  # tab (needs to be smaller when using fixed pitch)
         return '\t'
-    elif code == 11 and zcode.header.zversion == 6: # sentence space (needs to be smaller when using fixed pitch)
+    elif code == 11 and zcode.header.zversion == 6:  # sentence space (needs to be smaller when using fixed pitch)
         return chr(0x2001)
     elif code == 13:
         return '\r'
     elif code > 31 and code < 127:
         return chr(code)
-    elif code >= 155 and code <= 251: # extra chars
+    elif code >= 155 and code <= 251:  # extra chars
         try:
             char = unitable[code]
             char = chr(char)
@@ -247,7 +255,8 @@ def getZSCIIchar(code):
     else:
         zcode.error.warning(f'ZSCII character {code} undefined for output.')
         return ''
-    
+
+
 def printabbrev(table, code):
     address = zcode.header.abbrevtableloc
     loc = 32 * (table-1) + code
@@ -256,8 +265,6 @@ def printabbrev(table, code):
     textaddress = zcode.memory.wordaddress(wordaddress)
     chars = zcharstozscii(textaddress)
     return chars
-
-
 
 
 def zcharstozscii(address):
@@ -270,13 +277,12 @@ def zcharstozscii(address):
         c = splitwords(w)
         if w & 0x8000 == 0x8000:
             finished = True
-                
+
         for a in c:
             codes.append(a)
-                    
+
         loc += 2
 
- 
     # codes should now be a list of the z-characters, with Unicode string bytes
     # Need to convert this to ZSCII (and Unicode strings bytes)
     ZSCII = []
@@ -291,10 +297,10 @@ def zcharstozscii(address):
         if abbrev != 0:
             ZSCII.extend(printabbrev(abbrev, a))
             abbrev = 0
-        elif twocode == 1: # first 5 bits of a 10-byte zscii code
+        elif twocode == 1:  # first 5 bits of a 10-byte zscii code
             ZSCII.append(a << 5)
             twocode = 2
-        elif twocode == 2: # last 5 bits of a 10-byte zscii code
+        elif twocode == 2:  # last 5 bits of a 10-byte zscii code
             ZSCII[-1] = chr(ZSCII[-1] + a)
             twocode = 0
         elif a < 4 and a > 0 and zcode.header.zversion >= 3:
@@ -329,8 +335,8 @@ def zcharstozscii(address):
                 currentalpha = A1
             if a == 3:
                 temporary = True
-        
-        elif currentalpha == A2 and a == 6: # start a ten-byte zscii code
+
+        elif currentalpha == A2 and a == 6:  # start a ten-byte zscii code
             twocode = 1
             if temporary == True:
                 currentalpha = previousalpha
@@ -344,22 +350,19 @@ def zcharstozscii(address):
                 temporary = False
     return ZSCII
 
+
 def zsciitounicode(zscii):
     text = []
     unitext = []
     for a in zscii:
         text.append(getZSCIIchar(ord(a)).encode('utf-8'))
     return b''.join(text)
-            
-    
 
 
 def decodetext(address, antirecurse=0):
     z = zcharstozscii(address)
     u = zsciitounicode(z)
     return u.decode('utf-8')
-
-
 
 
 def unicodetozscii(text):
@@ -375,6 +378,7 @@ def unicodetozscii(text):
                 w.append(a)
     return ''.join(w)
 
+
 def zsciitozchars(text, maxlen=-1):
     encoded = []
     for a in text:
@@ -386,7 +390,7 @@ def zsciitozchars(text, maxlen=-1):
         elif A2.find(a) != -1:
             encoded.append(5)
             encoded.append(A2.find(a))
-        else: # The letter is not in any of the three alphabets
+        else:  # The letter is not in any of the three alphabets
             encoded.append(5)
             encoded.append(6)
             if ord(a) in outputvalues:
@@ -412,7 +416,7 @@ def zsciitozchars(text, maxlen=-1):
     return chars
 
 
-def encodetext(word): # encodes words for matching against the dictionary
+def encodetext(word):  # encodes words for matching against the dictionary
     word = unicodetozscii(word)
     if zcode.header.zversion < 4:
         maxlen = 6

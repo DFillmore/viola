@@ -25,10 +25,12 @@ def setup():
     quit = 0
     input = 0
     restart = 0
-    
+
+
 static_routines = {}
 
-def setuproutine(address): 
+
+def setuproutine(address):
     """set up the local variables and returns the address of the first instruction"""
     global static_routines
     if address in static_routines:
@@ -50,7 +52,7 @@ def setuproutine(address):
         print()
         print(varnum, 'local variables', end='')
     if address > zcode.header.statmembase:
-        routine = {'address':address, 'vars':vars[:]}
+        routine = {'address': address, 'vars': vars[:]}
         static_routines[inaddress] = routine
     return address
 
@@ -61,26 +63,26 @@ def execloop():
     global oldpc
     global timerreturn
     global quit
-    
+
     while (restart == 0) and (quit == 0) and (timerreturn == False):
         try:
             if zcode.screen.ioScreen.resized:
-                zcode.screen.ioScreen.resized=False
+                zcode.screen.ioScreen.resized = False
                 zcode.screen.resize()
         except:
             pass
-        
+
         if len(zcode.game.interruptstack) > 0:
             zcode.game.interrupt_call()
         oldpc = zcode.game.PC
         zcode.game.PC = zcode.instructions.decode(zcode.game.PC)
-        zcode.instructions.runops(oldpc)             
+        zcode.instructions.runops(oldpc)
     timerreturn = False
 
 
-def execstart(): 
+def execstart():
     """set up the Z-Machine to start executing instructions"""
-    global quit # if set to 1, game ends
+    global quit  # if set to 1, game ends
     global restart
     if zcode.debug:
         print('start at', hex(zcode.header.startat))
@@ -96,4 +98,3 @@ def execstart():
             zcode.game.call(zcode.header.startat, [], 0, 0, 1)
         restart = 0
         execloop()
-

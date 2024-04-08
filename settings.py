@@ -19,25 +19,29 @@ import os
 
 locations = ["$HOME", "$USERPROFILE"]
 
+
 def getcode(gamedata):
     release = (gamedata[2] << 8) + gamedata[3]
     serial = gamedata[0x12:0x18].decode('latin-1')
     return str(release) + '.' + serial
+
 
 def findgame():
     c = re.escape(code)
     expr = r'code:[\s\w\.]*' + c + '.*?(^%%|\Z)'
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
-    if match == None: 
+    if match == None:
         return None
     return match.string[match.start():match.end()]
-    
+
+
 def getdefaults():
     expr = r'.*?(^%%|\Z)'
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
     return match.string[match.start():match.end()]
+
 
 def gettitle(gamesettings):
     expr = r'title:.*?$'
@@ -46,7 +50,8 @@ def gettitle(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+6:match.end()].strip()
+        return match.string[match.start() + 6:match.end()].strip()
+
 
 def getblorb(gamesettings):
     expr = r'blorb:.*?$'
@@ -55,7 +60,8 @@ def getblorb(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+6:match.end()].strip()
+        return match.string[match.start() + 6:match.end()].strip()
+
 
 def getheight(gamesettings):
     expr = r'height:.*?$'
@@ -64,7 +70,8 @@ def getheight(gamesettings):
     if match == None:
         return None
     else:
-        return int(match.string[match.start()+7:match.end()].strip())
+        return int(match.string[match.start() + 7:match.end()].strip())
+
 
 def getwidth(gamesettings):
     expr = r'width:.*?$'
@@ -73,7 +80,8 @@ def getwidth(gamesettings):
     if match == None:
         return None
     else:
-        return int(match.string[match.start()+6:match.end()].strip())
+        return int(match.string[match.start() + 6:match.end()].strip())
+
 
 def getterpnum(gamesettings):
     expr = r'terpnum:.*?$'
@@ -82,7 +90,8 @@ def getterpnum(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+8:match.end()].strip()
+        return match.string[match.start() + 8:match.end()].strip()
+
 
 def getforeground(gamesettings):
     expr = r'foreground:.*?$'
@@ -91,7 +100,8 @@ def getforeground(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+11:match.end()].strip()
+        return match.string[match.start() + 11:match.end()].strip()
+
 
 def getbackground(gamesettings):
     expr = r'background:.*?$'
@@ -100,7 +110,8 @@ def getbackground(gamesettings):
     if match == None:
         return None
     else:
-        return match.string[match.start()+11:match.end()].strip()
+        return match.string[match.start() + 11:match.end()].strip()
+
 
 def getsettings(gamesettings):
     if gamesettings == None:
@@ -114,7 +125,8 @@ def getsettings(gamesettings):
     set.append(getforeground(gamesettings))
     set.append(getbackground(gamesettings))
     return set
-        
+
+
 def setup(gamedata):
     global file, filesize, filetext, code, defaults, gamesettings
 
@@ -133,4 +145,3 @@ def setup(gamedata):
         file.close()
 
     code = getcode(gamedata)
-

@@ -119,11 +119,12 @@ opvar = [ zcode.opcodes.z_call_vs,
           zcode.opcodes.z_badop
         ]
 
-opext = [zcode.opcodes.z_badop]*256
+opext = [zcode.opcodes.z_badop] * 256
+
 
 def setup():
     global op2, op1, op0, opvar, opext
-    
+
     if zcode.memory.data[0] >= 3:
         op0[0xc] = zcode.opcodes.z_show_status
         op0[0xd] = zcode.opcodes.z_verify
@@ -132,7 +133,7 @@ def setup():
         opvar[0x13] = zcode.opcodes.z_output_stream
         opvar[0x14] = zcode.opcodes.z_input_stream
         opvar[0x15] = zcode.opcodes.z_sound_effect
-        
+
     if zcode.memory.data[0] >= 4:
         op2[0x19] = zcode.opcodes.z_call_2s
         op1[0x8] = zcode.opcodes.z_call_1s
@@ -146,7 +147,7 @@ def setup():
         opvar[0x12] = zcode.opcodes.z_buffer_mode
         opvar[0x16] = zcode.opcodes.z_read_char
         opvar[0x17] = zcode.opcodes.z_scan_table
-        
+
     if zcode.memory.data[0] >= 5:
         op2[0x1a] = zcode.opcodes.z_call_2n
         op2[0x1b] = zcode.opcodes.z_set_colour
@@ -172,12 +173,12 @@ def setup():
         opext[0x4] = zcode.opcodes.z_set_font
         opext[0x9] = zcode.opcodes.z_save_undo
         opext[0xa] = zcode.opcodes.z_restore_undo
-        if zcode.use_standard >= STANDARD_10: # Standard 1.0 or later
+        if zcode.use_standard >= STANDARD_10:  # Standard 1.0 or later
             opext[0xb] = zcode.opcodes.z_print_unicode
             opext[0xc] = zcode.opcodes.z_check_unicode
-        if zcode.use_standard >= STANDARD_11: # Standard 1.1 or later
+        if zcode.use_standard >= STANDARD_11:  # Standard 1.1 or later
             opext[0xd] = zcode.opcodes.z_set_true_colour
-            
+
     if zcode.memory.data[0] == 6:
         opext[0x5] = zcode.opcodes.z_draw_picture
         opext[0x6] = zcode.opcodes.z_picture_data
@@ -196,10 +197,5 @@ def setup():
         opext[0x1a] = zcode.opcodes.z_print_form
         opext[0x1b] = zcode.opcodes.z_make_menu
         opext[0x1c] = zcode.opcodes.z_picture_table
-        if zcode.use_standard >= STANDARD_11: # Standard 1.1 or later
+        if zcode.use_standard >= STANDARD_11:  # Standard 1.1 or later
             opext[0x1d] = zcode.opcodes.z_buffer_screen
-
-
-
-
-        

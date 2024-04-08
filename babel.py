@@ -18,11 +18,12 @@ from xml.dom.minidom import parseString
 def getbibliographic(iFiction):
     dom = parseString(iFiction)
     try:
-        story = dom.getElementsByTagName('story')[0] # assumes only one story element
+        story = dom.getElementsByTagName('story')[0]  # assumes only one story element
         biblio = story.getElementsByTagName('bibliographic')[0]
     except:
         return None
     return biblio
+
 
 def gettitle(iFiction):
     try:
@@ -32,6 +33,7 @@ def gettitle(iFiction):
     except:
         return None
 
+
 def getheadline(iFiction):
     try:
         biblio = getbibliographic(iFiction)
@@ -39,6 +41,7 @@ def getheadline(iFiction):
         return headline.childNodes[0].wholeText
     except:
         return None
+
 
 def getauthor(iFiction):
     try:
@@ -68,14 +71,16 @@ def getdescription(iFiction):
     except:
         return None
 
+
 def getzcode(iFiction):
     try:
         dom = parseString(iFiction)
-        story = dom.getElementsByTagName('story')[0] # assumes only one story element
+        story = dom.getElementsByTagName('story')[0]  # assumes only one story element
         zcode = story.getElementsByTagName('zcode')[0]
         return zcode
     except:
         return None
+
 
 def getcoverpicture(iFiction):
     zcode = getzcode(iFiction)
