@@ -16,7 +16,7 @@ import sys
 import copy
 import os
 
-import quetzal
+from ififf import quetzal
 import zio.io as io
 import zcode
 

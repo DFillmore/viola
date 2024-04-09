@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 
 import sys
-import blorb
+from ififf import blorb
 import zio.io as io
 import zcode
 from zcode.constants import *

@@ -20,8 +20,8 @@ import getopt
 import os
 import settings
 import zcode
-import blorb
-import babel
+from ififf import blorb
+from ififf import babel
 from zcode.constants import specs
 
 blorbs = []
