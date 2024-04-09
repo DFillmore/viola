@@ -26,7 +26,7 @@ object_data_length = 0
 object_list = {}  # not a list
 
 
-class z_object():
+class z_object:
     location = False
     properties_address = False
     parent = False
@@ -398,7 +398,7 @@ def getFirstProperty(obj):  # returns the address of obj's first property
     return address
 
 
-def getPropertyAddress(obj, prop): # returns the address of the property prop of the object obj (this returns the address of the first byte of the size info, not the first byte of the data)
+def getPropertyAddress(obj, prop):  # returns the address of the property prop of the object obj (this returns the address of the first byte of the size info, not the first byte of the data)
     global object_property_address
     if object_data == zcode.memory.data[objstart:objstart + object_data_length]:
         if obj in object_property_address:

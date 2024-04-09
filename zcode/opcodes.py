@@ -721,7 +721,7 @@ def z_print_paddr():
     zcode.output.printtext(zcode.text.decodetext(zcode.memory.unpackaddress(packedaddress, 2)))
 
 
-def z_print_ret():  #int
+def z_print_ret():
     address = zcode.game.PC
     textlen = zcode.text.gettextlength(address)
     zcode.game.PC = address + textlen
@@ -933,8 +933,6 @@ def z_read():
 
     zcode.input.instring = []
 
-    chplace = -1
-
     for count, value in enumerate(inp):
         zcode.memory.setbyte(text + start + count, ord(value))
 
@@ -1132,7 +1130,7 @@ def z_scan_table():
     fieldlen = form & 127
     place = 0
     for a in range(length):
-        if (result == 0):
+        if result == 0:
             if form & 128 == 128:
                 y = zcode.memory.getword(table + (a * fieldlen))
                 if x == zcode.memory.getword(table + (a * fieldlen)):

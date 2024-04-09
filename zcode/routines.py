@@ -12,12 +12,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import zcode
+
 quit = 0
 input = 0
 restart = 0
 timerreturn = False
-
-import zcode
 
 
 def setup():
