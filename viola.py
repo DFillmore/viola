@@ -261,5 +261,19 @@ def rungame(gamedata):
     zcode.routines.execstart(debug)
     return 1
 
-gamedata = handle_parameters(sys.argv)
-rungame(gamedata)
+
+if __name__ == '__main__':
+    gamedata = handle_parameters(sys.argv)
+
+    if zcode.profile:
+        import cProfile
+        import pstats
+
+        with cProfile.Profile() as pr:
+            rungame(gamedata)
+
+        stats = pstats.Stats(pr)
+        stats.sort_stats(pstats.SortKey.TIME)
+        stats.dump_stats(filename='viola.prof')
+    else:
+        rungame(gamedata)
