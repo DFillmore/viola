@@ -25,3 +25,5 @@ __all__ = ["dictionary",
            "text"
           ]
 from zcode import *
+
+profile = False
