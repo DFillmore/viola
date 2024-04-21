@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
-# Copyright (C) 2001 - 2024 David Fillmore
+import ififf.iff
+# Copyright (C) 2001 - 2019 David Fillmore
 #
 # This file is part of Viola.
 #
@@ -19,8 +19,8 @@ import sys
 import getopt
 import settings
 import zcode
-import blorb
-import babel
+from ififf import blorb
+from ififf import babel
 from zcode.constants import specs
 
 blorbs = []
@@ -74,7 +74,6 @@ def getgame(filename):
     except:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
-
     gamefile.seek(0)
 
     # check to see if it's actually a blorb file
@@ -82,7 +81,7 @@ def getgame(filename):
     gametype = checkgamefile(gamefile)
     gamefile.seek(0)
     if gametype == 'blorb':
-        blorbs = [blorb.Blorb(filename)]
+        blorbs = [blorb.blorb(blorb.blorb_chunk(gamefile.read()))]
         game = blorbs[0].getExec(0)
     elif gametype == 'unknown':
         raise UnknownGameType("Viola does not recognise the format of the game file.")
@@ -155,8 +154,12 @@ def handle_parameters(argv):  # handles command line parameters
         sys.exit()
 
     gamedata = getgame(args[0])
-    for a in range(len(args[1:])):
-        blorbs.append(blorb.Blorb(args[1:][a], gamedata))
+
+    for a in args[1:]:
+        f = open(a, 'rb')
+        blorb_data = f.read()
+        f.close()
+        blorbs.append(blorb.blorb(blorb.blorb_chunk(blorb_data)))
 
     return gamedata
 
@@ -260,11 +263,11 @@ def rungame(gamedata):
 
     if title is None:
         for a in blorbs:
-            iFiction = a.getmetadata()
+            iFiction = a.getMetaData()
             if iFiction:
-                title = babel.gettitle(iFiction)
-                headline = babel.getheadline(iFiction)
-                author = babel.getauthor(iFiction)
+                title = babel.getTitle(iFiction)
+                headline = babel.getHeadline(iFiction)
+                author = babel.getAuthor(iFiction)
                 if title is None:
                     title = ''
                 if headline is not None:

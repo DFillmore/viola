@@ -14,7 +14,7 @@
 
 import copy
 
-import quetzal
+from ififf import quetzal
 import vio.zcode as io
 import zcode
 
