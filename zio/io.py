@@ -54,7 +54,7 @@ def setup(width, height, b, title, foreground, background):
     
     icon = None
     for a in blorbs:
-        icon = a.gettitlepic()
+        icon = a.getTitlePic()
     if icon:
         zApp.setIcon(icon)
 
@@ -539,7 +539,10 @@ class image:
         else: # assume pygame surface
             self.picture = data
         try:
-            self.palette = self.picture.get_palette()
+            self.palette = list(self.picture.get_palette())
+            for a in range(len(self.palette)):
+                self.palette[a] = self.palette[a][:-1]
+
         except:
             self.palette = None
 
@@ -589,7 +592,7 @@ def getpic(screen, picture_number):
     palette = pic.getPalette()
     if palette:
         for a in blorbs:
-            palette = a.getPalette(picture_number, palette)
+            palette = a.adaptPalette(picture_number, palette)
         pic.setPalette(palette)
     return pic
 
