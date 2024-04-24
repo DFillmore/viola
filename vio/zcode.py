@@ -56,7 +56,7 @@ def setup(width, height, b, title, foreground, background):
     
     icon = None
     for a in blorbs:
-        icon = a.getTitlePic()
+        icon = a.getTitlePic().data[:]
     if icon:
         zApp.setIcon(icon)
 
