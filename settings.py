@@ -28,7 +28,7 @@ def getcode(gamedata):
 
 def findgame():
     c = re.escape(code)
-    expr = r'code:[\s\w\.]*' + c + '.*?(^%%|\Z)'
+    expr = r"code:[\s\w.]*" + c + ".*?(?=code:|\Z)"
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
     if match == None:
@@ -37,14 +37,14 @@ def findgame():
 
 
 def getdefaults():
-    expr = r'.*?(^%%|\Z)'
+    expr = r".*?(?=code:|\Z)"
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
     return match.string[match.start():match.end()]
 
 
 def gettitle(gamesettings):
-    expr = r'title:.*?$'
+    expr = r"title:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -54,7 +54,7 @@ def gettitle(gamesettings):
 
 
 def getblorb(gamesettings):
-    expr = r'blorb:.*?$'
+    expr = r"blorb:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -64,7 +64,7 @@ def getblorb(gamesettings):
 
 
 def getheight(gamesettings):
-    expr = r'height:.*?$'
+    expr = r"height:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -74,7 +74,7 @@ def getheight(gamesettings):
 
 
 def getwidth(gamesettings):
-    expr = r'width:.*?$'
+    expr = r"width:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -84,7 +84,7 @@ def getwidth(gamesettings):
 
 
 def getterpnum(gamesettings):
-    expr = r'terpnum:.*?$'
+    expr = r"terpnum:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -94,7 +94,7 @@ def getterpnum(gamesettings):
 
 
 def getforeground(gamesettings):
-    expr = r'foreground:.*?$'
+    expr = r"foreground:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:
@@ -104,7 +104,7 @@ def getforeground(gamesettings):
 
 
 def getbackground(gamesettings):
-    expr = r'background:.*?$'
+    expr = r"background:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match == None:

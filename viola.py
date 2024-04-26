@@ -207,15 +207,21 @@ def rungame(gamedata):
     if width is None:
         width = gameset[1]
 
-    try:
-        foreground = zcode.screen.basic_colours[gameset[5]]
-    except:
-        foreground = 2
+    if gameset[5].lower() in zcode.screen.colours:
+        foreground = zcode.screen.colours[gameset[5].lower()]
+    else:
+        try:
+            foreground = int(gameset[5])
+        except TypeError:
+            foreground = 2
 
-    try:
-        background = zcode.screen.basic_colours[gameset[6]]
-    except:
-        background = 9
+    if gameset[6].lower() in zcode.screen.colours:
+        background = zcode.screen.colours[gameset[6].lower()]
+    else:
+        try:
+            background = int(gameset[6])
+        except TypeError:
+            background = 9
 
     if gameset[3] is not None:
         blorbs.append(io.findfile(gameset[3]))
