@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import ififf.iff
+
 # Copyright (C) 2001 - 2019 David Fillmore
 #
 # This file is part of Viola.
@@ -14,6 +14,8 @@ import ififf.iff
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from __future__ import annotations
+
 import vio.zcode as io
 import sys
 import getopt
@@ -27,7 +29,7 @@ blorbs = []
 height = None
 width = None
 title = None
-terpnum = None
+terpnum: None | int = None
 
 
 def checkgamefile(gamefile):
@@ -69,11 +71,7 @@ def getgame(filename):
     if f == False:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
-    try:
-        gamefile = open(f, 'rb')
-    except:
-        print("Error opening game file", file=sys.stderr)
-        sys.exit()
+    gamefile = open(f, 'rb')
     gamefile.seek(0)
 
     # check to see if it's actually a blorb file
@@ -114,7 +112,7 @@ def handle_parameters(argv):  # handles command line parameters
     if len(argv) <= 1:
         return None
 
-    args = getopt.getopt(argv[1:], 'Bdh:w:T:t:R:P:', 'zspec=')
+    args = getopt.getopt(argv[1:], 'Bdh:w:T:t:R:P:', ['zspec='])
 
     options = args[0]
     args = args[1]
