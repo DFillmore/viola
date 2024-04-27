@@ -196,35 +196,32 @@ def rungame(gamedata):
     global height, width, title, terpnum, foreground, background
     settings.setup(gamedata)
     defset = settings.getsettings(settings.getdefaults())
-    gameset = settings.getsettings(settings.findgame())
+    gameset = settings.getsettings(settings.findgame(), defset)
 
-    for a in range(len(gameset)):
-        if gameset[a] == None:
-            gameset[a] = defset[a]
-
+    # only use height and width from game settings if not passed at the command line
     if height is None:
-        height = gameset[2]
+        height = gameset.height
     if width is None:
-        width = gameset[1]
+        width = gameset.width
 
-    if gameset[5].lower() in zcode.screen.colours:
-        foreground = zcode.screen.colours[gameset[5].lower()]
+    if gameset.foreground and gameset.foreground.lower() in zcode.screen.colours:
+        foreground = zcode.screen.colours[gameset.foreground.lower()]
     else:
         try:
-            foreground = int(gameset[5])
+            foreground = int(gameset.foreground)
         except TypeError:
             foreground = 2
 
-    if gameset[6].lower() in zcode.screen.colours:
-        background = zcode.screen.colours[gameset[6].lower()]
+    if gameset.background and gameset.background.lower() in zcode.screen.colours:
+        background = zcode.screen.colours[gameset.background.lower()]
     else:
         try:
-            background = int(gameset[6])
+            background = int(gameset.background)
         except TypeError:
             background = 9
 
-    if gameset[3] is not None:
-        blorbs.append(io.findfile(gameset[3]))
+    if gameset.blorb is not None:
+        blorbs.append(io.findfile(gameset.blorb))
 
     for a in range(len(blorbs)):
         if not blorbs[a]:
@@ -262,18 +259,25 @@ def rungame(gamedata):
     except:
         height = 768
 
-    terpnum = gameset[4]
+    terpnum = gameset.terp_number
 
     if title is None:
-        title = gameset[0]
+        title = gameset.title
+    headline = gameset.headline
+    author = gameset.author
 
-    if title is None:
+    # title, headline and author in settings file take precedence over information from blorb metadata
+
+    if (title is None) or (headline is None) or (author is None):
         for a in blorbs:
             iFiction = a.getMetaData()
             if iFiction:
-                title = babel.getTitle(iFiction)
-                headline = babel.getHeadline(iFiction)
-                author = babel.getAuthor(iFiction)
+                if title is None:
+                    title = babel.getTitle(iFiction)
+                if headline is None:
+                    headline = babel.getHeadline(iFiction)
+                if author is None:
+                    author = babel.getAuthor(iFiction)
                 if title is None:
                     title = ''
                 if headline is not None:

@@ -53,6 +53,25 @@ def gettitle(gamesettings):
         return match.string[match.start() + 6:match.end()].strip()
 
 
+def getheadline(gamesettings):
+    expr = r"headline:.*?$"
+    r = re.compile(expr, re.M)
+    match = r.search(gamesettings)
+    if match is None:
+        return None
+    else:
+        return match.string[match.start() + 6:match.end()].strip()
+
+
+def getauthor(gamesettings):
+    expr = r"author:.*?$"
+    r = re.compile(expr, re.M)
+    match = r.search(gamesettings)
+    if match is None:
+        return None
+    else:
+        return match.string[match.start() + 6:match.end()].strip()
+
 def getblorb(gamesettings):
     expr = r"blorb:.*?$"
     r = re.compile(expr, re.M)
@@ -113,17 +132,65 @@ def getbackground(gamesettings):
         return match.string[match.start() + 11:match.end()].strip()
 
 
-def getsettings(gamesettings):
-    if gamesettings == None:
-        return [None, None, None, None, None]
-    set = []
-    set.append(gettitle(gamesettings))
-    set.append(getwidth(gamesettings))
-    set.append(getheight(gamesettings))
-    set.append(getblorb(gamesettings))
-    set.append(getterpnum(gamesettings))
-    set.append(getforeground(gamesettings))
-    set.append(getbackground(gamesettings))
+class gameset:
+    title = None
+    width = None
+    height = None
+    blorb = None
+    terp_number = None
+    foreground = None
+    background = None
+    headline = None
+    author = None
+
+
+    def __init__(self, *, width=None, height=None, blorb=None, terp_number=None,
+                 foreground=None, background=None, title=None, headline=None, author=None):
+        self.width=width
+        self.height=height
+        self.blorb=blorb
+        self.terp_number = terp_number
+        self.foreground = foreground
+        self.background = background
+        self.title = title
+        self.headline = headline
+        self.author = author
+
+
+def getsettings(gamesettings, backup: gameset = None):
+    if gamesettings is None:
+        set = gameset(width=None, height=None, blorb=None, terp_number=None,
+                      foreground=None, background=None, headline=None, author=None)
+    else:
+        set = gameset(title=gettitle(gamesettings),
+                      headline=getheadline(gamesettings),
+                      author=getauthor(gamesettings),
+                      width=getwidth(gamesettings),
+                      height=getheight(gamesettings),
+                      blorb=getblorb(gamesettings),
+                      terp_number=getterpnum(gamesettings),
+                      foreground=getforeground(gamesettings),
+                      background=getbackground(gamesettings)
+                     )
+    if backup:
+        if not set.title:
+            set.title = backup.title
+        if not set.headline:
+            set.headline = backup.title
+        if not set.author:
+            set.author = backup.author
+        if not set.width:
+            set.width = backup.width
+        if not set.height:
+            set.height = backup.height
+        if not set.blorb:
+            set.blorb = backup.blorb
+        if not set.terp_number:
+            set.terp_number = backup.terp_number
+        if not set.foreground:
+            set.foreground = backup.foreground
+        if not set.background:
+            set.background = backup.background
     return set
 
 
