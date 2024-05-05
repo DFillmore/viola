@@ -722,7 +722,7 @@ class window(io.window):
         else:
             return False
 
-    # functions to retrieve more meaningful info from properites
+    # functions to retrieve more meaningful info from properties
 
     def setattributes(self, flags, operation):
         if operation == 0:  # set attributes to match flags exactly
