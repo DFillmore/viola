@@ -22,8 +22,8 @@ errors = []
 
 def fatal(message):
     try:
-       for a in range(1, 3):
-           zcode.output.streams[a].write('Fatal Error: ' + str(message))
+        for a in range(1, 3):
+            zcode.output.streams[a].write('Fatal Error: ' + str(message))
     except:
         pass 
     print('Fatal Error:', message, file=sys.stderr)
