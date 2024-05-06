@@ -160,28 +160,11 @@ def setupalphatable():
     if zcode.header.zversion == 1:
         A2 = '       0123456789.,!?_#\'"/\\<-:()'
     if (zcode.header.zversion >= 5) and (zcode.header.alphatableloc != 0):
-        temp = []
         loc = zcode.header.alphatableloc
-        for x in range(6):
-            temp.append(' ')
-        for x in range(26):
-            temp.append(chr(zcode.memory.getbyte(loc+x)))
-        A0 = ''.join(temp)
-        loc = loc + x + 1
-        temp = []
-        for x in range(6):
-            temp.append(' ')
-        for x in range(26):
-            temp.append(chr(zcode.memory.getbyte(loc+x)))
-        A1 = ''.join(temp)
-        loc = loc + x + 1
-        temp = []
-        for x in range(6):
-            temp.append(' ')
-        for x in range(26):
-            temp.append(chr(zcode.memory.getbyte(loc+x)))
-        temp[7] = '\r'
-        A2 = ''.join(temp)
+        A0 = '      ' + zcode.memory.getarray(loc, 26).decode('latin-1')
+        A1 = '      ' + zcode.memory.getarray(loc + 26, 26).decode('latin-1')
+        A2 = '      ' + zcode.memory.getarray(loc + 52, 26).decode('latin-1')
+        A2 = A2.replace(A2[7], '\r')
 
 
 def splitwords(word):
