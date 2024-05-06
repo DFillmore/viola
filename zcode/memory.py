@@ -12,13 +12,14 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from __future__ import annotations
 import functools
 import sys
 
 import zcode
 from zcode.constants import *
 
-data = None
+data: bytearray | None = None
 originaldata = None
 WORDSIZE = 2
 memory_size = 0
@@ -154,7 +155,7 @@ def setword(offset, word):
     data[offset:offset + WORDSIZE] = int.to_bytes(word, WORDSIZE, byteorder='big')
 
 
-def getarray(offset, length):
+def getarray(offset: int, length: int) -> bytearray:
     offset = zcode.numbers.unsigned(offset)
     return data[offset:offset + length]
 
