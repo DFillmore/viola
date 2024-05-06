@@ -11,17 +11,19 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
+# reads settings from the .violarc file
+
 from __future__ import annotations
 
 import copy
-# reads settings from the .violarc file
-
 import re
 import os
-
 import data
 
 locations = ["$HOME", "$USERPROFILE"]
+
+base_expression = r"(\\#|.)*?(?=$|#)"
 
 
 def findgame(gamecode):
@@ -33,7 +35,6 @@ def findgame(gamecode):
     return match.string[match.start():match.end()]
 
 
-
 def getdefaults():
     expr = r"(?:.*?(\n|\Z))*?(?=code:|ifid:|\Z)"
     r = re.compile(expr, re.M | re.S)
@@ -42,7 +43,7 @@ def getdefaults():
 
 
 def gettitle(gamesettings):
-    expr = r"title:.*?$"
+    expr = r"title:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -52,7 +53,7 @@ def gettitle(gamesettings):
 
 
 def getheadline(gamesettings):
-    expr = r"headline:.*?$"
+    expr = r"headline:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -62,7 +63,7 @@ def getheadline(gamesettings):
 
 
 def getauthor(gamesettings):
-    expr = r"author:.*?$"
+    expr = r"author:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -72,7 +73,7 @@ def getauthor(gamesettings):
 
 
 def getblorb(gamesettings):
-    expr = r"blorb:.*?$"
+    expr = r"blorb:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -82,7 +83,7 @@ def getblorb(gamesettings):
 
 
 def getheight(gamesettings):
-    expr = r"height:.*?$"
+    expr = r"height:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -92,7 +93,7 @@ def getheight(gamesettings):
 
 
 def getwidth(gamesettings):
-    expr = r"width:.*?$"
+    expr = r"width:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -102,7 +103,7 @@ def getwidth(gamesettings):
 
 
 def getterpnum(gamesettings):
-    expr = r"terpnum:.*?$"
+    expr = r"terpnum:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -112,7 +113,7 @@ def getterpnum(gamesettings):
 
 
 def getforeground(gamesettings):
-    expr = r"foreground:.*?$"
+    expr = r"foreground:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
@@ -122,7 +123,7 @@ def getforeground(gamesettings):
 
 
 def getbackground(gamesettings):
-    expr = r"background:.*?$"
+    expr = r"background:" + base_expression
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
     if match is None:
