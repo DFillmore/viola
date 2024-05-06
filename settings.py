@@ -20,12 +20,6 @@ import os
 locations = ["$HOME", "$USERPROFILE"]
 
 
-def getcode(gamedata):
-    release = (gamedata[2] << 8) + gamedata[3]
-    serial = gamedata[0x12:0x18].decode('latin-1')
-    return str(release) + '.' + serial
-
-
 def findgame():
     c = re.escape(code)
     expr = r"code:[\s\w.]*" + c + ".*?(?=code:|\Z)"
