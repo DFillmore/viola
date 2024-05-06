@@ -19,12 +19,15 @@ from zcode.constants import *
 ibm_graphics_chars = { 191:0x2510, 192:0x2514, 217:0x2518, 218:0x250C, 196:0x2500, 179:0x2502, 24:0x2191, 25:0x2193 }
 appleiic_mousetext_chars = { 95:0x258f, 90:0x2595, 76:0x2594,  75:0x2191, 74:0x2193 }
 
+beyondzork = False
 
-def setup():
+
+def setup(gamecode):
     setupunitable()
     setupreverseunitable()
     setupalphatable()
-    if settings.code in zcode.constants.beyond_zork_codes:
+    if gamecode in zcode.constants.beyond_zork_codes:
+        beyondzork = True
         if zcode.header.getterpnum() == 9 or (zcode.header.getterpnum() == 6 and not zcode.header.getflag(2, 3)):
             zcode.screen.specialfont3()
 
@@ -225,7 +228,7 @@ def convertBZorkCode(code):
 
 
 def getZSCIIchar(code):
-    if settings.code in zcode.constants.beyond_zork_codes:
+    if beyondzork:
         newcode = convertBZorkCode(code)
         if newcode != code:
             return chr(newcode)

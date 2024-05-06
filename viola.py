@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import data
 import vio.zcode as io
 import sys
 import getopt
@@ -30,6 +31,18 @@ height = None
 width = None
 title = None
 terpnum: None | int = None
+gamecode = None
+
+# priority of settings: command line > game-specific settings > data from ifdb > default settings > viola defaults
+
+command_settings = settings.gameset(priority=4)
+ifdb_settings = settings.gameset(priority=2)
+base_settings = settings.gameset(width=1024,
+                                 height=768,
+                                 terp_number=zcode.header.TERP_IBM,
+                                 foreground='black',
+                                 background='white'
+                                )
 
 
 def checkgamefile(gamefile):
@@ -68,7 +81,7 @@ class UnsupportedGameType(Exception):
 def getgame(filename):
     global blorbs
     f = io.findfile(filename, gamefile=True)
-    if f == False:
+    if not f:
         print("Error opening game file", file=sys.stderr)
         sys.exit()
     gamefile = open(f, 'rb')
@@ -94,7 +107,8 @@ def getgame(filename):
 
 def handle_parameters(argv):  # handles command line parameters
     global blorbfiles
-    global height, width, title, transcriptfile, usespec, recordfile, playbackfile
+    global height, width, title, transcriptfile, usespec, recordfile, playbackfile, gamecode
+    global command_settings, ifdb_settings
     # viola [options] gamefile [resourcefile]
     if len(argv) <= 1:
         print('Syntax: viola [options] game-file [resource-file]\n'
@@ -105,14 +119,15 @@ def handle_parameters(argv):  # handles command line parameters
               '  -t <period>  milliseconds between timer calls (default 100)\n'
               '  -R <filename>  record input commands to file\n'
               '  -P <filename>  playback input commands from file\n'
-              '  -B  force blorb file to work even if it does not match the game'
+              '  -B  force blorb file to work even if it does not match the game\n'
+              '  -D  download game information (title and author)'
               )
         sys.exit()
 
     if len(argv) <= 1:
         return None
 
-    args = getopt.getopt(argv[1:], 'Bdh:w:T:t:R:P:', ['zspec='])
+    args = getopt.getopt(argv[1:], 'BdDh:w:T:t:R:P:', ['zspec='])
 
     options = args[0]
     args = args[1]
@@ -120,14 +135,15 @@ def handle_parameters(argv):  # handles command line parameters
     recordfile = False
     playbackfile = False
     usespec = 3
+    datagrab: bool = False
 
     for a in options:
         if a[0] == '-d':
             zcode.debug = True
         elif a[0] == '-h':
-            height = int(a[1])
+            command_settings.height = int(a[1])
         elif a[0] == '-w':
-            width = int(a[1])
+            command_settings.width = int(a[1])
         elif a[0] == '-T':
             transcriptfile = a[1]
         elif a[0] == '-t':
@@ -138,6 +154,9 @@ def handle_parameters(argv):  # handles command line parameters
             playbackfile = a[1]
         elif a[0] == '-B':
             blorb.forceblorb = True
+        elif a[0] == '-D':
+            datagrab = True
+
         elif a[0] == '--zspec':
             specversion = a[1]
             if specversion not in specs:
@@ -152,6 +171,13 @@ def handle_parameters(argv):  # handles command line parameters
         sys.exit()
 
     gamedata = getgame(args[0])
+    gamecode = data.getcode(gamedata)
+    if datagrab:
+        ifid = data.getifid(gamedata)
+        ifdb_page = data.getpage(ifid)
+        if ifdb_page:
+            command_settings.title = data.gettitle(ifdb_page)
+            command_settings.author = data.getauthor(ifdb_page)
 
     for a in args[1:]:
         f = open(a, 'rb')
@@ -183,7 +209,7 @@ def setupmodules(gamefile):
     zcode.sounds.setup(blorbs)
     zcode.header.setup()
     zcode.objects.setup()
-    zcode.text.setup()
+    zcode.text.setup(gamecode)
     if terpnum is not None:
         zcode.header.setterpnum(int(terpnum))
 
@@ -192,15 +218,19 @@ def setupmodules(gamefile):
 
 def rungame(gamedata):
     global height, width, title, terpnum, foreground, background
-    settings.setup(gamedata)
-    defset = settings.getsettings(settings.getdefaults())
-    gameset = settings.getsettings(settings.findgame(), defset)
+    settings.setup()
+    defset = settings.getsettings()
+    gameset = settings.getsettings(data.getcode(gamedata))
+    if not gameset:
+        gameset = settings.getsettings(data.getifid(gamedata))
 
-    # only use height and width from game settings if not passed at the command line
-    if height is None:
-        height = gameset.height
-    if width is None:
-        width = gameset.width
+    gameset = gameset.merge(defset)
+    gameset = gameset.merge(ifdb_settings)
+    gameset = gameset.merge(command_settings)
+    gameset = gameset.merge(base_settings)
+
+    height = gameset.height
+    width = gameset.width
 
     if gameset.foreground and gameset.foreground.lower() in zcode.screen.colours:
         foreground = zcode.screen.colours[gameset.foreground.lower()]
@@ -228,16 +258,14 @@ def rungame(gamedata):
     bwidth = 0
     bheight = 0
     for a in blorbs:
-        try:
-            bwidth, bheight = a.getWinSizes()[:2]
-        except:
-            pass
+        bwidth, bheight = a.getWinSizes()[:2]
 
     if bwidth == 0:
         wrat = 1
         bwidth = width
     else:
         wrat = width / bwidth
+
     if bheight == 0:
         hrat = 1
         bheight = height
@@ -248,40 +276,35 @@ def rungame(gamedata):
         rat = wrat
     else:
         rat = hrat
-    try:
-        width = round(bwidth * rat)
-    except:
-        width = 1024
-    try:
-        height = round(bheight * rat)
-    except:
-        height = 768
+
+    width = round(bwidth * rat)
+    height = round(bheight * rat)
 
     terpnum = gameset.terp_number
 
-    if title is None:
-        title = gameset.title
+    # title, headline and author in settings file take precedence over information from blorb metadata
+
+    try:
+        iFiction = blorbs[0].getMetaData()
+    except IndexError:
+        iFiction = None
+
+    if iFiction:
+        blorb_settings = settings.gameset(priority=gameset.priority-1, title=babel.getTitle(iFiction),
+                                          author=babel.getAuthor(iFiction), headline=babel.getHeadline(iFiction)
+                                         )
+        gameset = gameset.merge(blorb_settings)
+
+    title = gameset.title
     headline = gameset.headline
     author = gameset.author
 
-    # title, headline and author in settings file take precedence over information from blorb metadata
-
-    if (title is None) or (headline is None) or (author is None):
-        for a in blorbs:
-            iFiction = a.getMetaData()
-            if iFiction:
-                if title is None:
-                    title = babel.getTitle(iFiction)
-                if headline is None:
-                    headline = babel.getHeadline(iFiction)
-                if author is None:
-                    author = babel.getAuthor(iFiction)
-                if title is None:
-                    title = ''
-                if headline is not None:
-                    title = title + ' (' + headline + ')'
-                if author is not None:
-                    title += ' by ' + author
+    if title is None:
+        title = ''
+    if headline is not None:
+        title = title + ' (' + headline + ')'
+    if author is not None:
+        title += ' by ' + author
 
     if title == '' or title is None:
         title = 'Viola'

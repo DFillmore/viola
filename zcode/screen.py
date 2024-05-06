@@ -14,6 +14,7 @@
 
 
 import settings
+import data
 import vio.zcode as io
 import zcode
 from zcode.constants import *
@@ -759,14 +760,12 @@ class window(io.window):
     maxfontheight = 0
 
     def preNewline(self):
-        story = settings.code
         # call the interrupt routine (if it's time to do so)
-        if zcode.header.getterpnum() != 6 or story != '393.890714':
+        if zcode.header.getterpnum() != 6 or data.getcode(zcode.memory.originaldata) != '393.890714':
             self.cdown = self.countdown()
 
     def postNewline(self):
-        story = settings.code
-        if zcode.header.getterpnum() == 6 and story == '393.890714':
+        if zcode.header.getterpnum() == 6 and data.getcode(zcode.memory.originaldata) == '393.890714':
             self.cdown = self.countdown()
 
     def newline(self):

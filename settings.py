@@ -11,27 +11,31 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+from __future__ import annotations
 
+import copy
 # reads settings from the .violarc file
 
 import re
 import os
 
+import data
+
 locations = ["$HOME", "$USERPROFILE"]
 
 
-def findgame():
-    c = re.escape(code)
-    expr = r"code:[\s\w.]*" + c + ".*?(?=code:|\Z)"
+def findgame(gamecode):
+    expr = r"(?:code: | ifid:)[\s\w.]*" + gamecode + r"(?:.|\n)*?(?=code:|ifid:|\Z)"
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
-    if match == None:
+    if match is None:
         return None
     return match.string[match.start():match.end()]
 
 
+
 def getdefaults():
-    expr = r".*?(?=code:|\Z)"
+    expr = r"(?:.*?(\n|\Z))*?(?=code:|ifid:|\Z)"
     r = re.compile(expr, re.M | re.S)
     match = r.search(filetext)
     return match.string[match.start():match.end()]
@@ -41,7 +45,7 @@ def gettitle(gamesettings):
     expr = r"title:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return match.string[match.start() + 6:match.end()].strip()
@@ -66,11 +70,12 @@ def getauthor(gamesettings):
     else:
         return match.string[match.start() + 6:match.end()].strip()
 
+
 def getblorb(gamesettings):
     expr = r"blorb:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return match.string[match.start() + 6:match.end()].strip()
@@ -80,7 +85,7 @@ def getheight(gamesettings):
     expr = r"height:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return int(match.string[match.start() + 7:match.end()].strip())
@@ -90,7 +95,7 @@ def getwidth(gamesettings):
     expr = r"width:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return int(match.string[match.start() + 6:match.end()].strip())
@@ -100,7 +105,7 @@ def getterpnum(gamesettings):
     expr = r"terpnum:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return match.string[match.start() + 8:match.end()].strip()
@@ -110,7 +115,7 @@ def getforeground(gamesettings):
     expr = r"foreground:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return match.string[match.start() + 11:match.end()].strip()
@@ -120,13 +125,16 @@ def getbackground(gamesettings):
     expr = r"background:.*?$"
     r = re.compile(expr, re.M)
     match = r.search(gamesettings)
-    if match == None:
+    if match is None:
         return None
     else:
         return match.string[match.start() + 11:match.end()].strip()
 
 
+# priority of settings: command line > game-specific settings > data from ifdb > default settings > viola defaults
+
 class gameset:
+    priority = 0
     title = None
     width = None
     height = None
@@ -137,12 +145,12 @@ class gameset:
     headline = None
     author = None
 
-
-    def __init__(self, *, width=None, height=None, blorb=None, terp_number=None,
+    def __init__(self, *, priority=0, width=None, height=None, blorb=None, terp_number=None,
                  foreground=None, background=None, title=None, headline=None, author=None):
-        self.width=width
-        self.height=height
-        self.blorb=blorb
+        self.priority = priority
+        self.width = width
+        self.height = height
+        self.blorb = blorb
         self.terp_number = terp_number
         self.foreground = foreground
         self.background = background
@@ -150,59 +158,74 @@ class gameset:
         self.headline = headline
         self.author = author
 
+    def merge(self, gset: gameset) -> gameset:
+        setA = copy.deepcopy(self)
+        setB = copy.deepcopy(gset)
+        if self.priority < gset.priority:
+            setA = copy.deepcopy(gset)
+            setB = copy.deepcopy(self)
 
-def getsettings(gamesettings, backup: gameset = None):
-    if gamesettings is None:
-        set = gameset(width=None, height=None, blorb=None, terp_number=None,
-                      foreground=None, background=None, headline=None, author=None)
+        if setA.width:
+            setB.width = setA.width
+        if setA.height:
+            setB.height = setA.height
+        if setA.blorb:
+            setB.blorb = setA.blorb
+        if setA.terp_number:
+            setB.terp_number = setA.terp_number
+        if setA.foreground:
+            setB.foreground = setA.foreground
+        if setA.background:
+            setB.background = setA.background
+        if setA.title:
+            setB.title = setA.title
+        if setA.headline:
+            setB.headline = setA.headline
+        if setA.author:
+            setB.author = setA.author
+
+        return setB
+
+
+def getsettings(gamecode=None):
+    if not gamecode:
+        gamesettings = getdefaults()
+        priority = 1
     else:
-        set = gameset(title=gettitle(gamesettings),
-                      headline=getheadline(gamesettings),
-                      author=getauthor(gamesettings),
-                      width=getwidth(gamesettings),
-                      height=getheight(gamesettings),
-                      blorb=getblorb(gamesettings),
-                      terp_number=getterpnum(gamesettings),
-                      foreground=getforeground(gamesettings),
-                      background=getbackground(gamesettings)
-                     )
-    if backup:
-        if not set.title:
-            set.title = backup.title
-        if not set.headline:
-            set.headline = backup.title
-        if not set.author:
-            set.author = backup.author
-        if not set.width:
-            set.width = backup.width
-        if not set.height:
-            set.height = backup.height
-        if not set.blorb:
-            set.blorb = backup.blorb
-        if not set.terp_number:
-            set.terp_number = backup.terp_number
-        if not set.foreground:
-            set.foreground = backup.foreground
-        if not set.background:
-            set.background = backup.background
-    return set
+        gamesettings = findgame(gamecode)
+        priority = 3
+
+    if gamesettings is None:
+        gset = gameset(priority=priority, width=None, height=None, blorb=None, terp_number=None,
+                       foreground=None, background=None, headline=None, author=None)
+    else:
+        gset = gameset(priority=priority,
+                       title=gettitle(gamesettings),
+                       headline=getheadline(gamesettings),
+                       author=getauthor(gamesettings),
+                       width=getwidth(gamesettings),
+                       height=getheight(gamesettings),
+                       blorb=getblorb(gamesettings),
+                       terp_number=getterpnum(gamesettings),
+                       foreground=getforeground(gamesettings),
+                       background=getbackground(gamesettings)
+                      )
+    return gset
 
 
-def setup(gamedata):
-    global file, filesize, filetext, code, defaults, gamesettings
+def setup():
+    global file, filesize, filetext, defaults
 
     filename: str | None = None
-    for l in locations:
-        filename = os.path.join(os.path.expandvars(l), ".violarc")
+    for loc in locations:
+        filename = os.path.join(os.path.expandvars(loc), ".violarc")
         if os.path.exists(filename) == 1:
             break
 
-    if filename == None:
+    if filename is None:
         filetext = ''
     else:
         file = open(filename, "r")
         filesize = os.stat(filename).st_size
         filetext = file.read(filesize)
         file.close()
-
-    code = getcode(gamedata)
